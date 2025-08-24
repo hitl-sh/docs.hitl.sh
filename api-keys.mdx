@@ -1,0 +1,234 @@
+---
+title: "API Keys"
+description: "Generate and manage API keys to securely integrate HITL.sh with your applications and workflows"
+---
+
+# API Keys
+
+API keys are your secure credentials for integrating HITL.sh with your applications, workflows, and third-party tools. They authenticate your requests and ensure only authorized systems can interact with your loops and data.
+
+## Understanding API Keys
+
+API keys in HITL.sh serve as your application's identity and provide secure access to:
+
+- **Loop Management**: Create, update, and delete loops
+- **Request Submission**: Send requests for human review
+- **Response Retrieval**: Fetch human decisions and feedback
+- **Webhook Configuration**: Set up event notifications
+- **Analytics Access**: Retrieve performance metrics and reports
+
+<Warning>
+Keep your API keys secure and never expose them in client-side code or public repositories. Treat them like passwords.
+</Warning>
+
+## Generating Your First API Key
+
+<Steps>
+<Step title="Access API Settings">
+Navigate to your dashboard and click on "Settings" → "API Keys" in the sidebar.
+</Step>
+
+<Step title="Create New Key">
+Click the "Generate New API Key" button to create a new key.
+</Step>
+
+<Step title="Configure Permissions">
+Set the appropriate permissions for your use case:
+- **Read**: View loops, requests, and responses
+- **Write**: Create and update loops and requests
+- **Admin**: Full access including deletion and user management
+</Step>
+
+<Step title="Copy and Store">
+Copy the generated API key immediately and store it securely. You won't be able to see the full key again.
+</Step>
+</Steps>
+
+<Info>
+API keys are generated as 64-character hexadecimal strings. Store them securely in environment variables or secure configuration files.
+</Info>
+
+## API Key Management
+
+### Viewing Active Keys
+
+Your dashboard shows all active API keys with their:
+
+- **Name**: Descriptive label for easy identification
+- **Permissions**: Access level granted to the key
+- **Created Date**: When the key was generated
+- **Last Used**: Most recent activity timestamp
+- **Status**: Active, suspended, or expired
+
+### Key Permissions
+
+<AccordionGroup>
+<Accordion title="Read Permissions">
+- View loop configurations and settings
+- Retrieve request and response data
+- Access analytics and performance metrics
+- Read webhook configurations
+</Accordion>
+
+<Accordion title="Write Permissions">
+- Create and update loops
+- Submit new requests for review
+- Modify webhook settings
+- Update loop configurations
+</Accordion>
+
+<Accordion title="Admin Permissions">
+- Delete loops and requests
+- Manage user accounts and permissions
+- Configure system-wide settings
+- Access billing and usage information
+</Accordion>
+</AccordionGroup>
+
+### Security Best Practices
+
+<CardGroup cols={2}>
+<Card title="Environment Variables" icon="lock">
+Store API keys in environment variables, never hardcode them in your source code.
+</Card>
+
+<Card title="Key Rotation" icon="refresh">
+Regularly rotate your API keys to minimize the impact of potential compromises.
+</Card>
+
+<Card title="Scope Permissions" icon="shield">
+Grant only the minimum permissions necessary for each integration.
+</Card>
+
+<Card title="Monitor Usage" icon="eye">
+Regularly review API key usage to detect unauthorized access.
+</Card>
+</CardGroup>
+
+## Using API Keys
+
+### Authentication Header
+
+Include your API key in the `Authorization` header of all API requests:
+
+```bash
+Authorization: Bearer YOUR_API_KEY_HERE
+```
+
+### Example API Request
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.hitl.sh/v1/loops' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "Content Moderation",
+    "description": "Review flagged content for inappropriate material"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+  "id": "loop_abc123",
+  "name": "Content Moderation",
+  "description": "Review flagged content for inappropriate material",
+  "status": "active",
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+</ResponseExample>
+
+## Integration Examples
+
+### Python Integration
+
+```python
+import requests
+
+api_key = "YOUR_API_KEY"
+base_url = "https://api.hitl.sh/v1"
+
+headers = {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json"
+}
+
+# Create a new loop
+response = requests.post(
+    f"{base_url}/loops",
+    headers=headers,
+    json={
+        "name": "Quality Review",
+        "description": "Review AI-generated content quality"
+    }
+)
+```
+
+### Node.js Integration
+
+```javascript
+const axios = require('axios');
+
+const apiKey = 'YOUR_API_KEY';
+const baseURL = 'https://api.hitl.sh/v1';
+
+const client = axios.create({
+  baseURL,
+  headers: {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  }
+});
+
+// Submit a request for review
+const submitRequest = async (loopId, content) => {
+  try {
+    const response = await client.post(`/loops/${loopId}/requests`, {
+      content,
+      priority: 'high'
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error submitting request:', error);
+  }
+};
+```
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+<Accordion title="Invalid API Key">
+- Verify the key is copied correctly without extra spaces
+- Check if the key has expired or been revoked
+- Ensure the key has the required permissions
+</Accordion>
+
+<Accordion title="Permission Denied">
+- Review the key's permission settings
+- Check if the requested operation requires higher permissions
+- Verify the key is associated with the correct account
+</Accordion>
+
+<Accordion title="Rate Limiting">
+- Check your current usage against plan limits
+- Implement exponential backoff for retries
+- Consider upgrading your plan for higher limits
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+With your API key configured, you're ready to:
+
+<Card title="Create Your First Loop" icon="rocket" href="/first-loop">
+Set up a human-in-the-loop workflow using the API.
+</Card>
+
+<Card title="Explore API Reference" icon="book" href="/api-reference/introduction">
+Learn about all available API endpoints and parameters.
+</Card>

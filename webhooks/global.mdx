@@ -1,0 +1,692 @@
+---
+title: "Global Webhooks"
+description: "Configure global webhooks in HITL.sh to receive real-time notifications about all system events across your account"
+---
+
+# Global Webhooks
+
+Global webhooks in HITL.sh provide real-time notifications about all system events across your entire account. Unlike loop-specific webhooks, global webhooks capture events from all loops, making them ideal for centralized monitoring, analytics, and integration systems.
+
+## What are Global Webhooks?
+
+Global webhooks are HTTP endpoints that receive notifications about:
+
+<Card title="Global Webhook Events" icon="bell">
+- **Account-wide Events**: User management, billing, and system updates
+- **All Loop Events**: Requests, responses, and loop status changes
+- **System Events**: Performance metrics, errors, and maintenance updates
+- **Integration Events**: API usage, rate limiting, and authentication events
+</Card>
+
+## When to Use Global Webhooks
+
+### Use Cases
+
+<CardGroup cols={2}>
+<Card title="Centralized Monitoring" icon="monitor">
+Monitor all HITL.sh activity from a single endpoint for comprehensive oversight.
+</Card>
+
+<Card title="Analytics Systems" icon="chart">
+Collect data from all loops for unified analytics and reporting.
+</Card>
+
+<Card title="Audit Logging" icon="file-text">
+Maintain comprehensive audit trails for compliance and security purposes.
+</Card>
+
+<Card title="Integration Hubs" icon="link">
+Route events to multiple downstream systems and services.
+</Card>
+</CardGroup>
+
+### Comparison with Loop-Specific Webhooks
+
+<AccordionGroup>
+<Accordion title="Global Webhooks">
+- **Scope**: Account-wide, all loops
+- **Events**: All system events
+- **Use Case**: Centralized monitoring and analytics
+- **Complexity**: Higher, more event types to handle
+</Accordion>
+
+<Accordion title="Loop-Specific Webhooks">
+- **Scope**: Single loop only
+- **Events**: Loop-specific events only
+- **Use Case**: Loop-specific integrations
+- **Complexity**: Lower, focused event handling
+</Accordion>
+</AccordionGroup>
+
+## Setting Up Global Webhooks
+
+### 1. Create Webhook Endpoint
+
+First, create an endpoint in your system to receive webhook notifications:
+
+```python
+from flask import Flask, request, jsonify
+import hmac
+import hashlib
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "your_webhook_secret"
+
+@app.route('/webhooks/hitl/global', methods=['POST'])
+def handle_global_webhook():
+    # Verify webhook signature
+    signature = request.headers.get('X-HITL-Signature')
+    if not verify_signature(request.data, signature):
+        return jsonify({"error": "Invalid signature"}), 401
+    
+    payload = request.json
+    event_type = payload["event"]
+    
+    # Route to appropriate handler based on event type
+    if event_type.startswith("request."):
+        handle_request_event(payload)
+    elif event_type.startswith("loop."):
+        handle_loop_event(payload)
+    elif event_type.startswith("user."):
+        handle_user_event(payload)
+    elif event_type.startswith("system."):
+        handle_system_event(payload)
+    
+    return jsonify({"status": "success"}), 200
+
+def verify_signature(payload, signature):
+    expected_signature = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(expected_signature, signature)
+```
+
+### 2. Configure Webhook in HITL.sh
+
+Set up the global webhook through the API:
+
+```python
+import requests
+
+def create_global_webhook(webhook_url, events=None):
+    if events is None:
+        events = ["*"]  # Receive all events
+    
+    webhook_data = {
+        "url": webhook_url,
+        "events": events,
+        "type": "global",  # Specify global webhook
+        "secret": "your_webhook_secret",
+        "enabled": True
+    }
+    
+    response = requests.post(
+        "https://api.hitl.sh/v1/webhooks",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json=webhook_data
+    )
+    
+    return response.json()
+```
+
+### 3. Test Webhook Configuration
+
+Verify your webhook is working correctly:
+
+```python
+def test_webhook(webhook_id):
+    # Send a test event to verify webhook delivery
+    response = requests.post(
+        f"https://api.hitl.sh/v1/webhooks/{webhook_id}/test",
+        headers={"Authorization": f"Bearer {API_KEY}"}
+    )
+    
+    if response.status_code == 200:
+        print("Webhook test successful")
+        return True
+    else:
+        print(f"Webhook test failed: {response.text}")
+        return False
+```
+
+## Event Types and Payloads
+
+### Request Events
+
+Events related to request lifecycle:
+
+<AccordionGroup>
+<Accordion title="request.created">
+```json
+{
+  "event": "request.created",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "request_id": "req_abc123",
+    "loop_id": "loop_xyz789",
+    "content_type": "text",
+    "priority": "normal",
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+</Accordion>
+
+<Accordion title="request.assigned">
+```json
+{
+  "event": "request.assigned",
+  "timestamp": "2024-01-15T10:31:00Z",
+  "data": {
+    "request_id": "req_abc123",
+    "reviewer_id": "reviewer_def456",
+    "assigned_at": "2024-01-15T10:31:00Z"
+  }
+}
+```
+</Accordion>
+
+<Accordion title="request.completed">
+```json
+{
+  "event": "request.completed",
+  "timestamp": "2024-01-15T11:45:00Z",
+  "data": {
+    "request_id": "req_abc123",
+    "decision": "approved",
+    "reviewer_id": "reviewer_def456",
+    "completed_at": "2024-01-15T11:45:00Z"
+  }
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### Loop Events
+
+Events related to loop management:
+
+<AccordionGroup>
+<Accordion title="loop.created">
+```json
+{
+  "event": "loop.created",
+  "timestamp": "2024-01-15T09:00:00Z",
+  "data": {
+    "loop_id": "loop_xyz789",
+    "name": "Content Moderation",
+    "created_by": "user_123",
+    "created_at": "2024-01-15T09:00:00Z"
+  }
+}
+```
+</Accordion>
+
+<Accordion title="loop.updated">
+```json
+{
+  "event": "loop.updated",
+  "timestamp": "2024-01-15T14:30:00Z",
+  "data": {
+    "loop_id": "loop_xyz789",
+    "changes": {
+      "required_approvals": {"from": 1, "to": 2},
+      "response_time": {"from": 3600, "to": 7200}
+    },
+    "updated_by": "user_123",
+    "updated_at": "2024-01-15T14:30:00Z"
+  }
+}
+```
+</Accordion>
+
+<Accordion title="loop.archived">
+```json
+{
+  "event": "loop.archived",
+  "timestamp": "2024-01-15T16:00:00Z",
+  "data": {
+    "loop_id": "loop_xyz789",
+    "archived_by": "user_123",
+    "archived_at": "2024-01-15T16:00:00Z"
+  }
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### User Events
+
+Events related to user management:
+
+<AccordionGroup>
+<Accordion title="user.invited">
+```json
+{
+  "event": "user.invited",
+  "timestamp": "2024-01-15T10:00:00Z",
+  "data": {
+    "user_id": "user_456",
+    "email": "reviewer@example.com",
+    "invited_by": "user_123",
+    "invited_at": "2024-01-15T10:00:00Z"
+  }
+}
+```
+</Accordion>
+
+<Accordion title="user.joined">
+```json
+{
+  "event": "user.joined",
+  "timestamp": "2024-01-15T11:00:00Z",
+  "data": {
+    "user_id": "user_456",
+    "joined_at": "2024-01-15T11:00:00Z"
+  }
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### System Events
+
+Events related to system operations:
+
+<AccordionGroup>
+<Accordion title="system.performance">
+```json
+{
+  "event": "system.performance",
+  "timestamp": "2024-01-15T12:00:00Z",
+  "data": {
+    "metrics": {
+      "active_requests": 150,
+      "average_response_time": 1800,
+      "reviewer_utilization": 0.75
+    },
+    "period": "1h"
+  }
+}
+```
+</Accordion>
+
+<Accordion title="system.error">
+```json
+{
+  "event": "system.error",
+  "timestamp": "2024-01-15T12:05:00Z",
+  "data": {
+    "error_code": "API_RATE_LIMIT",
+    "error_message": "API rate limit exceeded",
+    "affected_service": "content_moderation",
+    "severity": "warning"
+  }
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Event Filtering
+
+### Selective Event Subscription
+
+Subscribe to specific event types to reduce noise:
+
+```python
+def create_filtered_webhook(webhook_url):
+    # Only receive request-related events
+    events = [
+        "request.created",
+        "request.completed",
+        "request.escalated"
+    ]
+    
+    webhook_data = {
+        "url": webhook_url,
+        "events": events,
+        "type": "global",
+        "secret": "your_webhook_secret",
+        "enabled": True
+    }
+    
+    response = requests.post(
+        "https://api.hitl.sh/v1/webhooks",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json=webhook_data
+    )
+    
+    return response.json()
+```
+
+### Event Pattern Matching
+
+Use wildcards for flexible event filtering:
+
+```python
+# Receive all request events
+events = ["request.*"]
+
+# Receive all events from specific loops
+events = ["loop.xyz789.*"]
+
+# Receive all events except system events
+events = ["*", "!system.*"]
+```
+
+## Webhook Processing
+
+### Event Routing
+
+Route different event types to appropriate handlers:
+
+```python
+def route_webhook_event(payload):
+    event_type = payload["event"]
+    
+    # Route based on event category
+    if event_type.startswith("request."):
+        route_request_event(payload)
+    elif event_type.startswith("loop."):
+        route_loop_event(payload)
+    elif event_type.startswith("user."):
+        route_user_event(payload)
+    elif event_type.startswith("system."):
+        route_system_event(payload)
+    else:
+        handle_unknown_event(payload)
+
+def route_request_event(payload):
+    event_type = payload["event"]
+    
+    if event_type == "request.created":
+        handle_new_request(payload["data"])
+    elif event_type == "request.completed":
+        handle_completed_request(payload["data"])
+    elif event_type == "request.escalated":
+        handle_escalated_request(payload["data"])
+```
+
+### Data Transformation
+
+Transform webhook data for your systems:
+
+```python
+def transform_request_data(webhook_data):
+    """Transform webhook data to internal format"""
+    return {
+        "id": webhook_data["request_id"],
+        "loop_id": webhook_data["loop_id"],
+        "status": webhook_data.get("status", "unknown"),
+        "created_at": webhook_data["created_at"],
+        "priority": webhook_data.get("priority", "normal"),
+        "content_type": webhook_data.get("content_type", "unknown")
+    }
+
+def transform_loop_data(webhook_data):
+    """Transform loop event data"""
+    return {
+        "id": webhook_data["loop_id"],
+        "name": webhook_data.get("name", ""),
+        "status": webhook_data.get("status", "unknown"),
+        "event_type": webhook_data["event"],
+        "timestamp": webhook_data["timestamp"]
+    }
+```
+
+## Error Handling and Retries
+
+### Webhook Delivery Failures
+
+Handle webhook delivery failures gracefully:
+
+<CardGroup cols={2}>
+<Card title="Retry Logic" icon="refresh">
+- Implement exponential backoff
+- Set maximum retry attempts
+- Log failed deliveries for investigation
+- Alert on persistent failures
+</Card>
+
+<Card title="Fallback Mechanisms" icon="shield">
+- Store failed events for later processing
+- Implement alternative notification methods
+- Use polling as backup for critical events
+- Maintain event ordering when possible
+</Card>
+</CardGroup>
+
+### Dead Letter Queues
+
+Implement dead letter queues for failed webhooks:
+
+```python
+import redis
+import json
+
+class DeadLetterQueue:
+    def __init__(self, redis_client):
+        self.redis = redis_client
+        self.queue_key = "hitl_webhook_dlq"
+    
+    def add_failed_event(self, event_data, error_reason):
+        """Add failed webhook event to dead letter queue"""
+        dlq_entry = {
+            "event_data": event_data,
+            "error_reason": error_reason,
+            "failed_at": datetime.utcnow().isoformat(),
+            "retry_count": 0
+        }
+        
+        self.redis.lpush(self.queue_key, json.dumps(dlq_entry))
+    
+    def process_dlq(self):
+        """Process events from dead letter queue"""
+        while True:
+            entry = self.redis.brpop(self.queue_key, timeout=1)
+            if entry:
+                dlq_entry = json.loads(entry[1])
+                self.retry_event(dlq_entry)
+    
+    def retry_event(self, dlq_entry):
+        """Retry processing a failed event"""
+        try:
+            # Attempt to process the event again
+            process_webhook_event(dlq_entry["event_data"])
+        except Exception as e:
+            # Increment retry count
+            dlq_entry["retry_count"] += 1
+            
+            if dlq_entry["retry_count"] < 3:
+                # Re-add to queue for another attempt
+                self.add_failed_event(
+                    dlq_entry["event_data"],
+                    str(e)
+                )
+            else:
+                # Log final failure
+                log_final_failure(dlq_entry)
+```
+
+## Security and Authentication
+
+### Webhook Signature Verification
+
+Always verify webhook signatures:
+
+```python
+def verify_webhook_signature(payload, signature, secret):
+    """Verify webhook signature using HMAC-SHA256"""
+    expected_signature = hmac.new(
+        secret.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(expected_signature, signature)
+
+def secure_webhook_handler(request):
+    """Secure webhook handler with signature verification"""
+    # Get signature from headers
+    signature = request.headers.get('X-HITL-Signature')
+    if not signature:
+        return jsonify({"error": "Missing signature"}), 401
+    
+    # Verify signature
+    if not verify_webhook_signature(
+        request.data, 
+        signature, 
+        WEBHOOK_SECRET
+    ):
+        return jsonify({"error": "Invalid signature"}), 401
+    
+    # Process webhook
+    return process_webhook(request.json)
+```
+
+### Rate Limiting
+
+Implement rate limiting to prevent abuse:
+
+```python
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["100 per minute"]
+)
+
+@app.route('/webhooks/hitl/global', methods=['POST'])
+@limiter.limit("100 per minute")
+def handle_global_webhook():
+    # Webhook processing logic
+    pass
+```
+
+## Monitoring and Analytics
+
+### Webhook Performance Metrics
+
+Track webhook delivery performance:
+
+<CardGroup cols={2}>
+<Card title="Delivery Metrics" icon="check">
+- Success rate percentage
+- Average delivery time
+- Failure rate by event type
+- Retry success rates
+</Card>
+
+<Card title="System Metrics" icon="gauge">
+- Webhook queue length
+- Processing latency
+- Error frequency
+- Resource utilization
+</Card>
+</CardGroup>
+
+### Alerting and Notifications
+
+Set up alerts for webhook issues:
+
+<Steps>
+<Step title="Failure Alerts">
+Alert when webhook delivery fails repeatedly.
+</Step>
+
+<Step title="Performance Alerts">
+Alert when webhook processing times exceed thresholds.
+</Step>
+
+<Step title="Volume Alerts">
+Alert when webhook volume is unusually high or low.
+</Step>
+</Steps>
+
+## Best Practices
+
+### Webhook Design
+
+<CardGroup cols={2}>
+<Card title="Idempotency" icon="repeat">
+- Handle duplicate events gracefully
+- Use event IDs for deduplication
+- Implement idempotent processing logic
+</Card>
+
+<Card title="Event Ordering" icon="list">
+- Maintain event order when possible
+- Use timestamps for sequencing
+- Handle out-of-order events gracefully
+</Card>
+</CardGroup>
+
+### Performance Optimization
+
+<Steps>
+<Step title="Async Processing">
+Process webhooks asynchronously to avoid blocking.
+</Step>
+
+<Step title="Batch Processing">
+Group related events for efficient processing.
+</Step>
+
+<Step title="Connection Pooling">
+Reuse HTTP connections for better performance.
+</Step>
+</Steps>
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+<Accordion title="Webhook Not Receiving Events">
+- Verify webhook URL is accessible
+- Check webhook configuration in dashboard
+- Ensure webhook is enabled and active
+- Verify event subscriptions
+</Accordion>
+
+<Accordion title="Signature Verification Failures">
+- Check webhook secret configuration
+- Verify signature header format
+- Ensure payload hasn't been modified
+- Test with webhook testing tool
+</Accordion>
+
+<Accordion title="High Failure Rates">
+- Check endpoint availability and performance
+- Review error logs for specific failure reasons
+- Implement proper error handling
+- Consider implementing retry logic
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Ready to set up global webhooks for your HITL.sh account?
+
+<Card title="Loop-Based Webhooks" icon="link" href="/webhooks/loop-based">
+Learn about loop-specific webhook configurations.
+</Card>
+
+<Card title="API Reference" icon="book" href="/api-reference/introduction">
+Detailed API documentation for webhook management.
+</Card>
+
+<Card title="Integration Examples" icon="code" href="/integrations/n8n">
+See how to use webhooks with popular integration platforms.
+</Card>

@@ -1,0 +1,474 @@
+---
+title: "N8N Integration"
+description: "Integrate HITL.sh with N8N to create powerful automated workflows with human-in-the-loop capabilities"
+---
+
+# N8N Integration
+
+N8N is a powerful workflow automation platform that enables you to connect HITL.sh with hundreds of other services and applications. This integration allows you to create sophisticated automated workflows that include human decision-making at critical points.
+
+## What is N8N?
+
+N8N is an open-source workflow automation tool that provides:
+
+<Card title="N8N Features" icon="workflow">
+- **Visual Workflow Builder**: Drag-and-drop interface for creating automation workflows
+- **700+ Integrations**: Connect with popular services and APIs
+- **Custom Nodes**: Build your own integration nodes
+- **Self-Hosted**: Deploy on your own infrastructure for full control
+- **Webhook Support**: Trigger workflows via HTTP requests
+</Card>
+
+## Why Integrate HITL.sh with N8N?
+
+<CardGroup cols={2}>
+<Card title="Automated Workflows" icon="zap">
+Trigger HITL.sh requests automatically based on events from other systems.
+</Card>
+
+<Card title="Human Decision Points" icon="users">
+Insert human oversight at critical junctures in automated processes.
+</Card>
+
+<Card title="Multi-Service Integration" icon="link">
+Connect HITL.sh with your entire tech stack through a single platform.
+</Card>
+
+<Card title="Visual Process Design" icon="eye">
+Design complex workflows visually without writing code.
+</Card>
+</CardGroup>
+
+## Integration Overview
+
+### Workflow Components
+
+A typical N8N + HITL.sh workflow includes:
+
+<Steps>
+<Step title="Trigger Node">
+An event that starts the workflow (e.g., new email, form submission).
+</Step>
+
+<Step title="Processing Nodes">
+Transform data and prepare it for human review.
+</Step>
+
+<Step title="HITL.sh Node">
+Submit content for human review and wait for decision.
+</Step>
+
+<Step title="Decision Handling">
+Process the human decision and take appropriate action.
+</Step>
+
+<Step title="Action Nodes">
+Execute actions based on human decisions (e.g., send notifications, update databases).
+</Step>
+</Steps>
+
+## Setting Up the Integration
+
+### 1. Install N8N
+
+<Steps>
+<Step title="Choose Installation Method">
+- **Docker**: Quick setup with containerization
+- **npm**: Direct installation via Node.js
+- **Self-hosted**: Full control over deployment
+</Step>
+
+<Step title="Install N8N">
+```bash
+# Using npm
+npm install n8n -g
+
+# Using Docker
+docker run -it --rm \
+  --name n8n \
+  -p 5678:5678 \
+  -v ~/.n8n:/home/node/.n8n \
+  n8nio/n8n
+```
+
+<Step title="Access N8N">
+Open your browser and navigate to `http://localhost:5678`
+</Step>
+</Steps>
+
+### 2. Configure HITL.sh Credentials
+
+<Steps>
+<Step title="Get API Key">
+Generate an API key from your HITL.sh dashboard.
+</Step>
+
+<Step title="Add Credentials">
+In N8N, go to Settings → Credentials → Add Credential
+</Step>
+
+<Step title="Configure HITL.sh">
+- **Name**: HITL.sh API
+- **Type**: Generic API
+- **Base URL**: https://api.hitl.sh/v1
+- **API Key**: Your HITL.sh API key
+</Step>
+</Steps>
+
+### 3. Install HITL.sh Nodes
+
+<Card title="Custom Nodes" icon="puzzle">
+HITL.sh provides custom N8N nodes for seamless integration:
+- **HITL.sh Request Node**: Submit content for review
+- **HITL.sh Response Node**: Retrieve human decisions
+- **HITL.sh Webhook Node**: Receive real-time notifications
+</Card>
+
+## Building Your First Workflow
+
+### Content Moderation Workflow
+
+Create a workflow that automatically moderates social media posts:
+
+<Frame>
+<img src="/images/n8n-content-moderation-workflow.png" alt="N8N workflow diagram showing content moderation with HITL.sh integration" />
+</Frame>
+
+#### Workflow Steps
+
+<Steps>
+<Step title="Twitter Trigger">
+Monitor for new tweets containing specific keywords.
+</Step>
+
+<Step title="Content Analysis">
+Use AI service to analyze tweet content and flag potential issues.
+</Step>
+
+<Step title="HITL.sh Request">
+Submit flagged content for human review if AI confidence is low.
+</Step>
+
+<Step title="Wait for Decision">
+Pause workflow until human decision is received.
+</Step>
+
+<Step title="Process Decision">
+Take action based on human decision (approve, reject, or flag).
+</Step>
+</Steps>
+
+#### Node Configuration
+
+**Twitter Trigger Node**:
+```json
+{
+  "resource": "tweet",
+  "operation": "getAll",
+  "searchText": "your_keywords_here",
+  "includeRetweets": false
+}
+```
+
+**HITL.sh Request Node**:
+```json
+{
+  "loop_id": "content_moderation",
+  "content": "{{ $json.text }}",
+  "content_type": "text",
+  "priority": "normal",
+  "metadata": {
+    "user_id": "{{ $json.author_id }}",
+    "tweet_id": "{{ $json.id }}",
+    "source": "twitter"
+  }
+}
+```
+
+### Customer Support Escalation Workflow
+
+Automatically escalate support tickets that require human intervention:
+
+<Steps>
+<Step title="Zendesk Trigger">
+Monitor for new support tickets with specific tags.
+</Step>
+
+<Step title="AI Classification">
+Use AI to classify ticket complexity and urgency.
+</Step>
+
+<Step title="HITL.sh Review">
+Route complex tickets to human agents for review.
+</Step>
+
+<Step title="Agent Assignment">
+Assign tickets to appropriate support agents based on human decision.
+</Step>
+
+<Step title="Notification System">
+Notify relevant stakeholders about escalated tickets.
+</Step>
+</Steps>
+
+## Advanced Workflow Patterns
+
+### Conditional Routing
+
+Route requests based on content characteristics:
+
+```javascript
+// In a Code node
+const content = $input.all()[0].json;
+const ai_confidence = content.ai_analysis.confidence;
+
+if (ai_confidence < 0.5) {
+  // Low confidence - send to human review
+  return {
+    route_to_hitl: true,
+    priority: "high"
+  };
+} else if (ai_confidence < 0.8) {
+  // Medium confidence - send to human review
+  return {
+    route_to_hitl: true,
+    priority: "normal"
+  };
+} else {
+  // High confidence - auto-approve
+  return {
+    route_to_hitl: false,
+    auto_approve: true
+  };
+}
+```
+
+### Batch Processing
+
+Process multiple requests together for efficiency:
+
+```javascript
+// In a Code node
+const requests = $input.all();
+const batch_size = 10;
+const batches = [];
+
+for (let i = 0; i < requests.length; i += batch_size) {
+  batches.push(requests.slice(i, i + batch_size));
+}
+
+return batches.map(batch => ({
+  batch_requests: batch.map(req => ({
+    content: req.json.content,
+    content_type: req.json.content_type,
+    priority: req.json.priority
+  }))
+}));
+```
+
+### Error Handling
+
+Implement robust error handling for your workflows:
+
+<CardGroup cols={2}>
+<Card title="Retry Logic" icon="refresh">
+- Configure automatic retries for failed API calls
+- Set exponential backoff for rate limiting
+- Handle temporary network issues gracefully
+</Card>
+
+<Card title="Fallback Actions" icon="shield">
+- Define alternative actions when HITL.sh is unavailable
+- Implement manual review processes as backup
+- Log errors for monitoring and debugging
+</Card>
+</CardGroup>
+
+## Webhook Integration
+
+### Real-Time Notifications
+
+Receive instant updates when human decisions are made:
+
+<Steps>
+<Step title="Configure Webhook">
+Set up webhook endpoint in HITL.sh pointing to your N8N instance.
+</Step>
+
+<Step title="Webhook Trigger Node">
+Create a webhook trigger node in N8N to receive notifications.
+</Step>
+
+<Step title="Process Notifications">
+Handle webhook payloads and trigger appropriate workflow actions.
+</Step>
+</Steps>
+
+### Webhook Payload Example
+
+```json
+{
+  "event": "request.completed",
+  "timestamp": "2024-01-15T11:45:00Z",
+  "data": {
+    "request_id": "req_abc123",
+    "loop_id": "content_moderation",
+    "decision": "approved",
+    "reviewer_id": "reviewer_xyz789",
+    "reasoning": "Content meets all guidelines",
+    "confidence": 0.95
+  }
+}
+```
+
+## Best Practices
+
+### Workflow Design
+
+<CardGroup cols={2}>
+<Card title="Modular Design" icon="puzzle">
+- Break complex workflows into smaller, reusable components
+- Use sub-workflows for common operations
+- Maintain clear separation of concerns
+</Card>
+
+<Card title="Error Handling" icon="alert-triangle">
+- Implement comprehensive error handling
+- Add logging and monitoring nodes
+- Create fallback paths for critical operations
+</Card>
+
+<Card title="Performance Optimization" icon="zap">
+- Use batch processing when possible
+- Implement appropriate delays and rate limiting
+- Monitor workflow execution times
+</Card>
+
+<Card title="Documentation" icon="book">
+- Document workflow purpose and logic
+- Add comments to complex nodes
+- Maintain workflow version history
+</Card>
+</CardGroup>
+
+### Security Considerations
+
+<AccordionGroup>
+<Accordion title="API Key Management">
+- Store API keys securely in N8N credentials
+- Rotate keys regularly
+- Use environment variables for sensitive data
+</Accordion>
+
+<Accordion title="Webhook Security">
+- Verify webhook signatures
+- Use HTTPS endpoints
+- Implement rate limiting on webhook triggers
+</Accordion>
+
+<Accordion title="Data Privacy">
+- Minimize data exposure in workflow logs
+- Implement data retention policies
+- Ensure compliance with privacy regulations
+</Accordion>
+</AccordionGroup>
+
+## Monitoring and Analytics
+
+### Workflow Performance
+
+Track the performance of your N8N workflows:
+
+<CardGroup cols={2}>
+<Card title="Execution Metrics" icon="chart">
+- Success/failure rates
+- Execution times
+- Resource usage
+- Error frequency
+</Card>
+
+<Card title="Business Metrics" icon="trending-up">
+- Requests processed per day
+- Human review response times
+- Decision accuracy rates
+- Workflow efficiency improvements
+</Card>
+</CardGroup>
+
+### Alerting and Notifications
+
+Set up alerts for workflow issues:
+
+<Steps>
+<Step title="Error Monitoring">
+Monitor for workflow failures and errors.
+</Step>
+
+<Step title="Performance Alerts">
+Alert when workflows exceed expected execution times.
+</Step>
+
+<Step title="Business Alerts">
+Notify stakeholders about important business events.
+</Step>
+</Steps>
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+<Accordion title="API Rate Limiting">
+- Implement exponential backoff
+- Use batch processing to reduce API calls
+- Monitor API usage and adjust accordingly
+</Accordion>
+
+<Accordion title="Webhook Failures">
+- Verify webhook endpoint accessibility
+- Check webhook signature verification
+- Monitor webhook delivery logs
+</Accordion>
+
+<Accordion title="Workflow Timeouts">
+- Adjust timeout settings for long-running operations
+- Implement progress tracking for human review processes
+- Use appropriate delay nodes for waiting periods
+</Accordion>
+</AccordionGroup>
+
+### Debugging Tips
+
+<CardGroup cols={2}>
+<Card title="Logging" icon="file-text">
+- Add logging nodes throughout your workflow
+- Use console.log in Code nodes for debugging
+- Monitor N8N execution logs
+</Card>
+
+<Card title="Testing" icon="play">
+- Test workflows with sample data
+- Use N8N's test mode for validation
+- Create separate test workflows for development
+</Card>
+</CardGroup>
+
+## Next Steps
+
+Ready to build your first N8N + HITL.sh workflow?
+
+<Card title="Explore Other Integrations" icon="link" href="/integrations/zapier">
+Learn about Zapier integration for simpler automation.
+</Card>
+
+<Card title="Set Up Webhooks" icon="bell" href="/webhooks/global">
+Configure webhooks for real-time notifications.
+</Card>
+
+<Card title="API Reference" icon="book" href="/api-reference/introduction">
+Detailed API documentation for custom integrations.
+</Card>
+
+<Card title="Community Support" icon="users" href="https://discord.gg/jYVrpmnMP9">
+Join the HITL.sh community for help and inspiration.
+</Card>

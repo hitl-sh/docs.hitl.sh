@@ -1,0 +1,354 @@
+---
+title: "Loops"
+description: "Learn about loops, the core workflow mechanism in HITL.sh that routes requests to human reviewers"
+---
+
+# Loops
+
+Loops are the fundamental building blocks of HITL.sh workflows. A loop defines how requests flow from your AI system to human reviewers and back, creating a complete human-in-the-loop cycle.
+
+## What is a Loop?
+
+A loop in HITL.sh is a configurable workflow that:
+
+- **Receives Requests**: Accepts requests from your AI system or applications
+- **Routes to Reviewers**: Directs requests to appropriate human reviewers
+- **Collects Decisions**: Gathers human responses and decisions
+- **Returns Results**: Sends human decisions back to your system
+- **Manages Flow**: Handles escalations, timeouts, and routing logic
+
+<Card title="Loop Examples" icon="workflow">
+- Content moderation workflows
+- Financial approval processes
+- Quality assurance reviews
+- Compliance verification
+- Customer support escalations
+</Card>
+
+## Loop Components
+
+### 1. Loop Configuration
+
+Every loop has essential configuration settings:
+
+<AccordionGroup>
+<Accordion title="Basic Settings">
+- **Name**: Descriptive identifier for the loop
+- **Description**: Purpose and scope of the workflow
+- **Status**: Active, paused, or archived
+- **Priority**: Normal, high, or urgent
+</Accordion>
+
+<Accordion title="Review Settings">
+- **Required Approvals**: Number of reviewers needed
+- **Response Time**: Expected time for human decisions
+- **Auto-approve After**: Automatic approval if no response
+- **Escalation Rules**: What happens when deadlines aren't met
+</Accordion>
+
+<Accordion title="Routing Logic">
+- **Reviewer Assignment**: How reviewers are selected
+- **Skill Matching**: Assigning based on expertise
+- **Load Balancing**: Distributing work evenly
+- **Fallback Options**: Backup reviewers and escalation paths
+</Accordion>
+</AccordionGroup>
+
+### 2. Request Schema
+
+Define the structure of requests that flow through the loop:
+
+```json
+{
+  "content": "string",
+  "content_type": "text|image|video",
+  "priority": "low|normal|high|urgent",
+  "metadata": {
+    "user_id": "string",
+    "timestamp": "datetime",
+    "source": "string"
+  },
+  "ai_analysis": {
+    "confidence": "number",
+    "flags": ["array"],
+    "risk_score": "number"
+  }
+}
+```
+
+### 3. Response Options
+
+Configure what decisions reviewers can make:
+
+<CardGroup cols={2}>
+<Card title="Approved" icon="check">
+Content or request passes review and can proceed.
+</Card>
+
+<Card title="Rejected" icon="x">
+Content or request fails review and is blocked.
+</Card>
+
+<Card title="Needs Changes" icon="edit">
+Request modifications before approval.
+</Card>
+
+<Card title="Escalate" icon="alert">
+Send to senior reviewer or manager.
+</Card>
+</CardGroup>
+
+## Loop Lifecycle
+
+### Creation Phase
+
+<Steps>
+<Step title="Define Purpose">
+Determine what the loop will review and why human oversight is needed.
+</Step>
+
+<Step title="Configure Settings">
+Set up review requirements, response times, and routing logic.
+</Step>
+
+<Step title="Add Reviewers">
+Invite team members and assign appropriate skills and permissions.
+</Step>
+
+<Step title="Test Configuration">
+Verify the loop works correctly with sample requests.
+</Step>
+</Steps>
+
+### Operation Phase
+
+Once active, loops continuously process requests:
+
+<Frame>
+<img src="/images/loop-lifecycle.png" alt="Diagram showing the continuous operation of a loop processing requests" />
+</Frame>
+
+### Maintenance Phase
+
+Regular monitoring and optimization:
+
+- **Performance Review**: Analyze response times and decision quality
+- **Workload Balancing**: Adjust reviewer assignments and skills
+- **Process Improvement**: Refine routing rules and escalation procedures
+- **Team Updates**: Add or remove reviewers as needed
+
+## Loop Types
+
+### Content Moderation Loops
+
+Review user-generated content for inappropriate material:
+
+```python
+content_moderation_loop = {
+    "name": "Content Moderation",
+    "description": "Review flagged content for community guidelines",
+    "settings": {
+        "required_approvals": 1,
+        "response_time": 3600,  # 1 hour
+        "auto_approve_after": 14400,  # 4 hours
+        "escalation_rules": {
+            "high_risk": "immediate_escalation",
+            "timeout": "senior_reviewer"
+        }
+    },
+    "reviewers": ["moderator_1", "moderator_2", "senior_moderator"],
+    "response_options": ["approved", "rejected", "needs_changes", "escalate"]
+}
+```
+
+### Approval Workflow Loops
+
+Handle business process approvals:
+
+```python
+approval_loop = {
+    "name": "Expense Approval",
+    "description": "Review and approve expense reports",
+    "settings": {
+        "required_approvals": 2,
+        "response_time": 86400,  # 24 hours
+        "auto_approve_after": 172800,  # 48 hours
+        "routing_rules": {
+            "amount_threshold": 1000,
+            "escalation": "manager_approval"
+        }
+    },
+    "reviewers": ["supervisor", "manager", "finance_team"],
+    "response_options": ["approved", "rejected", "needs_receipts", "escalate"]
+}
+```
+
+### Quality Assurance Loops
+
+Review AI-generated content for accuracy:
+
+```python
+qa_loop = {
+    "name": "AI Content QA",
+    "description": "Review AI-generated content for quality and accuracy",
+    "settings": {
+        "required_approvals": 1,
+        "response_time": 7200,  # 2 hours
+        "auto_approve_after": 28800,  # 8 hours
+        "quality_thresholds": {
+            "accuracy": 0.95,
+            "completeness": 0.90
+        }
+    },
+    "reviewers": ["qa_specialist", "domain_expert", "senior_reviewer"],
+    "response_options": ["approved", "rejected", "needs_revision", "escalate"]
+}
+```
+
+## Advanced Loop Features
+
+### Conditional Routing
+
+Route requests based on content characteristics:
+
+```python
+def route_request(request):
+    if request.priority == "urgent":
+        return assign_to_senior_reviewer(request)
+    elif request.content_type == "image":
+        return assign_to_image_specialist(request)
+    elif request.ai_confidence < 0.5:
+        return assign_to_expert_reviewer(request)
+    else:
+        return assign_to_available_reviewer(request)
+```
+
+### Escalation Chains
+
+Handle timeouts and complex decisions:
+
+```python
+escalation_chain = {
+    "level_1": {
+        "reviewers": ["junior_reviewer"],
+        "timeout": 3600,  # 1 hour
+        "next_level": "level_2"
+    },
+    "level_2": {
+        "reviewers": ["senior_reviewer"],
+        "timeout": 7200,  # 2 hours
+        "next_level": "level_3"
+    },
+    "level_3": {
+        "reviewers": ["manager"],
+        "timeout": 86400,  # 24 hours
+        "final_action": "auto_approve"
+    }
+}
+```
+
+### Batch Processing
+
+Group similar requests for efficient review:
+
+```python
+def batch_requests(requests, batch_size=10):
+    # Group requests by content type and priority
+    batches = {}
+    for request in requests:
+        key = f"{request.content_type}_{request.priority}"
+        if key not in batches:
+            batches[key] = []
+        batches[key].append(request)
+        
+        # Send batch when full
+        if len(batches[key]) >= batch_size:
+            send_batch_for_review(batches[key])
+            batches[key] = []
+```
+
+## Loop Performance Metrics
+
+Track and optimize your loops:
+
+<CardGroup cols={2}>
+<Card title="Response Time" icon="clock">
+- Average response time
+- 95th percentile response time
+- Time to first response
+- Escalation frequency
+</Card>
+
+<Card title="Quality Metrics" icon="chart">
+- Decision consistency
+- Inter-rater reliability
+- Error rates
+- Reviewer performance
+</Card>
+
+<Card title="Volume Metrics" icon="bar-chart">
+- Requests per day
+- Peak load times
+- Queue length
+- Processing capacity
+</Card>
+
+<Card title="Cost Metrics" icon="dollar-sign">
+- Cost per request
+- Reviewer efficiency
+- Automation savings
+- ROI calculations
+</Card>
+</CardGroup>
+
+## Best Practices
+
+### Loop Design
+
+<Steps>
+<Step title="Start Simple">
+Begin with basic loops and add complexity as needed.
+</Step>
+
+<Step title="Clear Guidelines">
+Provide reviewers with explicit decision criteria.
+</Step>
+
+<Step title="Balanced Workload">
+Distribute work evenly across your reviewer team.
+</Step>
+
+<Step title="Regular Review">
+Continuously monitor and optimize loop performance.
+</Step>
+</Steps>
+
+### Reviewer Management
+
+- **Skill Matching**: Assign reviewers based on expertise
+- **Training**: Provide regular training on policies and procedures
+- **Feedback**: Give reviewers feedback on their performance
+- **Rotation**: Rotate reviewers to prevent burnout and bias
+
+### Performance Optimization
+
+- **Threshold Tuning**: Adjust confidence thresholds based on performance
+- **Routing Optimization**: Refine routing rules for better efficiency
+- **Automation**: Automate routine decisions where possible
+- **Capacity Planning**: Scale reviewer capacity based on demand
+
+## Next Steps
+
+Ready to create and configure your loops?
+
+<Card title="Create Your First Loop" icon="rocket" href="/first-loop">
+Step-by-step guide to building your first loop.
+</Card>
+
+<Card title="Explore Request Types" icon="list" href="/requests/introduction">
+Learn about different types of requests your loops can handle.
+</Card>
+
+<Card title="Mobile App Setup" icon="smartphone" href="/mobile/home-screen">
+Get your reviewers set up with the mobile app.
+</Card>

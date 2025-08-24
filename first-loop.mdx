@@ -1,0 +1,321 @@
+---
+title: "Creating Your First Loop"
+description: "Step-by-step guide to set up your first human-in-the-loop workflow in HITL.sh"
+---
+
+# Creating Your First Loop
+
+A loop in HITL.sh is a human-in-the-loop workflow that routes requests to human reviewers when AI systems need human oversight. This guide will walk you through creating your first loop from start to finish.
+
+## What You'll Build
+
+In this tutorial, you'll create a **Content Moderation Loop** that:
+- Receives flagged content from your AI system
+- Routes it to human reviewers for approval
+- Returns the human decision to complete the workflow
+
+<Check>
+By the end of this guide, you'll have a fully functional loop that can process real requests.
+</Check>
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- ✅ A HITL.sh account with API access
+- ✅ Your API key generated and ready
+- ✅ At least one reviewer added to your team
+- ✅ Basic understanding of REST APIs
+
+<Card title="Set Up API Keys" icon="key" href="/api-keys">
+If you haven't generated your API key yet, complete this step first.
+</Card>
+
+## Step 1: Create the Loop
+
+### Using the Dashboard
+
+<Steps>
+<Step title="Navigate to Loops">
+From your dashboard, click "Loops" in the sidebar, then click "Create New Loop".
+</Step>
+
+<Step title="Configure Basic Settings">
+Fill in the loop details:
+- **Name**: Content Moderation
+- **Description**: Review flagged content for inappropriate material
+- **Priority**: Normal
+- **Response Time**: 2 hours
+</Step>
+
+<Step title="Set Review Requirements">
+Configure how many reviewers need to approve each request:
+- **Required Approvals**: 1
+- **Auto-approve after**: 4 hours (if no response)
+</Step>
+</Steps>
+
+### Using the API
+
+Alternatively, create the loop programmatically:
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.hitl.sh/v1/loops' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "Content Moderation",
+    "description": "Review flagged content for inappropriate material",
+    "settings": {
+      "required_approvals": 1,
+      "auto_approve_after": 14400,
+      "priority": "normal"
+    }
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+  "id": "loop_abc123",
+  "name": "Content Moderation",
+  "description": "Review flagged content for inappropriate material",
+  "status": "active",
+  "settings": {
+    "required_approvals": 1,
+    "auto_approve_after": 14400,
+    "priority": "normal"
+  },
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+</ResponseExample>
+
+## Step 2: Add Reviewers
+
+Your loop needs human reviewers to process requests. Add team members who will review content:
+
+<Steps>
+<Step title="Invite Reviewers">
+From the loop settings, click "Add Reviewers" and enter email addresses.
+</Step>
+
+<Step title="Set Skills">
+Assign content moderation expertise to reviewers:
+- **Primary Skills**: Content Moderation, Safety
+- **Secondary Skills**: Language, Cultural Context
+</Step>
+
+<Step title="Configure Availability">
+Set when reviewers are available to respond to requests.
+</Step>
+</Steps>
+
+<Info>
+Reviewers will receive email invitations and can join using the mobile app or web interface.
+</Info>
+
+## Step 3: Configure Request Fields
+
+Define what information reviewers need to make decisions:
+
+<AccordionGroup>
+<Accordion title="Required Fields">
+- **Content**: The flagged text, image, or video
+- **Flag Reason**: Why the AI flagged this content
+- **Confidence Score**: AI's confidence in the flag
+</Accordion>
+
+<Accordion title="Optional Fields">
+- **User Context**: Information about the content creator
+- **Previous Flags**: History of similar content
+- **Category**: Type of content (text, image, video)
+</Accordion>
+</AccordionGroup>
+
+## Step 4: Set Response Options
+
+Configure what decisions reviewers can make:
+
+<CardGroup cols={2}>
+<Card title="Approved" icon="check">
+Content passes moderation and can be published.
+</Card>
+
+<Card title="Rejected" icon="x">
+Content violates guidelines and should be removed.
+</Card>
+
+<Card title="Needs Changes" icon="edit">
+Content requires modifications before approval.
+</Card>
+
+<Card title="Escalate" icon="alert">
+Send to senior moderator for review.
+</Card>
+</CardGroup>
+
+## Step 5: Test Your Loop
+
+Before going live, test your loop with sample requests:
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.hitl.sh/v1/loops/loop_abc123/requests' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "content": "This is a test message for content moderation",
+    "flag_reason": "Potential inappropriate language",
+    "confidence_score": 0.75,
+    "category": "text"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+  "id": "req_xyz789",
+  "loop_id": "loop_abc123",
+  "status": "pending",
+  "content": "This is a test message for content moderation",
+  "created_at": "2024-01-15T10:35:00Z"
+}
+```
+</ResponseExample>
+
+## Step 6: Monitor and Respond
+
+Once your loop is active:
+
+<Steps>
+<Step title="Reviewer Notification">
+Reviewers receive push notifications and emails about new requests.
+</Step>
+
+<Step title="Mobile Review">
+Reviewers can respond using the HITL.sh mobile app.
+</Step>
+
+<Step title="Decision Processing">
+Human decisions are automatically sent back to your system via webhooks.
+</Step>
+</Steps>
+
+## Integration with Your System
+
+### Webhook Configuration
+
+Set up webhooks to receive human decisions:
+
+<RequestExample>
+```bash cURL
+curl -X POST 'https://api.hitl.sh/v1/webhooks' \
+  -H 'Authorization: Bearer YOUR_API_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://your-app.com/webhooks/hitl",
+    "events": ["request.completed"],
+    "loop_id": "loop_abc123"
+  }'
+```
+</RequestExample>
+
+### Processing Responses
+
+Handle webhook payloads in your application:
+
+```python
+from flask import Flask, request
+import json
+
+app = Flask(__name__)
+
+@app.route('/webhooks/hitl', methods=['POST'])
+def handle_hitl_webhook():
+    payload = request.json
+    
+    if payload['event'] == 'request.completed':
+        request_id = payload['data']['request_id']
+        decision = payload['data']['decision']
+        
+        # Process the human decision
+        if decision == 'approved':
+            publish_content(request_id)
+        elif decision == 'rejected':
+            remove_content(request_id)
+        elif decision == 'needs_changes':
+            request_changes(request_id)
+    
+    return {'status': 'success'}, 200
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+<Card title="Clear Guidelines" icon="book">
+Provide reviewers with clear criteria for making decisions.
+</Card>
+
+<Card title="Regular Training" icon="graduation-cap">
+Keep reviewers updated on policy changes and edge cases.
+</Card>
+
+<Card title="Performance Monitoring" icon="chart">
+Track response times and decision consistency.
+</Card>
+
+<Card title="Feedback Loop" icon="refresh">
+Use reviewer feedback to improve AI flagging accuracy.
+</Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="Reviewers Not Responding">
+- Check notification settings
+- Verify email addresses are correct
+- Ensure reviewers have accepted invitations
+- Consider adjusting response time expectations
+</Accordion>
+
+<Accordion title="Webhook Not Receiving Data">
+- Verify webhook URL is accessible
+- Check authentication headers
+- Review webhook configuration
+- Monitor webhook delivery logs
+</Accordion>
+
+<Accordion title="Loop Performance Issues">
+- Review response time settings
+- Check reviewer availability
+- Monitor queue size and processing
+- Consider adding more reviewers
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Congratulations! You've created your first loop. Now explore:
+
+<CardGroup cols={2}>
+<Card title="Advanced Loop Features" icon="settings">
+Configure escalations, routing rules, and advanced settings.
+</Card>
+
+<Card title="Mobile App Setup" icon="smartphone" href="/mobile/home-screen">
+Get your team set up with the mobile app for on-the-go reviews.
+</Card>
+
+<Card title="Analytics Dashboard" icon="chart">
+Monitor loop performance and optimize your workflows.
+</Card>
+
+<Card title="Additional Integrations" icon="link" href="/integrations/n8n">
+Connect HITL.sh with your existing tools and platforms.
+</Card>
+</CardGroup>

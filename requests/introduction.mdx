@@ -1,0 +1,420 @@
+---
+title: "Requests Introduction"
+description: "Learn about the different types of requests in HITL.sh and how they enable human-in-the-loop workflows"
+---
+
+# Requests Introduction
+
+Requests are the fundamental building blocks of HITL.sh workflows. They represent pieces of content, decisions, or actions that require human oversight before proceeding. Understanding how to create and structure requests is essential for building effective human-in-the-loop systems.
+
+## What are Requests?
+
+A request in HITL.sh is a structured data package that contains:
+
+- **Content to Review**: The actual material requiring human oversight
+- **Context Information**: Background data to help reviewers make decisions
+- **AI Analysis**: Results from your AI system's initial processing
+- **Metadata**: Request details like priority, source, and timestamps
+- **Routing Instructions**: How the request should be handled
+
+<Card title="Request Examples" icon="file-text">
+- Flagged social media posts for content moderation
+- Suspicious financial transactions for fraud review
+- AI-generated content for quality assurance
+- Customer support tickets requiring escalation
+- Compliance documents for verification
+</Card>
+
+## Request Lifecycle
+
+### 1. Creation
+
+Requests are created when your AI system or application identifies a need for human review:
+
+```python
+def create_review_request(content, ai_analysis):
+    request = hitl_client.create_request(
+        loop_id="content_moderation",
+        data={
+            "content": content.text,
+            "content_type": "text",
+            "priority": determine_priority(ai_analysis.risk_score),
+            "ai_analysis": {
+                "confidence": ai_analysis.confidence,
+                "flags": ai_analysis.flags,
+                "risk_score": ai_analysis.risk_score,
+                "model_version": ai_analysis.model_version
+            },
+            "metadata": {
+                "user_id": content.user_id,
+                "timestamp": content.created_at,
+                "source": "social_media_api",
+                "previous_flags": get_user_flag_count(content.user_id)
+            }
+        }
+    )
+    return request
+```
+
+### 2. Routing
+
+Requests are automatically routed to appropriate reviewers based on:
+
+<AccordionGroup>
+<Accordion title="Reviewer Skills">
+Content type, language, domain expertise, and experience level.
+</Accordion>
+
+<Accordion title="Workload Balance">
+Current reviewer availability and queue lengths.
+</Accordion>
+
+<Accordion title="Priority Rules">
+Urgent requests go to senior reviewers or multiple reviewers.
+</Accordion>
+
+<Accordion title="Escalation Paths">
+Fallback reviewers when primary reviewers are unavailable.
+</Accordion>
+</AccordionGroup>
+
+### 3. Review
+
+Human reviewers examine the request and provide their decision:
+
+<Frame>
+<img src="/images/request-review-process.png" alt="Diagram showing the request review process flow" />
+</Frame>
+
+### 4. Completion
+
+The human decision is processed and returned to your system:
+
+```python
+def handle_completed_request(request_id):
+    response = hitl_client.get_response(request_id)
+    
+    # Process the human decision
+    if response.decision == "approved":
+        process_approval(response)
+    elif response.decision == "rejected":
+        process_rejection(response)
+    elif response.decision == "needs_changes":
+        request_modifications(response)
+    elif response.decision == "escalate":
+        escalate_to_senior_reviewer(response)
+    
+    # Update your system's state
+    update_request_status(request_id, response.decision)
+    
+    # Log the decision for analytics
+    log_decision(request_id, response)
+```
+
+## Request Types
+
+HITL.sh supports multiple content types, each with specific handling requirements:
+
+<CardGroup cols={2}>
+<Card title="Text-Based Requests" icon="type" href="/requests/text-based">
+Review written content for appropriateness, accuracy, or compliance.
+</Card>
+
+<Card title="Image-Based Requests" icon="image" href="/requests/image-based">
+Review visual content for inappropriate material or quality issues.
+</Card>
+
+<Card title="Video-Based Requests" icon="video" href="/requests/video-based">
+Review video content for compliance or quality standards.
+</Card>
+
+<Card title="Document-Based Requests" icon="file-text">
+Review documents for accuracy, completeness, or compliance.
+</Card>
+</CardGroup>
+
+## Request Structure
+
+### Required Fields
+
+Every request must include these essential elements:
+
+```json
+{
+  "loop_id": "string",
+  "content": "string",
+  "content_type": "text|image|video|document",
+  "priority": "low|normal|high|urgent"
+}
+```
+
+### Optional Fields
+
+Enhance requests with additional context:
+
+```json
+{
+  "ai_analysis": {
+    "confidence": 0.75,
+    "flags": ["potential_harm", "inappropriate_language"],
+    "risk_score": 0.8,
+    "model_version": "v2.1.0",
+    "processing_time": 0.15
+  },
+  "metadata": {
+    "user_id": "user_123",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "source": "api_endpoint",
+    "session_id": "sess_abc",
+    "ip_address": "192.168.1.1"
+  },
+  "context": {
+    "previous_decisions": 3,
+    "user_reputation": "trusted",
+    "content_category": "user_generated",
+    "language": "en"
+  }
+}
+```
+
+## Request Priority Levels
+
+### Low Priority
+
+Standard requests with no time sensitivity:
+
+- **Response Time**: 24-48 hours
+- **Reviewer Level**: Junior reviewers
+- **Examples**: General content moderation, routine quality checks
+
+### Normal Priority
+
+Standard business requests:
+
+- **Response Time**: 4-8 hours
+- **Reviewer Level**: Standard reviewers
+- **Examples**: Content approval, expense reports under threshold
+
+### High Priority
+
+Time-sensitive requests requiring prompt attention:
+
+- **Response Time**: 1-2 hours
+- **Reviewer Level**: Senior reviewers or multiple reviewers
+- **Examples**: Customer escalations, urgent compliance reviews
+
+### Urgent Priority
+
+Critical requests requiring immediate attention:
+
+- **Response Time**: 15-30 minutes
+- **Reviewer Level**: Senior reviewers, managers, or escalation team
+- **Examples**: Security incidents, legal compliance issues, customer complaints
+
+## Request States
+
+Track the progress of requests through their lifecycle:
+
+<CardGroup cols={2}>
+<Card title="Pending" icon="clock">
+Request is waiting to be assigned to a reviewer.
+</Card>
+
+<Card title="Assigned" icon="user">
+Request has been assigned to a specific reviewer.
+</Card>
+
+<Card title="In Review" icon="eye">
+Reviewer is actively examining the request.
+</Card>
+
+<Card title="Completed" icon="check">
+Human decision has been made and returned.
+</Card>
+
+<Card title="Escalated" icon="arrow-up">
+Request has been escalated to a senior reviewer.
+</Card>
+
+<Card title="Timed Out" icon="alert">
+Request exceeded response time and was auto-processed.
+</Card>
+</CardGroup>
+
+## Creating Effective Requests
+
+### Content Presentation
+
+<Steps>
+<Step title="Clear Formatting">
+Present content in a format that's easy for reviewers to understand.
+</Step>
+
+<Step title="Relevant Context">
+Include all information reviewers need to make informed decisions.
+</Step>
+
+<Step title="Structured Data">
+Organize request data logically with consistent formatting.
+</Step>
+
+<Step title="Appropriate Priority">
+Set realistic priorities based on business impact and urgency.
+</Step>
+</Steps>
+
+### AI Analysis Integration
+
+<CardGroup cols={2}>
+<Card title="Confidence Scores" icon="target">
+Include AI confidence levels to help reviewers understand uncertainty.
+</Card>
+
+<Card title="Flagged Issues" icon="flag">
+Highlight specific concerns the AI has identified.
+</Card>
+
+<Card title="Risk Assessment" icon="alert-triangle">
+Provide risk scores and reasoning for human consideration.
+</Card>
+
+<Card title="Model Information" icon="info">
+Include AI model version and processing details for transparency.
+</Card>
+</CardGroup>
+
+## Request Performance
+
+### Metrics to Track
+
+Monitor request performance to optimize your workflows:
+
+<AccordionGroup>
+<Accordion title="Response Time Metrics">
+- Average response time per request type
+- 95th percentile response times
+- Time to first response
+- Escalation frequency and timing
+</Accordion>
+
+<Accordion title="Quality Metrics">
+- Decision consistency across reviewers
+- Inter-rater reliability scores
+- Error rates and types
+- Reviewer performance trends
+</Accordion>
+
+<Accordion title="Volume Metrics">
+- Requests per day/week/month
+- Peak load times and patterns
+- Queue length and processing capacity
+- Loop utilization rates
+</Accordion>
+</AccordionGroup>
+
+### Optimization Strategies
+
+<Steps>
+<Step title="Batch Processing">
+Group similar requests to reduce reviewer overhead.
+</Step>
+
+<Step title="Smart Routing">
+Route requests to reviewers with appropriate expertise.
+</Step>
+
+<Step title="Load Balancing">
+Distribute requests evenly across your reviewer team.
+</Step>
+
+<Step title="Priority Queuing">
+Process high-priority requests before lower-priority ones.
+</Step>
+</Steps>
+
+## Best Practices
+
+### Request Design
+
+<CardGroup cols={2}>
+<Card title="Clear Content" icon="eye">
+Present content in a format that's easy for reviewers to understand.
+</Card>
+
+<Card title="Relevant Context" icon="info">
+Include all information reviewers need to make informed decisions.
+</Card>
+
+<Card title="Structured Data" icon="database">
+Organize request data logically with consistent formatting.
+</Card>
+
+<Card title="Appropriate Priority" icon="flag">
+Set realistic priorities based on business impact and urgency.
+</Card>
+</CardGroup>
+
+### Performance Optimization
+
+- **Validation**: Verify request data before submission
+- **Consistency**: Maintain consistent request structure across loops
+- **Monitoring**: Track request processing times and success rates
+- **Feedback**: Use reviewer feedback to improve request quality
+
+## API Integration
+
+### Creating Requests
+
+```python
+import requests
+
+def submit_request(loop_id, request_data):
+    response = requests.post(
+        f"https://api.hitl.sh/v1/loops/{loop_id}/requests",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json=request_data
+    )
+    
+    if response.status_code == 201:
+        return response.json()
+    else:
+        raise Exception(f"Failed to create request: {response.text}")
+```
+
+### Retrieving Responses
+
+```python
+def get_request_response(request_id):
+    response = requests.get(
+        f"https://api.hitl.sh/v1/requests/{request_id}/response",
+        headers={"Authorization": f"Bearer {API_KEY}"}
+    )
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None  # Response not ready yet
+```
+
+## Next Steps
+
+Ready to start creating requests for your loops?
+
+<Card title="Text-Based Requests" icon="type" href="/requests/text-based">
+Learn how to create and structure text-based review requests.
+</Card>
+
+<Card title="Image-Based Requests" icon="image" href="/requests/image-based">
+Understand how to handle image content for human review.
+</Card>
+
+<Card title="Video-Based Requests" icon="video" href="/requests/video-based">
+Explore video content review workflows and best practices.
+</Card>
+
+<Card title="Create Your First Loop" icon="rocket" href="/first-loop">
+Set up a loop to process your requests.
+</Card>

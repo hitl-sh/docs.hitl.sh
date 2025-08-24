@@ -1,0 +1,453 @@
+---
+title: "Types of Responses"
+description: "Learn about the different types of responses reviewers can provide and how to use them effectively in HITL.sh"
+---
+
+# Types of Responses
+
+In HITL.sh, reviewers provide structured responses that guide the next steps in your workflow. Understanding the different response types and when to use them is crucial for effective human-in-the-loop systems.
+
+## Response Overview
+
+A response in HITL.sh is a structured decision that includes:
+
+- **Decision Type**: The primary choice (approved, rejected, etc.)
+- **Reasoning**: Explanation for the decision
+- **Additional Feedback**: Optional comments and suggestions
+- **Confidence Level**: How certain the reviewer is about their decision
+- **Metadata**: Response timestamp and reviewer information
+
+<Card title="Response Examples" icon="message-circle">
+- Content approval with minor edit suggestions
+- Transaction rejection with fraud reasoning
+- Quality review with specific improvement notes
+- Escalation request with senior reviewer assignment
+</Card>
+
+## Primary Response Types
+
+### 1. Approved
+
+**When to Use**: Content meets all requirements and can proceed
+
+**Response Structure**:
+```json
+{
+  "decision": "approved",
+  "reasoning": "Content meets all community guidelines and quality standards",
+  "confidence": 0.95,
+  "feedback": {
+    "positive_aspects": [
+      "Clear and informative content",
+      "Appropriate tone and language",
+      "Accurate information"
+    ]
+  }
+}
+```
+
+**Use Cases**:
+- Content passes moderation checks
+- Documents meet compliance requirements
+- Transactions are legitimate
+- AI-generated content is accurate
+
+**Next Steps**: Content proceeds to the next stage of your workflow
+
+### 2. Rejected
+
+**When to Use**: Content violates policies or fails quality standards
+
+**Response Structure**:
+```json
+{
+  "decision": "rejected",
+  "reasoning": "Content violates community guidelines regarding hate speech",
+  "confidence": 0.98,
+  "feedback": {
+    "violations": [
+      "Contains discriminatory language",
+      "Promotes harmful stereotypes",
+      "Violates platform policies"
+    ],
+    "recommendations": [
+      "Remove discriminatory content",
+      "Rewrite with inclusive language",
+      "Review community guidelines"
+    ]
+  }
+}
+```
+
+**Use Cases**:
+- Content violates community guidelines
+- Documents fail compliance checks
+- Transactions appear fraudulent
+- AI-generated content is inaccurate
+
+**Next Steps**: Content is blocked or returned for correction
+
+### 3. Needs Changes
+
+**When to Use**: Content has potential but requires modifications before approval
+
+**Response Structure**:
+```json
+{
+  "decision": "needs_changes",
+  "reasoning": "Content has potential but requires revisions for clarity",
+  "confidence": 0.85,
+  "feedback": {
+    "required_changes": [
+      "Clarify technical terminology",
+      "Add examples for better understanding",
+      "Fix grammatical errors"
+    ],
+    "optional_improvements": [
+      "Consider adding visual aids",
+      "Include related resources"
+    ],
+    "deadline": "2024-01-20T23:59:59Z"
+  }
+}
+```
+
+**Use Cases**:
+- Content is mostly correct but needs clarification
+- Documents are incomplete or have errors
+- AI-generated content needs human refinement
+- Quality issues can be easily addressed
+
+**Next Steps**: Content is returned to creator for modifications
+
+### 4. Escalate
+
+**When to Use**: Request requires additional expertise or senior review
+
+**Response Structure**:
+```json
+{
+  "decision": "escalate",
+  "reasoning": "Complex legal compliance issue requiring expert review",
+  "confidence": 0.7,
+  "feedback": {
+    "escalation_reason": "Legal compliance complexity",
+    "required_expertise": ["legal_review", "compliance_specialist"],
+    "urgency": "high",
+    "additional_context": "Previous similar cases had legal implications"
+  }
+}
+```
+
+**Use Cases**:
+- Complex policy violations
+- Legal or compliance questions
+- High-value or high-risk decisions
+- Requests outside reviewer expertise
+
+**Next Steps**: Request is routed to senior reviewer or specialist
+
+## Response Confidence Levels
+
+### High Confidence (0.8-1.0)
+
+**Characteristics**:
+- Clear decision criteria
+- Obvious policy violations or compliance
+- Standard content types
+- Familiar scenarios
+
+**Example**: "This is clearly spam content with multiple links and promotional language."
+
+### Medium Confidence (0.5-0.79)
+
+**Characteristics**:
+- Some uncertainty about decision
+- Edge cases or borderline content
+- Complex policy interpretations
+- Mixed signals from content
+
+**Example**: "The content seems mostly appropriate but has some language that could be interpreted as inflammatory."
+
+### Low Confidence (0.0-0.49)
+
+**Characteristics**:
+- High uncertainty about decision
+- Unfamiliar content types
+- Complex or ambiguous situations
+- Need for additional context
+
+**Example**: "I'm unsure about the technical accuracy of this content and would need expert review."
+
+## Response Feedback Types
+
+### Required Changes
+
+Specific modifications that must be made:
+
+<CardGroup cols={2}>
+<Card title="Content Issues" icon="edit">
+- Factual corrections
+- Grammar and spelling fixes
+- Policy compliance adjustments
+- Format improvements
+</Card>
+
+<Card title="Technical Issues" icon="settings">
+- Code quality improvements
+- Documentation completeness
+- API specification updates
+- Security considerations
+</Card>
+</CardGroup>
+
+### Optional Improvements
+
+Suggestions for enhancement:
+
+<CardGroup cols={2}>
+<Card title="User Experience" icon="user">
+- Better organization
+- Additional examples
+- Visual enhancements
+- Accessibility improvements
+</Card>
+
+<Card title="Content Quality" icon="star">
+- More detailed explanations
+- Related resources
+- Professional formatting
+- Brand consistency
+</Card>
+</CardGroup>
+
+### Escalation Details
+
+Information needed for proper escalation:
+
+<AccordionGroup>
+<Accordion title="Reason for Escalation">
+- Specific expertise required
+- Complexity level
+- Risk assessment
+- Previous similar cases
+</Accordion>
+
+<Accordion title="Urgency Level">
+- Time sensitivity
+- Business impact
+- Compliance deadlines
+- Customer impact
+</Accordion>
+
+<Accordion title="Additional Context">
+- Related information
+- Background details
+- Stakeholder involvement
+- Historical context
+</Accordion>
+</AccordionGroup>
+
+## Response Workflows
+
+### Standard Approval Workflow
+
+<Steps>
+<Step title="Review Content">
+Examine the content against established criteria.
+</Step>
+
+<Step title="Make Decision">
+Choose appropriate response type based on findings.
+</Step>
+
+<Step title="Provide Reasoning">
+Explain the decision with clear justification.
+</Step>
+
+<Step title="Add Feedback">
+Include any additional comments or suggestions.
+</Step>
+
+<Step title="Submit Response">
+Send the response to complete the review.
+</Step>
+</Steps>
+
+### Escalation Workflow
+
+<Steps>
+<Step title="Identify Need">
+Recognize when escalation is required.
+</Step>
+
+<Step title="Document Reasons">
+Clearly explain why escalation is needed.
+</Step>
+
+<Step title="Specify Requirements">
+Detail what expertise or level is required.
+</Step>
+
+<Step title="Set Priority">
+Indicate urgency and business impact.
+</Step>
+
+<Step title="Submit Escalation">
+Route the request to appropriate reviewer.
+</Step>
+</Steps>
+
+## Response Quality Standards
+
+### Consistency Requirements
+
+<CardGroup cols={2}>
+<Card title="Decision Consistency" icon="repeat">
+- Apply same criteria across similar requests
+- Maintain consistent standards over time
+- Follow established policies and procedures
+- Use consistent language and terminology
+</Card>
+
+<Card title="Reasoning Quality" icon="message-square">
+- Provide clear, specific explanations
+- Reference relevant policies or guidelines
+- Include actionable feedback when possible
+- Maintain professional tone and language
+</Card>
+</CardGroup>
+
+### Documentation Standards
+
+<AccordionGroup>
+<Accordion title="Required Information">
+- Decision type and reasoning
+- Specific policy violations (if any)
+- Required changes (if applicable)
+- Escalation details (if needed)
+</Accordion>
+
+<Accordion title="Optional Enhancements">
+- Additional context or background
+- Suggestions for improvement
+- Related examples or resources
+- Professional recommendations
+</Accordion>
+</AccordionGroup>
+
+## Response Analytics
+
+### Metrics to Track
+
+Monitor response quality and effectiveness:
+
+<CardGroup cols={2}>
+<Card title="Decision Distribution" icon="pie-chart">
+- Percentage of each response type
+- Trends over time
+- Comparison across reviewers
+- Loop-specific patterns
+</Card>
+
+<Card title="Quality Metrics" icon="target">
+- Response consistency scores
+- Inter-rater reliability
+- Feedback quality ratings
+- Escalation appropriateness
+</Card>
+
+<Card title="Performance Metrics" icon="clock">
+- Average response time
+- Response completion rates
+- Escalation frequency
+- Reviewer productivity
+</Card>
+
+<Card title="Impact Metrics" icon="trending-up">
+- Decision accuracy rates
+- Content improvement rates
+- Policy compliance improvements
+- User satisfaction scores
+</Card>
+</AccordionGroup>
+
+### Continuous Improvement
+
+<Steps>
+<Step title="Monitor Metrics">
+Track response quality and performance indicators.
+</Step>
+
+<Step title="Identify Patterns">
+Look for trends in decision-making and feedback.
+</Step>
+
+<Step title="Provide Training">
+Address areas where reviewers need improvement.
+</Step>
+
+<Step title="Update Guidelines">
+Refine policies based on reviewer feedback and outcomes.
+</Step>
+</Steps>
+
+## Best Practices
+
+### Effective Decision Making
+
+<CardGroup cols={2}>
+<Card title="Follow Guidelines" icon="book">
+- Reference established policies and procedures
+- Apply consistent criteria across requests
+- Consider context and nuance
+- Document reasoning clearly
+</Card>
+
+<Card title="Quality Feedback" icon="message-circle">
+- Provide specific, actionable feedback
+- Include positive aspects when appropriate
+- Suggest improvements constructively
+- Maintain professional tone
+</Card>
+</CardGroup>
+
+### Escalation Management
+
+<Steps>
+<Step title="Know Your Limits">
+Recognize when requests exceed your expertise.
+</Step>
+
+<Step title="Document Thoroughly">
+Provide complete context for escalated requests.
+</Step>
+
+<Step title="Set Appropriate Priority">
+Indicate urgency and business impact clearly.
+</Step>
+
+<Step title="Follow Up">
+Check on escalated requests to ensure resolution.
+</Step>
+</Steps>
+
+## Next Steps
+
+Ready to master the different response types?
+
+<Card title="Text-Based Responses" icon="type" href="/responses/text-based">
+Learn how to provide effective text-based responses.
+</Card>
+
+<Card title="Multiple Choice Responses" icon="list" href="/responses/multiple-choice">
+Understand structured multiple choice response options.
+</Card>
+
+<Card title="Number Input Responses" icon="hash" href="/responses/number-input">
+Explore numerical response types and their uses.
+</Card>
+
+<Card title="Rating Responses" icon="star" href="/responses/rating">
+Learn about rating and scoring response systems.
+</Card>

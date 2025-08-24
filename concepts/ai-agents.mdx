@@ -1,0 +1,317 @@
+---
+title: "AI Agents"
+description: "Understand how AI agents integrate with HITL.sh to create intelligent human-in-the-loop workflows"
+---
+
+# AI Agents
+
+AI agents are autonomous systems that can perform tasks, make decisions, and interact with users or other systems. In the context of HITL.sh, AI agents are the systems that generate requests for human review when they encounter uncertainty or need human oversight.
+
+## What are AI Agents?
+
+AI agents are software systems that can:
+
+- **Process Information**: Analyze text, images, videos, and structured data
+- **Make Decisions**: Apply machine learning models to classify, predict, or generate content
+- **Take Actions**: Execute tasks based on their analysis and decisions
+- **Learn and Adapt**: Improve performance over time through feedback and training
+
+<Card title="AI Agent Examples" icon="robot">
+- Content moderation systems
+- Customer service chatbots
+- Financial fraud detection
+- Medical diagnosis assistants
+- Quality assurance tools
+</Card>
+
+## When AI Agents Need Human Oversight
+
+Even the most advanced AI agents encounter situations where human judgment is essential:
+
+<AccordionGroup>
+<Accordion title="Low Confidence Decisions">
+When AI models have low confidence scores, human review ensures accuracy and prevents errors.
+</Accordion>
+
+<Accordion title="Edge Cases">
+Unusual or novel situations that weren't covered in training data require human expertise.
+</Accordion>
+
+<Accordion title="High-Stakes Decisions">
+Financial, medical, or legal decisions where accuracy is critical need human verification.
+</Accordion>
+
+<Accordion title="Compliance Requirements">
+Regulatory frameworks often require human oversight for certain types of decisions.
+</Accordion>
+</AccordionGroup>
+
+## Integration Patterns
+
+### Request-Response Pattern
+
+The most common integration pattern for AI agents:
+
+<Steps>
+<Step title="AI Processing">
+Your AI agent processes input and identifies a decision point.
+</Step>
+
+<Step title="Confidence Check">
+If confidence is below threshold, create a HITL.sh request.
+</Step>
+
+<Step title="Human Review">
+Human reviewers examine the request and provide their decision.
+</Step>
+
+<Step title="Decision Integration">
+Use the human decision to complete the workflow.
+</Step>
+</Steps>
+
+### Continuous Learning Pattern
+
+AI agents can learn from human decisions to improve future performance:
+
+<Frame>
+<img src="/images/ai-learning-loop.png" alt="Diagram showing AI agent learning from human feedback loop" />
+</Frame>
+
+## Building AI Agents with HITL.sh
+
+### 1. Decision Thresholds
+
+Set confidence thresholds that trigger human review:
+
+```python
+def process_with_hitl(content, confidence_threshold=0.8):
+    # AI processing
+    ai_decision = ai_model.predict(content)
+    confidence = ai_decision.confidence
+    
+    if confidence < confidence_threshold:
+        # Route to human review
+        request = create_hitl_request(
+            content=content,
+            ai_decision=ai_decision,
+            confidence=confidence
+        )
+        return wait_for_human_decision(request.id)
+    else:
+        # Use AI decision directly
+        return ai_decision
+```
+
+### 2. Request Creation
+
+Structure requests to provide reviewers with necessary context:
+
+```python
+def create_hitl_request(content, ai_decision, confidence):
+    return hitl_client.create_request(
+        loop_id="content_moderation",
+        data={
+            "content": content,
+            "ai_decision": ai_decision.prediction,
+            "confidence": confidence,
+            "model_version": ai_decision.model_version,
+            "processing_time": ai_decision.processing_time,
+            "context": {
+                "user_id": content.user_id,
+                "content_type": content.type,
+                "previous_flags": get_user_history(content.user_id)
+            }
+        }
+    )
+```
+
+### 3. Response Handling
+
+Process human decisions and integrate them into your workflow:
+
+```python
+def handle_human_decision(request_id):
+    response = hitl_client.get_response(request_id)
+    
+    if response.decision == "approved":
+        # Process approved content
+        publish_content(response.content_id)
+        # Learn from human decision
+        update_training_data(response.content_id, "approved")
+        
+    elif response.decision == "rejected":
+        # Handle rejected content
+        flag_content(response.content_id, response.reason)
+        # Learn from human decision
+        update_training_data(response.content_id, "rejected")
+        
+    elif response.decision == "needs_changes":
+        # Request modifications
+        request_content_changes(response.content_id, response.feedback)
+```
+
+## Best Practices for AI Agent Integration
+
+### Request Design
+
+<CardGroup cols={2}>
+<Card title="Clear Context" icon="info">
+Provide reviewers with all information needed to make informed decisions.
+</Card>
+
+<Card title="Structured Data" icon="database">
+Organize request data in logical, easy-to-scan formats.
+</Card>
+
+<Card title="Relevant Metadata" icon="tag">
+Include AI confidence scores, model versions, and processing details.
+</Card>
+
+<Card title="Historical Context" icon="history">
+Reference previous decisions and user behavior patterns.
+</Card>
+</CardGroup>
+
+### Performance Optimization
+
+<AccordionGroup>
+<Accordion title="Batch Processing">
+Group similar requests to reduce human review overhead.
+</Accordion>
+
+<Accordion title="Priority Routing">
+Route urgent or high-value requests to experienced reviewers.
+</Accordion>
+
+<Accordion title="Smart Thresholds">
+Dynamically adjust confidence thresholds based on content type and risk.
+</Accordion>
+</AccordionGroup>
+
+### Learning and Improvement
+
+<Steps>
+<Step title="Collect Feedback">
+Gather human decisions and reasoning for training data.
+</Step>
+
+<Step title="Analyze Patterns">
+Identify common decision patterns and edge cases.
+</Step>
+
+<Step title="Update Models">
+Retrain AI models with human feedback data.
+</Step>
+
+<Step title="Measure Improvement">
+Track accuracy improvements and reduce human review needs.
+</Step>
+</Steps>
+
+## Common Integration Scenarios
+
+### Content Moderation
+
+AI agents flag potentially inappropriate content for human review:
+
+```python
+def moderate_content(content):
+    # AI content analysis
+    moderation_result = content_moderator.analyze(content)
+    
+    if moderation_result.requires_review:
+        request = hitl_client.create_request(
+            loop_id="content_moderation",
+            data={
+                "content": content.text,
+                "content_type": "text",
+                "ai_flags": moderation_result.flags,
+                "confidence": moderation_result.confidence,
+                "risk_level": moderation_result.risk_level
+            }
+        )
+        return request
+```
+
+### Quality Assurance
+
+AI-generated content is reviewed for accuracy and quality:
+
+```python
+def quality_check_content(content):
+    # AI quality assessment
+    quality_score = quality_checker.assess(content)
+    
+    if quality_score < QUALITY_THRESHOLD:
+        request = hitl_client.create_request(
+            loop_id="quality_assurance",
+            data={
+                "content": content,
+                "quality_score": quality_score,
+                "ai_feedback": quality_checker.get_feedback(),
+                "expected_standards": get_content_standards()
+            }
+        )
+        return request
+```
+
+### Fraud Detection
+
+AI systems flag suspicious transactions for human investigation:
+
+```python
+def fraud_detection(transaction):
+    # AI fraud analysis
+    fraud_score = fraud_detector.analyze(transaction)
+    
+    if fraud_score > FRAUD_THRESHOLD:
+        request = hitl_client.create_request(
+            loop_id="fraud_review",
+            data={
+                "transaction": transaction,
+                "fraud_score": fraud_score,
+                "risk_factors": fraud_detector.get_risk_factors(),
+                "user_history": get_user_transaction_history(transaction.user_id)
+            }
+        )
+        return request
+```
+
+## Monitoring and Analytics
+
+Track your AI agent's performance and human review effectiveness:
+
+<CardGroup cols={2}>
+<Card title="AI Performance" icon="chart">
+Monitor accuracy, confidence distributions, and decision quality.
+</Card>
+
+<Card title="Human Review Metrics" icon="users">
+Track response times, decision consistency, and reviewer performance.
+</Card>
+
+<Card title="Learning Progress" icon="trending-up">
+Measure improvements in AI accuracy over time.
+</Card>
+
+<Card title="Cost Optimization" icon="dollar-sign">
+Balance AI automation with human review costs.
+</Card>
+</CardGroup>
+
+## Next Steps
+
+Ready to integrate your AI agent with HITL.sh?
+
+<Card title="Create Your First Loop" icon="rocket" href="/first-loop">
+Set up a human-in-the-loop workflow for your AI agent.
+</Card>
+
+<Card title="Explore Request Types" icon="list" href="/requests/introduction">
+Learn about different types of requests you can create.
+</Card>
+
+<Card title="Set Up Webhooks" icon="link" href="/webhooks/global">
+Configure real-time notifications for human decisions.
+</Card>

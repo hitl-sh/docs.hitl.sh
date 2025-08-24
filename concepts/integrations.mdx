@@ -1,0 +1,451 @@
+---
+title: "Integrations"
+description: "Learn how HITL.sh integrates with your existing systems, tools, and platforms to create seamless human-in-the-loop workflows"
+---
+
+# Integrations
+
+HITL.sh is designed to integrate seamlessly with your existing systems and workflows. Whether you're using popular automation platforms, custom applications, or enterprise systems, HITL.sh provides multiple integration methods to fit your needs.
+
+## Integration Methods
+
+### REST API Integration
+
+The most flexible integration method for custom applications:
+
+<Card title="REST API" icon="code">
+- **Full Control**: Complete control over request creation and response handling
+- **Custom Logic**: Implement your own business logic and error handling
+- **Real-time Processing**: Immediate request submission and response retrieval
+- **Scalability**: Handle high-volume workflows with custom queuing
+</Card>
+
+### Webhook Integration
+
+Receive real-time notifications when human decisions are made:
+
+<Card title="Webhooks" icon="bell">
+- **Real-time Updates**: Instant notifications when responses are ready
+- **Event-driven**: Trigger actions based on specific events
+- **Reliable Delivery**: Automatic retry and error handling
+- **Easy Setup**: Simple endpoint configuration
+</Card>
+
+### Platform Integrations
+
+Connect with popular automation and workflow platforms:
+
+<CardGroup cols={2}>
+<Card title="N8N" icon="workflow">
+Automate workflows with visual automation builder.
+</Card>
+
+<Card title="Zapier" icon="zap">
+Connect HITL.sh with 5000+ apps and services.
+</Card>
+
+<Card title="Make" icon="puzzle">
+Create complex automation scenarios with visual tools.
+</Card>
+
+<Card title="LangGraph" icon="graph">
+Build AI agent workflows with human oversight.
+</Card>
+</CardGroup>
+
+## REST API Integration
+
+### Authentication
+
+Secure your API calls with API keys:
+
+```python
+import requests
+
+class HITLClient:
+    def __init__(self, api_key, base_url="https://api.hitl.sh/v1"):
+        self.api_key = api_key
+        self.base_url = base_url
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+    
+    def create_request(self, loop_id, data):
+        response = requests.post(
+            f"{self.base_url}/loops/{loop_id}/requests",
+            headers=self.headers,
+            json=data
+        )
+        return response.json()
+    
+    def get_response(self, request_id):
+        response = requests.get(
+            f"{self.base_url}/requests/{request_id}/response",
+            headers=self.headers
+        )
+        return response.json()
+```
+
+### Request Creation
+
+Submit requests for human review:
+
+```python
+def submit_content_for_review(content, loop_id):
+    client = HITLClient(API_KEY)
+    
+    request_data = {
+        "content": content.text,
+        "content_type": "text",
+        "priority": "normal",
+        "ai_analysis": {
+            "confidence": content.ai_confidence,
+            "flags": content.ai_flags,
+            "risk_score": content.risk_score
+        },
+        "metadata": {
+            "user_id": content.user_id,
+            "timestamp": content.created_at.isoformat(),
+            "source": "content_api"
+        }
+    }
+    
+    try:
+        response = client.create_request(loop_id, request_data)
+        return response["id"]
+    except Exception as e:
+        logger.error(f"Failed to submit request: {e}")
+        raise
+```
+
+### Response Handling
+
+Process human decisions when they're ready:
+
+```python
+def process_human_decision(request_id):
+    client = HITLClient(API_KEY)
+    
+    # Poll for response (in production, use webhooks instead)
+    while True:
+        response = client.get_response(request_id)
+        
+        if response and response.get("status") == "completed":
+            decision = response["decision"]
+            
+            if decision == "approved":
+                handle_approval(request_id, response)
+            elif decision == "rejected":
+                handle_rejection(request_id, response)
+            elif decision == "needs_changes":
+                handle_modification_request(request_id, response)
+            
+            break
+        
+        time.sleep(30)  # Wait 30 seconds before checking again
+```
+
+## Webhook Integration
+
+### Webhook Configuration
+
+Set up webhooks to receive real-time notifications:
+
+```python
+def configure_webhook(loop_id, webhook_url):
+    client = HITLClient(API_KEY)
+    
+    webhook_data = {
+        "url": webhook_url,
+        "events": ["request.completed", "request.escalated"],
+        "loop_id": loop_id,
+        "secret": generate_webhook_secret()
+    }
+    
+    response = client.create_webhook(webhook_data)
+    return response["id"]
+```
+
+### Webhook Handler
+
+Process incoming webhook notifications:
+
+```python
+from flask import Flask, request, jsonify
+import hmac
+import hashlib
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "your_webhook_secret"
+
+@app.route('/webhooks/hitl', methods=['POST'])
+def handle_hitl_webhook():
+    # Verify webhook signature
+    signature = request.headers.get('X-HITL-Signature')
+    if not verify_signature(request.data, signature):
+        return jsonify({"error": "Invalid signature"}), 401
+    
+    payload = request.json
+    event_type = payload["event"]
+    
+    if event_type == "request.completed":
+        process_completed_request(payload["data"])
+    elif event_type == "request.escalated":
+        handle_escalation(payload["data"])
+    
+    return jsonify({"status": "success"}), 200
+
+def verify_signature(payload, signature):
+    expected_signature = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(expected_signature, signature)
+
+def process_completed_request(data):
+    request_id = data["request_id"]
+    decision = data["decision"]
+    
+    # Process the human decision
+    if decision == "approved":
+        approve_content(request_id)
+    elif decision == "rejected":
+        reject_content(request_id)
+```
+
+## Platform-Specific Integrations
+
+### N8N Integration
+
+Automate workflows with N8N's visual automation builder:
+
+<Frame>
+<img src="/images/n8n-integration.png" alt="N8N workflow showing HITL.sh integration for content moderation" />
+</Frame>
+
+**Key Features:**
+- **Visual Workflow Builder**: Drag-and-drop interface for workflow creation
+- **Trigger Nodes**: Start workflows based on HITL.sh events
+- **Action Nodes**: Submit requests and process responses
+- **Error Handling**: Built-in retry logic and error management
+- **Scheduling**: Time-based workflow execution
+
+**Use Cases:**
+- Content moderation workflows
+- Customer support escalations
+- Quality assurance processes
+- Compliance verification
+
+### Zapier Integration
+
+Connect HITL.sh with thousands of apps and services:
+
+<Card title="Zapier Triggers" icon="zap">
+- **New Request Created**: When a request is submitted for review
+- **Request Completed**: When human decision is received
+- **Request Escalated**: When escalation occurs
+</Card>
+
+<Card title="Zapier Actions" icon="settings">
+- **Create Request**: Submit content for human review
+- **Update Request**: Modify existing request details
+- **Get Response**: Retrieve human decision data
+</Card>
+
+**Popular Integrations:**
+- **Slack**: Notify teams about pending reviews
+- **Gmail**: Send review requests via email
+- **Google Sheets**: Log decisions and track metrics
+- **Notion**: Document review processes and decisions
+
+### Make Integration
+
+Build complex automation scenarios with Make:
+
+<Card title="Make Features" icon="puzzle">
+- **Scenario Builder**: Visual workflow creation with advanced logic
+- **Data Mapping**: Transform data between different formats
+- **Conditional Logic**: Route requests based on content characteristics
+- **Error Handling**: Comprehensive error management and recovery
+</Card>
+
+**Advanced Workflows:**
+- Multi-step approval processes
+- Conditional routing based on content type
+- Integration with multiple data sources
+- Complex escalation chains
+
+## Custom Application Integration
+
+### Frontend Integration
+
+Integrate HITL.sh into your web applications:
+
+```javascript
+class HITLIntegration {
+    constructor(apiKey, baseUrl) {
+        this.apiKey = apiKey;
+        this.baseUrl = baseUrl;
+    }
+    
+    async submitForReview(content, loopId) {
+        const response = await fetch(`${this.baseUrl}/loops/${loopId}/requests`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: content.text,
+                content_type: 'text',
+                priority: 'normal'
+            })
+        });
+        
+        return response.json();
+    }
+    
+    async checkStatus(requestId) {
+        const response = await fetch(`${this.baseUrl}/requests/${requestId}/status`, {
+            headers: {
+                'Authorization': `Bearer ${this.apiKey}`
+            }
+        });
+        
+        return response.json();
+    }
+}
+
+// Usage in your application
+const hitl = new HITLIntegration(API_KEY, 'https://api.hitl.sh/v1');
+
+document.getElementById('submit-button').addEventListener('click', async () => {
+    const content = document.getElementById('content-input').value;
+    const request = await hitl.submitForReview(content, 'loop_123');
+    
+    // Show pending status
+    showPendingStatus(request.id);
+    
+    // Poll for completion
+    pollForCompletion(request.id);
+});
+```
+
+### Backend Integration
+
+Integrate with your server-side applications:
+
+```python
+# Django integration example
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+class HITLService:
+    def __init__(self, api_key):
+        self.client = HITLClient(api_key)
+    
+    def submit_content_review(self, content, user_id):
+        """Submit content for human review"""
+        request_data = {
+            "content": content,
+            "content_type": "text",
+            "priority": "normal",
+            "metadata": {
+                "user_id": str(user_id),
+                "timestamp": timezone.now().isoformat()
+            }
+        }
+        
+        response = self.client.create_request("content_moderation", request_data)
+        return response["id"]
+    
+    def handle_webhook(self, payload):
+        """Process webhook notifications"""
+        event_type = payload["event"]
+        
+        if event_type == "request.completed":
+            self.process_completed_request(payload["data"])
+        elif event_type == "request.escalated":
+            self.handle_escalation(payload["data"])
+
+# Django view for webhook handling
+@csrf_exempt
+def hitl_webhook(request):
+    if request.method == 'POST':
+        payload = json.loads(request.body)
+        hitl_service = HITLService(settings.HITL_API_KEY)
+        hitl_service.handle_webhook(payload)
+        
+        return JsonResponse({"status": "success"})
+    
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+```
+
+## Integration Best Practices
+
+### Security
+
+<CardGroup cols={2}>
+<Card title="API Key Management" icon="key">
+Store API keys securely in environment variables or secure vaults.
+</Card>
+
+<Card title="Webhook Verification" icon="shield">
+Always verify webhook signatures to prevent unauthorized access.
+</Card>
+
+<Card title="Rate Limiting" icon="gauge">
+Implement rate limiting to avoid overwhelming the API.
+</Card>
+
+<Card title="Error Handling" icon="alert-triangle">
+Handle API errors gracefully with retry logic and fallbacks.
+</Card>
+</CardGroup>
+
+### Performance
+
+<Steps>
+<Step title="Asynchronous Processing">
+Use webhooks instead of polling for better performance.
+</Step>
+
+<Step title="Batch Operations">
+Group multiple requests when possible to reduce API calls.
+</Step>
+
+<Step title="Caching">
+Cache frequently accessed data to minimize API requests.
+</Step>
+
+<Step title="Connection Pooling">
+Reuse HTTP connections for better performance.
+</Step>
+</Steps>
+
+### Monitoring
+
+- **API Usage**: Track API call volumes and response times
+- **Error Rates**: Monitor failed requests and error patterns
+- **Webhook Delivery**: Ensure webhook notifications are received
+- **Performance Metrics**: Track integration performance and bottlenecks
+
+## Next Steps
+
+Ready to integrate HITL.sh with your systems?
+
+<Card title="Explore Platform Integrations" icon="link" href="/integrations/n8n">
+Learn about specific platform integrations like N8N and Zapier.
+</Card>
+
+<Card title="Set Up Webhooks" icon="bell" href="/webhooks/global">
+Configure webhooks for real-time notifications.
+</Card>
+
+<Card title="API Reference" icon="book" href="/api-reference/introduction">
+Detailed API documentation for custom integrations.
+</Card>

@@ -1,0 +1,394 @@
+---
+title: "Responses"
+description: "Learn about human responses in HITL.sh, how they're structured, and how to integrate them into your workflows"
+---
+
+# Responses
+
+Responses are the human decisions and feedback that complete the human-in-the-loop workflow. When reviewers examine requests, they provide structured responses that your system can process to continue the workflow.
+
+## What are Responses?
+
+A response in HITL.sh contains:
+
+- **Human Decision**: The reviewer's choice (approved, rejected, etc.)
+- **Reasoning**: Explanation for the decision
+- **Additional Feedback**: Comments, suggestions, or modifications
+- **Metadata**: Response timestamp, reviewer information, and processing details
+- **Attachments**: Any files or additional information provided
+
+<Card title="Response Examples" icon="message-circle">
+- Content approval with minor edit suggestions
+- Transaction rejection with fraud reasoning
+- Quality review with specific improvement notes
+- Escalation request with senior reviewer assignment
+</Card>
+
+## Response Structure
+
+### Basic Response Format
+
+Every response follows a consistent structure:
+
+```json
+{
+  "request_id": "req_abc123",
+  "reviewer_id": "reviewer_xyz789",
+  "decision": "approved|rejected|needs_changes|escalate",
+  "timestamp": "2024-01-15T11:45:00Z",
+  "reasoning": "string",
+  "confidence": 0.95,
+  "processing_time": 120
+}
+```
+
+### Extended Response Format
+
+Enhanced responses include additional context:
+
+```json
+{
+  "request_id": "req_abc123",
+  "reviewer_id": "reviewer_xyz789",
+  "decision": "needs_changes",
+  "timestamp": "2024-01-15T11:45:00Z",
+  "reasoning": "Content contains factual inaccuracies that need correction",
+  "confidence": 0.9,
+  "processing_time": 180,
+  "feedback": {
+    "required_changes": [
+      "Update statistics to reflect current year data",
+      "Correct company name spelling",
+      "Add source citations for claims"
+    ],
+    "suggestions": [
+      "Consider adding visual elements to improve engagement",
+      "Include call-to-action for better conversion"
+    ]
+  },
+  "metadata": {
+    "reviewer_expertise": ["content_quality", "fact_checking"],
+    "review_duration": 180,
+    "device_type": "mobile",
+    "location": "US-East"
+  }
+}
+```
+
+## Response Types
+
+### Approval Responses
+
+When content or requests are approved:
+
+```python
+approval_response = {
+    "decision": "approved",
+    "reasoning": "Content meets all community guidelines and quality standards",
+    "confidence": 0.95,
+    "feedback": {
+        "positive_aspects": [
+            "Clear and informative content",
+            "Appropriate tone and language",
+            "Accurate information"
+        ]
+    }
+}
+```
+
+### Rejection Responses
+
+When content or requests are rejected:
+
+```python
+rejection_response = {
+    "decision": "rejected",
+    "reasoning": "Content violates community guidelines regarding hate speech",
+    "confidence": 0.98,
+    "feedback": {
+        "violations": [
+            "Contains discriminatory language",
+            "Promotes harmful stereotypes",
+            "Violates platform policies"
+        ],
+        "recommendations": [
+            "Remove discriminatory content",
+            "Rewrite with inclusive language",
+            "Review community guidelines"
+        ]
+    }
+}
+```
+
+### Modification Requests
+
+When changes are needed before approval:
+
+```python
+modification_response = {
+    "decision": "needs_changes",
+    "reasoning": "Content has potential but requires revisions for clarity",
+    "confidence": 0.85,
+    "feedback": {
+        "required_changes": [
+            "Clarify technical terminology",
+            "Add examples for better understanding",
+            "Fix grammatical errors"
+        ],
+        "optional_improvements": [
+            "Consider adding visual aids",
+            "Include related resources"
+        ],
+        "deadline": "2024-01-20T23:59:59Z"
+    }
+}
+```
+
+### Escalation Responses
+
+When requests need senior review:
+
+```python
+escalation_response = {
+    "decision": "escalate",
+    "reasoning": "Complex legal compliance issue requiring expert review",
+    "confidence": 0.7,
+    "feedback": {
+        "escalation_reason": "Legal compliance complexity",
+        "required_expertise": ["legal_review", "compliance_specialist"],
+        "urgency": "high",
+        "additional_context": "Previous similar cases had legal implications"
+    }
+}
+```
+
+## Response Processing
+
+### Handling Different Decisions
+
+Process responses based on the decision type:
+
+```python
+def process_response(response):
+    if response.decision == "approved":
+        handle_approval(response)
+    elif response.decision == "rejected":
+        handle_rejection(response)
+    elif response.decision == "needs_changes":
+        handle_modification_request(response)
+    elif response.decision == "escalate":
+        handle_escalation(response)
+    else:
+        handle_unknown_decision(response)
+
+def handle_approval(response):
+    # Process approved content
+    content_id = get_content_id_from_request(response.request_id)
+    publish_content(content_id)
+    
+    # Update analytics
+    log_approval(response)
+    
+    # Notify stakeholders
+    notify_content_approved(content_id)
+
+def handle_rejection(response):
+    # Process rejected content
+    content_id = get_content_id_from_request(response.request_id)
+    flag_content(content_id, response.reasoning)
+    
+    # Update user reputation
+    user_id = get_user_id_from_request(response.request_id)
+    update_user_reputation(user_id, -1)
+    
+    # Log rejection for training
+    log_rejection(response)
+
+def handle_modification_request(response):
+    # Request changes from content creator
+    content_id = get_content_id_from_request(response.request_id)
+    user_id = get_user_id_from_request(response.request_id)
+    
+    send_modification_request(
+        user_id=user_id,
+        content_id=content_id,
+        changes=response.feedback.required_changes,
+        deadline=response.feedback.deadline
+    )
+```
+
+### Response Validation
+
+Ensure responses meet quality standards:
+
+```python
+def validate_response(response):
+    errors = []
+    
+    # Check required fields
+    if not response.decision:
+        errors.append("Decision is required")
+    
+    if not response.reasoning:
+        errors.append("Reasoning is required")
+    
+    # Validate decision values
+    valid_decisions = ["approved", "rejected", "needs_changes", "escalate"]
+    if response.decision not in valid_decisions:
+        errors.append(f"Invalid decision: {response.decision}")
+    
+    # Check confidence range
+    if response.confidence < 0 or response.confidence > 1:
+        errors.append("Confidence must be between 0 and 1")
+    
+    # Validate processing time
+    if response.processing_time < 0:
+        errors.append("Processing time cannot be negative")
+    
+    return errors
+```
+
+## Response Quality
+
+### Measuring Response Quality
+
+Track the quality of human responses:
+
+<CardGroup cols={2}>
+<Card title="Consistency" icon="repeat">
+Measure agreement between different reviewers on similar requests.
+</Card>
+
+<Card title="Accuracy" icon="target">
+Track how often human decisions align with expected outcomes.
+</Card>
+
+<Card title="Completeness" icon="check-square">
+Ensure responses include all required information and reasoning.
+</Card>
+
+<Card title="Timeliness" icon="clock">
+Monitor response times and identify bottlenecks.
+</Card>
+</CardGroup>
+
+### Quality Improvement
+
+Continuously improve response quality:
+
+<Steps>
+<Step title="Review Guidelines">
+Provide clear criteria and examples for different decision types.
+</Step>
+
+<Step title="Training Programs">
+Regular training sessions on policies and best practices.
+</Step>
+
+<Step title="Feedback Loops">
+Give reviewers feedback on their response quality.
+</Step>
+
+<Step title="Performance Monitoring">
+Track metrics and identify areas for improvement.
+</Step>
+</Steps>
+
+## Response Analytics
+
+### Key Metrics
+
+Track important response statistics:
+
+```python
+def calculate_response_metrics(responses):
+    total_responses = len(responses)
+    
+    metrics = {
+        "total_count": total_responses,
+        "decision_distribution": {},
+        "average_confidence": 0,
+        "average_processing_time": 0,
+        "escalation_rate": 0,
+        "quality_scores": []
+    }
+    
+    # Calculate decision distribution
+    for response in responses:
+        decision = response.decision
+        metrics["decision_distribution"][decision] = \
+            metrics["decision_distribution"].get(decision, 0) + 1
+    
+    # Calculate averages
+    total_confidence = sum(r.confidence for r in responses)
+    total_time = sum(r.processing_time for r in responses)
+    
+    metrics["average_confidence"] = total_confidence / total_responses
+    metrics["average_processing_time"] = total_time / total_responses
+    
+    # Calculate escalation rate
+    escalations = sum(1 for r in responses if r.decision == "escalate")
+    metrics["escalation_rate"] = escalations / total_responses
+    
+    return metrics
+```
+
+### Performance Dashboards
+
+Monitor response performance in real-time:
+
+<Frame>
+<img src="/images/response-analytics-dashboard.png" alt="Dashboard showing response metrics and performance indicators" />
+</Frame>
+
+## Best Practices
+
+### Response Guidelines
+
+<CardGroup cols={2}>
+<Card title="Clear Reasoning" icon="message-square">
+Provide specific, actionable reasons for decisions.
+</Card>
+
+<Card title="Consistent Format" icon="file-text">
+Use standardized response templates for similar request types.
+</Card>
+
+<Card title="Constructive Feedback" icon="help-circle">
+Offer helpful suggestions for improvement when possible.
+</Card>
+
+<Card title="Timely Responses" icon="clock">
+Respond within expected timeframes to maintain workflow efficiency.
+</Card>
+</CardGroup>
+
+### Reviewer Training
+
+- **Decision Criteria**: Clear guidelines for each response type
+- **Example Responses**: Sample responses for common scenarios
+- **Quality Standards**: Expectations for response completeness and clarity
+- **Continuous Learning**: Regular updates on policies and procedures
+
+### System Integration
+
+- **Webhook Processing**: Handle responses in real-time
+- **Error Handling**: Gracefully manage invalid or incomplete responses
+- **Audit Logging**: Track all response activities for compliance
+- **Performance Monitoring**: Alert on response quality issues
+
+## Next Steps
+
+Ready to process human responses in your workflows?
+
+<Card title="Explore Response Types" icon="list" href="/responses/types">
+Learn about different types of responses and how to handle them.
+</Card>
+
+<Card title="Set Up Webhooks" icon="link" href="/webhooks/global">
+Configure real-time notifications for completed responses.
+</Card>
+
+<Card title="API Reference" icon="book" href="/api-reference/introduction">
+Detailed API documentation for response management.
+</Card>

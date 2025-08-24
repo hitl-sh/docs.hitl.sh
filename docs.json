@@ -14,41 +14,65 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
               "index",
-              "quickstart",
-              "concepts"
+              "introduction",
+              "dashboard",
+              "api-keys",
+              "first-loop"
             ]
           },
           {
-            "group": "Core features",
+            "group": "Core Concepts",
             "pages": [
-              "features/inbox",
-              "features/reviews",
-              "features/workflows",
-              "features/notifications"
+              "concepts/ai-agents",
+              "concepts/loops",
+              "concepts/requests",
+              "concepts/responses",
+              "concepts/integrations"
+            ]
+          },
+          {
+            "group": "Mobile App",
+            "pages": [
+              "mobile/home-screen",
+              "mobile/join-loop",
+              "mobile/responding"
+            ]
+          },
+          {
+            "group": "Requests",
+            "pages": [
+              "requests/introduction",
+              "requests/text-based",
+              "requests/image-based",
+              "requests/video-based"
+            ]
+          },
+          {
+            "group": "Responses",
+            "pages": [
+              "responses/types",
+              "responses/text-based",
+              "responses/multiple-choice",
+              "responses/number-input",
+              "responses/rating"
             ]
           },
           {
             "group": "Integrations",
             "pages": [
-              "integrations/overview",
-              "integrations/python",
-              "integrations/typescript",
               "integrations/n8n",
-              "integrations/make",
-              "integrations/langgraph",
-              "integrations/mcp"
+              "integrations/zapier",
+              "integrations/coming-soon"
             ]
           },
           {
-            "group": "Templates & UI",
+            "group": "Webhooks",
             "pages": [
-              "templates/overview",
-              "templates/editor",
-              "templates/field-types",
-              "templates/customization"
+              "webhooks/global",
+              "webhooks/loop-based"
             ]
           }
         ]
@@ -60,16 +84,10 @@
             "group": "Core API",
             "pages": [
               "api-reference/introduction",
-              "api-reference/authentication",
-              "api-reference/reviews",
-              "api-reference/templates"
-            ]
-          },
-          {
-            "group": "Webhooks",
-            "pages": [
-              "api-reference/webhooks",
-              "api-reference/events"
+              "api-reference/endpoint/create",
+              "api-reference/endpoint/get",
+              "api-reference/endpoint/delete",
+              "api-reference/endpoint/webhook"
             ]
           }
         ]
@@ -80,18 +98,7 @@
           {
             "group": "Use cases",
             "pages": [
-              "examples/content-moderation",
-              "examples/sales-approval",
-              "examples/ai-training",
-              "examples/workflow-control"
-            ]
-          },
-          {
-            "group": "Code samples",
-            "pages": [
-              "examples/python-samples",
-              "examples/typescript-samples",
-              "examples/webhook-samples"
+              "examples/content-moderation"
             ]
           }
         ]
