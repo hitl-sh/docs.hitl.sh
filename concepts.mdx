@@ -1,0 +1,259 @@
+---
+title: "Core Concepts"
+description: "Understand the fundamental concepts and architecture of HITL.sh for human-in-the-loop AI workflows."
+---
+
+## Understanding HITL.sh
+
+HITL.sh is a platform that adds human oversight to AI workflows. It acts as a bridge between your AI systems and human reviewers, ensuring quality, safety, and compliance in automated processes.
+
+## Key Concepts
+
+### Human-in-the-Loop (HITL)
+
+Human-in-the-loop refers to a workflow where AI systems perform tasks but require human oversight for critical decisions. This approach combines the efficiency of automation with the judgment and expertise of humans.
+
+**Benefits:**
+- **Quality control**: Human reviewers catch errors and improve outputs
+- **Risk management**: Critical decisions require human approval
+- **Compliance**: Meet regulatory requirements for human oversight
+- **Learning**: Collect feedback to improve AI performance
+
+### Review Workflow
+
+A review workflow in HITL.sh follows this pattern:
+
+1. **AI generates content** - Your AI system creates output (text, images, decisions)
+2. **Review request** - Send the output to HITL.sh for human review
+3. **Human review** - Reviewers examine and approve/reject/modify content
+4. **Result processing** - Your workflow receives the review result and continues
+
+<Card
+  title="Workflow Examples"
+  icon="workflow"
+  href="/examples"
+>
+  See real-world examples of review workflows in action.
+</Card>
+
+## Architecture Components
+
+### Review Templates
+
+Templates define the structure of what gets reviewed and what input you collect from humans.
+
+**Template elements:**
+- **Fields**: Input areas for reviewers (text, checkboxes, file uploads)
+- **Layout**: How the review interface is organized
+- **Validation**: Rules for required fields and data formats
+- **Styling**: Custom appearance and branding
+
+<Card
+  title="Template Editor"
+  icon="edit"
+  href="/templates/editor"
+>
+  Learn how to create and customize review templates.
+</Card>
+
+### Agent Inbox
+
+The Agent Inbox is the central hub where reviewers access pending reviews.
+
+**Features:**
+- **Unified view**: All reviews in one place
+- **Filtering**: Sort by status, assignee, priority
+- **Bulk actions**: Process multiple reviews efficiently
+- **Mobile optimized**: Review on any device
+
+### Integration Methods
+
+HITL.sh integrates with your existing systems through multiple channels:
+
+<Columns cols={2}>
+  <Card
+    title="SDKs"
+    icon="code"
+    href="/integrations/overview"
+  >
+    Python and TypeScript SDKs for direct integration
+  </Card>
+  <Card
+    title="Workflow Tools"
+    icon="plug"
+    href="/integrations/n8n"
+  >
+    Native nodes for n8n, Make.com, and other platforms
+  </Card>
+  <Card
+    title="HTTP API"
+    icon="api"
+    href="/api-reference/introduction"
+  >
+    RESTful API for custom integrations
+  </Card>
+  <Card
+    title="Webhooks"
+    icon="bell"
+    href="/api-reference/webhooks"
+  >
+    Receive review results in real-time
+  </Card>
+</Columns>
+
+## Review Types
+
+### Content Review
+
+Review AI-generated content before publication or distribution.
+
+**Use cases:**
+- Blog posts and articles
+- Marketing copy
+- Social media content
+- Product descriptions
+
+### Decision Approval
+
+Approve AI-generated decisions or recommendations.
+
+**Use cases:**
+- Financial transactions
+- Risk assessments
+- Compliance decisions
+- Strategic recommendations
+
+### Quality Assurance
+
+Ensure AI outputs meet quality standards.
+
+**Use cases:**
+- Code generation
+- Data analysis
+- Image generation
+- Translation services
+
+### Training Data
+
+Collect human feedback to improve AI models.
+
+**Use cases:**
+- Model fine-tuning
+- Dataset creation
+- Performance evaluation
+- Bias detection
+
+## Workflow Patterns
+
+### Simple Approval
+
+The most basic pattern: AI generates content, human approves/rejects.
+
+```
+AI Generation → HITL Review → Human Decision → Continue/Stop
+```
+
+### Iterative Improvement
+
+AI generates content, human provides feedback, AI regenerates.
+
+```
+AI Generation → HITL Review → Human Feedback → AI Regeneration → Final Review
+```
+
+### Multi-Step Review
+
+Complex workflows with multiple review checkpoints.
+
+```
+AI Step 1 → Review 1 → AI Step 2 → Review 2 → AI Step 3 → Final Review
+```
+
+### Conditional Review
+
+Only review content that meets certain criteria.
+
+```
+AI Generation → Quality Check → Conditional Review → Continue
+```
+
+## Security & Privacy
+
+### Data Protection
+
+- **Encryption**: All data encrypted in transit and at rest
+- **Access control**: Role-based permissions for team members
+- **Audit logs**: Complete history of all review activities
+- **Compliance**: GDPR and CCPA compliant
+
+### Integration Security
+
+- **API keys**: Secure authentication for integrations
+- **Webhook verification**: Signed payloads for security
+- **Rate limiting**: Protection against abuse
+- **IP restrictions**: Optional IP whitelisting
+
+## Performance & Scalability
+
+### Review Processing
+
+- **Real-time updates**: Instant notifications and status changes
+- **Batch processing**: Handle multiple reviews efficiently
+- **Priority queuing**: Important reviews get processed first
+- **Load balancing**: Automatic scaling based on demand
+
+### Integration Performance
+
+- **Low latency**: API responses in milliseconds
+- **High throughput**: Handle thousands of reviews per minute
+- **Reliability**: 99.9% uptime guarantee
+- **Global distribution**: Low-latency access worldwide
+
+## Best Practices
+
+### Template Design
+
+- **Keep it simple**: Focus on essential review criteria
+- **Clear instructions**: Help reviewers understand what to look for
+- **Efficient layout**: Minimize clicks and scrolling
+- **Mobile first**: Ensure good experience on mobile devices
+
+### Workflow Integration
+
+- **Async processing**: Don't block your main workflow
+- **Error handling**: Plan for review failures or timeouts
+- **Fallback options**: Provide alternatives when reviews aren't available
+- **Monitoring**: Track review completion times and success rates
+
+### Team Management
+
+- **Clear roles**: Define who reviews what
+- **Training**: Help reviewers understand the process
+- **Feedback loops**: Continuously improve the review process
+- **Automation**: Automate routine review assignments
+
+## Next Steps
+
+<Card
+  title="Quickstart Guide"
+  icon="rocket"
+  href="/quickstart"
+>
+  Get hands-on experience with your first review workflow.
+</Card>
+
+<Card
+  title="Integration Guide"
+  icon="plug"
+  href="/integrations/overview"
+>
+  Learn how to integrate HITL.sh with your existing systems.
+</Card>
+
+<Card
+  title="Examples"
+  icon="code"
+  href="/examples"
+>
+  See real-world implementations and use cases.
+</Card>

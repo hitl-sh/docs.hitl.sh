@@ -1,0 +1,545 @@
+---
+title: "Review Templates"
+description: "Create custom review templates to capture the right input from human reviewers. Design interfaces that match your workflow needs."
+---
+
+## Review Templates
+
+Review templates define the structure and interface for human reviews in HITL.sh. They specify what content gets reviewed, what input you collect from reviewers, and how the review interface looks and behaves.
+
+## Template Basics
+
+### What Are Templates?
+
+Templates are reusable configurations that define:
+
+- **Review fields**: What information reviewers provide
+- **Content display**: How AI-generated content is shown
+- **Validation rules**: Required fields and data formats
+- **Interface layout**: How the review form is organized
+- **Styling**: Custom appearance and branding
+
+### Template Structure
+
+Every template consists of:
+
+```json
+{
+  "id": "template_123",
+  "name": "Content Review",
+  "description": "Review AI-generated content for quality and accuracy",
+  "fields": [...],
+  "settings": {...},
+  "styling": {...}
+}
+```
+
+## Field Types
+
+### Text Fields
+
+**Basic text input:**
+
+```json
+{
+  "name": "feedback",
+  "type": "text",
+  "label": "Provide feedback",
+  "placeholder": "Enter your comments here...",
+  "required": true,
+  "max_length": 1000
+}
+```
+
+**Rich text with formatting:**
+
+```json
+{
+  "name": "detailed_feedback",
+  "type": "rich_text",
+  "label": "Detailed feedback",
+  "required": false,
+  "toolbar": ["bold", "italic", "bullet", "number"]
+}
+```
+
+### Boolean Fields
+
+**Simple approval/rejection:**
+
+```json
+{
+  "name": "approved",
+  "type": "boolean",
+  "label": "Approve this content",
+  "required": true,
+  "default_value": false
+}
+```
+
+**Multiple checkboxes:**
+
+```json
+{
+  "name": "quality_checks",
+  "type": "checkbox_group",
+  "label": "Quality checks passed",
+  "options": [
+    {"value": "grammar", "label": "Grammar and spelling"},
+    {"value": "factual", "label": "Factual accuracy"},
+    {"value": "tone", "label": "Appropriate tone"},
+    {"value": "compliance", "label": "Compliance requirements"}
+  ],
+  "required": true
+}
+```
+
+### Selection Fields
+
+**Single choice:**
+
+```json
+{
+  "name": "severity",
+  "type": "select",
+  "label": "Issue severity",
+  "options": [
+    {"value": "low", "label": "Low - Minor issue"},
+    {"value": "medium", "label": "Medium - Needs attention"},
+    {"value": "high", "label": "High - Critical issue"}
+  ],
+  "required": true
+}
+```
+
+**Multiple choice:**
+
+```json
+{
+  "name": "categories",
+  "type": "multi_select",
+  "label": "Content categories",
+  "options": [
+    {"value": "tech", "label": "Technology"},
+    {"value": "business", "label": "Business"},
+    {"value": "health", "label": "Health & Wellness"},
+    {"value": "lifestyle", "label": "Lifestyle"}
+  ],
+  "required": false
+}
+```
+
+### File & Media Fields
+
+**File uploads:**
+
+```json
+{
+  "name": "supporting_docs",
+  "type": "file",
+  "label": "Supporting documents",
+  "accept": [".pdf", ".doc", ".docx"],
+  "max_size": "10MB",
+  "multiple": true,
+  "required": false
+}
+```
+
+**Image review:**
+
+```json
+{
+  "name": "image_quality",
+  "type": "image_review",
+  "label": "Review generated image",
+  "tools": ["approve", "reject", "annotate"],
+  "required": true
+}
+```
+
+### Specialized Fields
+
+**Rating scales:**
+
+```json
+{
+  "name": "quality_score",
+  "type": "rating",
+  "label": "Overall quality score",
+  "scale": 5,
+  "labels": ["Poor", "Fair", "Good", "Very Good", "Excellent"],
+  "required": true
+}
+```
+
+**Date/time inputs:**
+
+```json
+{
+  "name": "publish_date",
+  "type": "datetime",
+  "label": "When should this be published?",
+  "min_date": "today",
+  "required": false
+}
+```
+
+## Template Editor
+
+### Visual Editor
+
+<Card
+  title="Template Editor Guide"
+  icon="edit"
+  href="/templates/editor"
+>
+  Learn how to use the visual template editor to create and customize templates.
+</Card>
+
+**Editor features:**
+- **Drag-and-drop interface**: Build templates visually
+- **Live preview**: See changes in real-time
+- **Field library**: Pre-built field components
+- **Template gallery**: Reusable template patterns
+
+### Code Editor
+
+**Advanced customization:**
+
+```json
+{
+  "name": "Advanced Content Review",
+  "description": "Multi-stage content review with conditional fields",
+  "fields": [
+    {
+      "name": "content",
+      "type": "content_display",
+      "label": "Content to review",
+      "editable": true,
+      "required": true
+    },
+    {
+      "name": "initial_approval",
+      "type": "boolean",
+      "label": "Initial approval",
+      "required": true
+    },
+    {
+      "name": "technical_review",
+      "type": "boolean",
+      "label": "Requires technical review",
+      "required": false,
+      "conditional": {
+        "field": "initial_approval",
+        "value": true
+      }
+    },
+    {
+      "name": "technical_feedback",
+      "type": "rich_text",
+      "label": "Technical feedback",
+      "required": false,
+      "conditional": {
+        "field": "technical_review",
+        "value": true
+      }
+    }
+  ]
+}
+```
+
+## Template Settings
+
+### Review Behavior
+
+**Review settings:**
+
+```json
+{
+  "settings": {
+    "auto_assign": true,
+    "assignment_strategy": "round_robin",
+    "timeout_hours": 24,
+    "allow_reassignment": true,
+    "require_comments": false,
+    "approval_threshold": 1
+  }
+}
+```
+
+**Assignment options:**
+- **Round-robin**: Distribute reviews evenly
+- **Load balancing**: Assign based on reviewer capacity
+- **Skill matching**: Match reviewers to content type
+- **Manual assignment**: Let workflow owners assign
+
+### Validation Rules
+
+**Field validation:**
+
+```json
+{
+  "fields": [
+    {
+      "name": "email",
+      "type": "email",
+      "label": "Contact email",
+      "validation": {
+        "required": true,
+        "pattern": "^[^@]+@[^@]+\\.[^@]+$",
+        "custom_message": "Please enter a valid email address"
+      }
+    }
+  ]
+}
+```
+
+**Cross-field validation:**
+
+```json
+{
+  "validation": {
+    "rules": [
+      {
+        "condition": "field('approval') == false",
+        "required_fields": ["feedback", "rejection_reason"],
+        "message": "Feedback and rejection reason required when rejecting"
+      }
+    ]
+  }
+}
+```
+
+## Template Styling
+
+### Visual Customization
+
+**Branding options:**
+
+```json
+{
+  "styling": {
+    "primary_color": "#6366F1",
+    "secondary_color": "#8B5CF6",
+    "logo_url": "https://company.com/logo.png",
+    "custom_css": ".review-form { font-family: 'Inter', sans-serif; }"
+  }
+}
+```
+
+**Layout options:**
+- **Theme**: Light, dark, or custom
+- **Layout**: Single column, two column, or custom grid
+- **Spacing**: Compact, comfortable, or spacious
+- **Typography**: Font families and sizes
+
+### Responsive Design
+
+**Mobile optimization:**
+- **Touch-friendly**: Large buttons and touch targets
+- **Responsive layout**: Adapts to any screen size
+- **Offline support**: Work without internet connection
+- **Progressive web app**: Install as mobile app
+
+## Template Management
+
+### Organization
+
+**Template categories:**
+
+```json
+{
+  "category": "content_review",
+  "tags": ["marketing", "blog", "social"],
+  "priority": "high",
+  "version": "1.2.0"
+}
+```
+
+**Template hierarchy:**
+- **Base templates**: Reusable foundation templates
+- **Specialized templates**: Domain-specific variations
+- **Template inheritance**: Extend and modify existing templates
+
+### Version Control
+
+**Template versions:**
+
+```json
+{
+  "version": "1.2.0",
+  "changelog": [
+    "Added quality rating field",
+    "Updated validation rules",
+    "Improved mobile layout"
+  ],
+  "deprecated": false,
+  "migration_guide": "https://docs.hitl.sh/migration-v1.2"
+}
+```
+
+**Version management:**
+- **Semantic versioning**: Major.minor.patch
+- **Backward compatibility**: Maintain existing workflows
+- **Migration tools**: Automatic template updates
+- **Rollback support**: Revert to previous versions
+
+## Best Practices
+
+### Template Design
+
+**Design principles:**
+- **Keep it simple**: Focus on essential review criteria
+- **Clear instructions**: Help reviewers understand expectations
+- **Efficient layout**: Minimize clicks and scrolling
+- **Mobile first**: Ensure good experience on mobile devices
+
+**Field organization:**
+- **Logical flow**: Group related fields together
+- **Progressive disclosure**: Show advanced options when needed
+- **Default values**: Pre-fill common responses
+- **Help text**: Provide context and examples
+
+### Performance Optimization
+
+**Template efficiency:**
+- **Minimize fields**: Only collect necessary information
+- **Conditional logic**: Show fields only when relevant
+- **Caching**: Cache template definitions for performance
+- **Lazy loading**: Load complex fields on demand
+
+### Accessibility
+
+**Accessibility features:**
+- **Screen reader support**: Proper labels and descriptions
+- **Keyboard navigation**: Full keyboard accessibility
+- **High contrast**: Support for high contrast themes
+- **Font scaling**: Adjustable text sizes
+
+## Template Examples
+
+### Content Moderation
+
+**Simple approval template:**
+
+```json
+{
+  "name": "Content Moderation",
+  "fields": [
+    {
+      "name": "content",
+      "type": "content_display",
+      "label": "Content to moderate",
+      "editable": true
+    },
+    {
+      "name": "approved",
+      "type": "boolean",
+      "label": "Approve for publication",
+      "required": true
+    },
+    {
+      "name": "moderation_notes",
+      "type": "text",
+      "label": "Moderation notes",
+      "required": false
+    }
+  ]
+}
+```
+
+### Code Review
+
+**Technical review template:**
+
+```json
+{
+  "name": "Code Review",
+  "fields": [
+    {
+      "name": "code",
+      "type": "code_display",
+      "label": "Code to review",
+      "language": "python",
+      "editable": true
+    },
+    {
+      "name": "quality_score",
+      "type": "rating",
+      "label": "Code quality",
+      "scale": 5
+    },
+    {
+      "name": "security_review",
+      "type": "boolean",
+      "label": "Security review passed",
+      "required": true
+    },
+    {
+      "name": "technical_feedback",
+      "type": "rich_text",
+      "label": "Technical feedback"
+    }
+  ]
+}
+```
+
+### Data Validation
+
+**Data quality template:**
+
+```json
+{
+  "name": "Data Validation",
+  "fields": [
+    {
+      "name": "data_sample",
+      "type": "table_display",
+      "label": "Data sample for review"
+    },
+    {
+      "name": "validation_checks",
+      "type": "checkbox_group",
+      "label": "Validation checks passed",
+      "options": [
+        {"value": "completeness", "label": "Data completeness"},
+        {"value": "accuracy", "label": "Data accuracy"},
+        {"value": "consistency", "label": "Data consistency"},
+        {"value": "timeliness", "label": "Data timeliness"}
+      ]
+    },
+    {
+      "name": "data_quality_score",
+      "type": "rating",
+      "label": "Overall data quality",
+      "scale": 10
+    }
+  ]
+}
+```
+
+## Next Steps
+
+<Card
+  title="Template Editor"
+  icon="edit"
+  href="/templates/editor"
+>
+  Learn how to use the visual template editor to create templates.
+</Card>
+
+<Card
+  title="Field Types"
+  icon="list"
+  href="/templates/field-types"
+>
+  Explore all available field types and their configuration options.
+</Card>
+
+<Card
+  title="Template Examples"
+  icon="code"
+  href="/examples"
+>
+  See more template examples and use cases.
+</Card>

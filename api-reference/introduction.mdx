@@ -1,33 +1,443 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Reference"
+description: "Complete API documentation for HITL.sh. Integrate human supervision into your applications with our RESTful API."
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## HITL.sh API Reference
 
-## Welcome
+The HITL.sh API provides a RESTful interface for integrating human supervision into your AI workflows. Use our API to create reviews, manage templates, and handle webhooks programmatically.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Base URL
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+https://api.hitl.sh
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API requests require authentication using an API key in the Authorization header.
+
+```bash
+Authorization: Bearer your_api_key_here
+```
+
+## Rate Limits
+
+- **Standard plan**: 1,000 requests per minute
+- **Professional plan**: 10,000 requests per minute
+- **Enterprise plan**: 100,000 requests per minute
+
+Rate limit headers are included in all responses:
+
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1642233600
+```
+
+## Response Format
+
+All API responses follow a consistent JSON format:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
+{
+  "success": true,
+  "data": {...},
+  "meta": {
+    "request_id": "req_123",
+    "timestamp": "2024-01-15T10:30:00Z"
   }
-]
+}
 ```
+
+**Error responses:**
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "validation_error",
+    "message": "Invalid field value",
+    "details": {
+      "field": "email",
+      "issue": "Invalid email format"
+    }
+  },
+  "meta": {
+    "request_id": "req_123",
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+## Common HTTP Status Codes
+
+- **200 OK**: Request successful
+- **201 Created**: Resource created successfully
+- **400 Bad Request**: Invalid request data
+- **401 Unauthorized**: Invalid or missing API key
+- **403 Forbidden**: Insufficient permissions
+- **404 Not Found**: Resource not found
+- **429 Too Many Requests**: Rate limit exceeded
+- **500 Internal Server Error**: Server error
+
+## API Endpoints
+
+### Reviews
+
+**Create a review:**
+
+```http
+POST /v1/reviews
+```
+
+**Get a review:**
+
+```http
+GET /v1/reviews/{review_id}
+```
+
+**List reviews:**
+
+```http
+GET /v1/reviews
+```
+
+**Update a review:**
+
+```http
+PATCH /v1/reviews/{review_id}
+```
+
+**Cancel a review:**
+
+```http
+DELETE /v1/reviews/{review_id}
+```
+
+### Templates
+
+**Create a template:**
+
+```http
+POST /v1/templates
+```
+
+**Get a template:**
+
+```http
+GET /v1/templates/{template_id}
+```
+
+**List templates:**
+
+```http
+GET /v1/templates
+```
+
+**Update a template:**
+
+```http
+PATCH /v1/templates/{template_id}
+```
+
+**Delete a template:**
+
+```http
+DELETE /v1/templates/{template_id}
+```
+
+### Webhooks
+
+**Create a webhook:**
+
+```http
+POST /v1/webhooks
+```
+
+**List webhooks:**
+
+```http
+GET /v1/webhooks
+```
+
+**Update a webhook:**
+
+```http
+PATCH /v1/webhooks/{webhook_id}
+```
+
+**Delete a webhook:**
+
+```http
+DELETE /v1/webhooks/{webhook_id}
+```
+
+### Teams
+
+**Create a team:**
+
+```http
+POST /v1/teams
+```
+
+**Get team members:**
+
+```http
+GET /v1/teams/{team_id}/members
+```
+
+**Add team member:**
+
+```http
+POST /v1/teams/{team_id}/members
+```
+
+## Request Examples
+
+### Create a Review
+
+```bash
+curl -X POST https://api.hitl.sh/v1/reviews \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "template_id": "template_123",
+    "content": {
+      "text": "AI-generated content to review",
+      "metadata": {
+        "source": "gpt-4",
+        "confidence": 0.95
+      }
+    },
+    "assignees": ["reviewer@company.com"],
+    "priority": "medium",
+    "due_date": "2024-01-20T18:00:00Z"
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "rev_123",
+    "template_id": "template_123",
+    "content": {
+      "text": "AI-generated content to review",
+      "metadata": {
+        "source": "gpt-4",
+        "confidence": 0.95
+      }
+    },
+    "assignees": ["reviewer@company.com"],
+    "priority": "medium",
+    "due_date": "2024-01-20T18:00:00Z",
+    "status": "created",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+### Create a Template
+
+```bash
+curl -X POST https://api.hitl.sh/v1/templates \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Content Review",
+    "description": "Review AI-generated content for quality and compliance",
+    "fields": [
+      {
+        "name": "content",
+        "type": "content_display",
+        "label": "Content to review",
+        "editable": true,
+        "required": true
+      },
+      {
+        "name": "approved",
+        "type": "boolean",
+        "label": "Approve content",
+        "required": true
+      },
+      {
+        "name": "feedback",
+        "type": "text",
+        "label": "Feedback or comments",
+        "required": false
+      }
+    ]
+  }'
+```
+
+## Webhook Integration
+
+### Webhook Events
+
+HITL.sh sends webhooks for the following events:
+
+- **review.created**: New review created
+- **review.assigned**: Review assigned to reviewer
+- **review.started**: Reviewer started review
+- **review.completed**: Review completed
+- **review.cancelled**: Review cancelled
+- **template.updated**: Template modified
+
+### Webhook Payload
+
+**Review completed webhook:**
+
+```json
+{
+  "event": "review.completed",
+  "review": {
+    "id": "rev_123",
+    "template_id": "template_123",
+    "status": "completed",
+    "result": {
+      "approved": true,
+      "content": "Revised content...",
+      "feedback": "Great content, approved with minor edits"
+    },
+    "completed_at": "2024-01-15T12:30:00Z",
+    "reviewer": "reviewer@company.com"
+  },
+  "timestamp": "2024-01-15T12:30:00Z"
+}
+```
+
+### Webhook Security
+
+**Signature verification:**
+
+```python
+import hmac
+import hashlib
+
+def verify_webhook_signature(payload, signature, secret):
+    expected_signature = hmac.new(
+        secret.encode('utf-8'),
+        payload.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(signature, expected_signature)
+```
+
+## SDKs and Libraries
+
+### Official SDKs
+
+- **Python SDK**: `pip install hitl`
+- **TypeScript SDK**: `npm install @hitl/typescript`
+- **JavaScript SDK**: `npm install @hitl/javascript`
+
+### Community Libraries
+
+- **Go**: `go get github.com/hitlsh/go-hitl`
+- **Ruby**: `gem install hitl`
+- **PHP**: `composer require hitlsh/php-hitl`
+
+## Error Handling
+
+### Common Error Codes
+
+- **validation_error**: Invalid request data
+- **template_not_found**: Template doesn't exist
+- **review_not_found**: Review doesn't exist
+- **insufficient_permissions**: API key lacks required permissions
+- **rate_limit_exceeded**: Too many requests
+- **webhook_delivery_failed**: Webhook delivery failed
+
+### Retry Logic
+
+**Exponential backoff:**
+
+```python
+import time
+import random
+
+def retry_with_backoff(func, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise e
+            
+            # Exponential backoff with jitter
+            delay = (2 ** attempt) + random.uniform(0, 1)
+            time.sleep(delay)
+```
+
+## Best Practices
+
+### API Usage
+
+- **Use HTTPS**: Always use HTTPS for production
+- **Store keys securely**: Never commit API keys to version control
+- **Implement retries**: Use exponential backoff for failed requests
+- **Monitor rate limits**: Track your API usage
+- **Handle errors gracefully**: Implement proper error handling
+
+### Webhook Handling
+
+- **Verify signatures**: Always verify webhook signatures
+- **Handle duplicates**: Webhooks may be sent multiple times
+- **Process asynchronously**: Don't block webhook processing
+- **Implement idempotency**: Handle duplicate webhook deliveries
+- **Monitor delivery**: Track webhook delivery success rates
+
+### Performance
+
+- **Use pagination**: For large result sets
+- **Batch operations**: When possible
+- **Cache responses**: Cache static data
+- **Monitor latency**: Track API response times
+- **Optimize requests**: Minimize unnecessary API calls
+
+## Support
+
+### Getting Help
+
+- **Documentation**: Browse our comprehensive guides
+- **API Status**: Check [status.hitl.sh](https://status.hitl.sh)
+- **Community**: Join our [Discord community](https://discord.gg/hitlsh)
+- **Support**: Email [support@hitl.sh](mailto:support@hitl.sh)
+
+### API Versioning
+
+- **Current version**: v1
+- **Deprecation policy**: 12 months notice for breaking changes
+- **Migration guides**: Available for major version updates
+- **Backward compatibility**: Maintained within major versions
+
+## Next Steps
+
+<Card
+  title="Authentication"
+  icon="key"
+  href="/api-reference/authentication"
+>
+  Learn about API authentication and security.
+</Card>
+
+<Card
+  title="Reviews API"
+  icon="file-text"
+  href="/api-reference/reviews"
+>
+  Complete documentation for the reviews API endpoints.
+</Card>
+
+<Card
+  title="Webhooks"
+  icon="bell"
+  href="/api-reference/webhooks"
+>
+  Set up webhooks to receive real-time updates.
+</Card>

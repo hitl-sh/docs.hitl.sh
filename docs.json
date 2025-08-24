@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "HITL.sh",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#6366F1",
+    "light": "#8B5CF6",
+    "dark": "#4F46E5"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -18,31 +18,37 @@
             "pages": [
               "index",
               "quickstart",
-              "development"
+              "concepts"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core features",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "features/inbox",
+              "features/reviews",
+              "features/workflows",
+              "features/notifications"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Integrations",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "integrations/overview",
+              "integrations/python",
+              "integrations/typescript",
+              "integrations/n8n",
+              "integrations/make",
+              "integrations/langgraph",
+              "integrations/mcp"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Templates & UI",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "templates/overview",
+              "templates/editor",
+              "templates/field-types",
+              "templates/customization"
             ]
           }
         ]
@@ -51,18 +57,41 @@
         "tab": "API reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Core API",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/introduction",
+              "api-reference/authentication",
+              "api-reference/reviews",
+              "api-reference/templates"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Webhooks",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/webhooks",
+              "api-reference/events"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Examples",
+        "groups": [
+          {
+            "group": "Use cases",
+            "pages": [
+              "examples/content-moderation",
+              "examples/sales-approval",
+              "examples/ai-training",
+              "examples/workflow-control"
+            ]
+          },
+          {
+            "group": "Code samples",
+            "pages": [
+              "examples/python-samples",
+              "examples/typescript-samples",
+              "examples/webhook-samples"
             ]
           }
         ]
@@ -72,18 +101,18 @@
       "anchors": [
         {
           "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
+          "href": "/",
           "icon": "book-open-cover"
         },
         {
           "anchor": "Community",
-          "href": "https://mintlify.com/community",
+          "href": "https://discord.gg/hitlsh",
           "icon": "slack"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "GitHub",
+          "href": "https://github.com/hitlsh",
+          "icon": "github"
         }
       ]
     }
@@ -96,13 +125,17 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@hitl.sh"
+      },
+      {
+        "label": "Pricing",
+        "href": "https://hitl.sh/pricing"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Get Started",
+      "href": "https://app.hitl.sh"
     }
   },
   "contextual": {
@@ -119,9 +152,9 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/hitlsh",
+      "github": "https://github.com/hitlsh",
+      "linkedin": "https://linkedin.com/company/hitlsh"
     }
   }
 }

@@ -1,0 +1,576 @@
+---
+title: "Content Moderation Example"
+description: "Learn how to implement AI content moderation with human oversight using HITL.sh. Review and approve AI-generated content before publication."
+---
+
+## Content Moderation Workflow
+
+This example demonstrates how to implement a content moderation system that uses AI to generate content and human reviewers to ensure quality and compliance before publication.
+
+## Overview
+
+**Workflow:**
+1. AI generates content (blog posts, social media, marketing copy)
+2. Content is automatically sent for human review
+3. Human moderators review for quality, accuracy, and compliance
+4. Approved content proceeds to publication
+5. Rejected content is flagged for revision
+
+## Use Cases
+
+- **Blog content**: Review AI-generated articles before publishing
+- **Social media**: Moderate posts for brand safety and tone
+- **Marketing copy**: Ensure promotional content meets guidelines
+- **Product descriptions**: Validate accuracy and compliance
+- **User-generated content**: Moderate community submissions
+
+## Implementation
+
+### Step 1: Create Review Template
+
+**Template configuration:**
+
+```json
+{
+  "name": "Content Moderation",
+  "description": "Review AI-generated content for quality and compliance",
+  "fields": [
+    {
+      "name": "content",
+      "type": "content_display",
+      "label": "Content to review",
+      "editable": true,
+      "required": true
+    },
+    {
+      "name": "content_type",
+      "type": "select",
+      "label": "Content type",
+      "options": [
+        {"value": "blog", "label": "Blog post"},
+        {"value": "social", "label": "Social media"},
+        {"value": "marketing", "label": "Marketing copy"},
+        {"value": "product", "label": "Product description"}
+      ],
+      "required": true
+    },
+    {
+      "name": "approved",
+      "type": "boolean",
+      "label": "Approve for publication",
+      "required": true
+    },
+    {
+      "name": "quality_score",
+      "type": "rating",
+      "label": "Content quality (1-5)",
+      "scale": 5,
+      "required": true
+    },
+    {
+      "name": "compliance_checks",
+      "type": "checkbox_group",
+      "label": "Compliance requirements met",
+      "options": [
+        {"value": "factual", "label": "Factual accuracy"},
+        {"value": "tone", "label": "Appropriate tone"},
+        {"value": "brand", "label": "Brand guidelines"},
+        {"value": "legal", "label": "Legal compliance"},
+        {"value": "seo", "label": "SEO requirements"}
+      ],
+      "required": true
+    },
+    {
+      "name": "moderation_notes",
+      "type": "rich_text",
+      "label": "Moderation notes and feedback",
+      "required": false
+    },
+    {
+      "name": "revision_required",
+      "type": "boolean",
+      "label": "Content needs revision",
+      "required": false
+    },
+    {
+      "name": "revision_instructions",
+      "type": "text",
+      "label": "Specific revision instructions",
+      "required": false,
+      "conditional": {
+        "field": "revision_required",
+        "value": true
+      }
+    }
+  ]
+}
+```
+
+### Step 2: Python Integration
+
+**Content generation and moderation:**
+
+```python
+import openai
+from hitl import HITLClient
+import json
+
+class ContentModerationSystem:
+    def __init__(self, openai_key, hitl_key):
+        self.openai_client = openai.OpenAI(api_key=openai_key)
+        self.hitl_client = HITLClient(api_key=hitl_key)
+        self.template_id = "content_moderation_template"
+    
+    def generate_and_moderate_content(self, prompt, content_type):
+        """Generate content with AI and send for human moderation"""
+        
+        # Generate content with AI
+        response = self.openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a professional content writer."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=1000
+        )
+        
+        generated_content = response.choices[0].message.content
+        
+        # Create moderation review
+        review = self.hitl_client.create_review(
+            template_id=self.template_id,
+            content={
+                "content": generated_content,
+                "content_type": content_type,
+                "prompt": prompt,
+                "ai_model": "gpt-4",
+                "generation_timestamp": "2024-01-15T10:30:00Z"
+            },
+            assignees=["content_moderator@company.com"],
+            priority="medium"
+        )
+        
+        return {
+            "review_id": review.id,
+            "generated_content": generated_content,
+            "status": "pending_review"
+        }
+    
+    def wait_for_moderation(self, review_id):
+        """Wait for moderation to complete and return result"""
+        
+        completed_review = self.hitl_client.wait_for_review(review_id)
+        
+        if completed_review.result.get("approved"):
+            return {
+                "status": "approved",
+                "content": completed_review.result.get("content"),
+                "quality_score": completed_review.result.get("quality_score"),
+                "moderator_notes": completed_review.result.get("moderation_notes")
+            }
+        else:
+            return {
+                "status": "rejected",
+                "revision_required": completed_review.result.get("revision_required"),
+                "revision_instructions": completed_review.result.get("revision_instructions"),
+                "moderator_notes": completed_review.result.get("moderation_notes")
+            }
+    
+    def handle_revision_request(self, review_id, original_content, revision_instructions):
+        """Handle content revision based on moderator feedback"""
+        
+        # Generate revised content
+        revision_prompt = f"""
+        Original content: {original_content}
+        
+        Revision instructions: {revision_instructions}
+        
+        Please provide a revised version that addresses these concerns.
+        """
+        
+        response = self.openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a professional content writer."},
+                {"role": "user", "content": revision_prompt}
+            ],
+            max_tokens=1000
+        )
+        
+        revised_content = response.choices[0].message.content
+        
+        # Create new review for revised content
+        revision_review = self.hitl_client.create_review(
+            template_id=self.template_id,
+            content={
+                "content": revised_content,
+                "content_type": "revision",
+                "original_content": original_content,
+                "revision_instructions": revision_instructions,
+                "revision_number": 1
+            },
+            assignees=["content_moderator@company.com"],
+            priority="high"
+        )
+        
+        return revision_review.id
+```
+
+### Step 3: Workflow Integration
+
+**Complete content workflow:**
+
+```python
+def content_publication_workflow():
+    """Complete content generation and publication workflow"""
+    
+    # Initialize system
+    moderation_system = ContentModerationSystem(
+        openai_key="your_openai_key",
+        hitl_key="your_hitl_key"
+    )
+    
+    # Generate and moderate content
+    prompt = "Write a blog post about the benefits of AI in business"
+    result = moderation_system.generate_and_moderate_content(
+        prompt=prompt,
+        content_type="blog"
+    )
+    
+    print(f"Content generated, review ID: {result['review_id']}")
+    
+    # Wait for moderation
+    moderation_result = moderation_system.wait_for_moderation(result['review_id'])
+    
+    if moderation_result['status'] == 'approved':
+        # Publish content
+        publish_content(moderation_result['content'])
+        print("Content published successfully!")
+        
+        # Log metrics
+        log_moderation_metrics({
+            "content_type": "blog",
+            "quality_score": moderation_result['quality_score'],
+            "moderation_time": "2.5 hours",
+            "status": "approved"
+        })
+        
+    else:
+        # Handle revision
+        print("Content needs revision")
+        print(f"Instructions: {moderation_result['revision_instructions']}")
+        
+        # Request revision
+        revision_id = moderation_system.handle_revision_request(
+            result['review_id'],
+            result['generated_content'],
+            moderation_result['revision_instructions']
+        )
+        
+        print(f"Revision review created: {revision_id}")
+
+def publish_content(content):
+    """Publish approved content to various channels"""
+    
+    # Publish to blog
+    publish_to_blog(content)
+    
+    # Share on social media
+    share_on_social(content)
+    
+    # Update content calendar
+    update_content_calendar(content)
+    
+    # Notify stakeholders
+    notify_stakeholders(content)
+
+def log_moderation_metrics(metrics):
+    """Log moderation performance metrics"""
+    
+    # Store in analytics database
+    store_analytics(metrics)
+    
+    # Update dashboards
+    update_dashboards(metrics)
+    
+    # Generate reports
+    generate_moderation_report(metrics)
+```
+
+### Step 4: Webhook Handling
+
+**Process moderation results:**
+
+```python
+from flask import Flask, request
+from hitl.webhooks import verify_signature
+
+app = Flask(__name__)
+
+@app.route('/webhook/moderation', methods=['POST'])
+def handle_moderation_webhook():
+    """Handle moderation completion webhooks"""
+    
+    # Verify webhook signature
+    if not verify_signature(
+        request.headers, 
+        request.data, 
+        "your_webhook_secret"
+    ):
+        return "Unauthorized", 401
+    
+    data = request.json
+    
+    if data['event'] == 'review.completed':
+        review_id = data['review']['id']
+        result = data['review']['result']
+        
+        # Process moderation result
+        if result.get('approved'):
+            # Content approved - proceed to publication
+            handle_approved_content(review_id, result)
+        else:
+            # Content rejected - handle revision
+            handle_rejected_content(review_id, result)
+    
+    return {'status': 'ok'}, 200
+
+def handle_approved_content(review_id, result):
+    """Handle approved content"""
+    
+    # Extract content and metadata
+    content = result.get('content')
+    quality_score = result.get('quality_score')
+    
+    # Publish content
+    publish_content(content)
+    
+    # Update review status
+    update_review_status(review_id, 'published')
+    
+    # Send notifications
+    notify_content_team('Content published successfully')
+    
+    # Log metrics
+    log_publication_metrics(review_id, quality_score)
+
+def handle_rejected_content(review_id, result):
+    """Handle rejected content"""
+    
+    # Extract rejection details
+    revision_required = result.get('revision_required')
+    revision_instructions = result.get('revision_instructions')
+    
+    # Update review status
+    update_review_status(review_id, 'revision_required')
+    
+    # Send revision request to content team
+    notify_content_team(
+        f"Content revision required: {revision_instructions}"
+    )
+    
+    # Log rejection metrics
+    log_rejection_metrics(review_id, revision_instructions)
+```
+
+## Configuration Options
+
+### Assignment Strategies
+
+**Automatic assignment:**
+
+```python
+# Round-robin assignment
+review = client.create_review(
+    template_id="content_moderation",
+    content={"content": "..."},
+    assignees=["moderator1@company.com", "moderator2@company.com"],
+    assignment_strategy="round_robin"
+)
+
+# Load-balanced assignment
+review = client.create_review(
+    template_id="content_moderation",
+    content={"content": "..."},
+    assignees=["moderator1@company.com", "moderator2@company.com"],
+    assignment_strategy="load_balanced"
+)
+```
+
+### Priority Management
+
+**Set review priorities:**
+
+```python
+# High priority for urgent content
+review = client.create_review(
+    template_id="content_moderation",
+    content={"content": "..."},
+    priority="high",
+    due_date="2024-01-15T18:00:00Z"
+)
+
+# Normal priority for regular content
+review = client.create_review(
+    template_id="content_moderation",
+    content={"content": "..."},
+    priority="normal"
+)
+```
+
+### Quality Thresholds
+
+**Implement quality gates:**
+
+```python
+def check_quality_thresholds(moderation_result):
+    """Check if content meets quality thresholds"""
+    
+    quality_score = moderation_result.get('quality_score', 0)
+    compliance_checks = moderation_result.get('compliance_checks', [])
+    
+    # Quality score must be 4 or higher
+    if quality_score < 4:
+        return False, "Quality score below threshold"
+    
+    # All compliance checks must pass
+    required_checks = ['factual', 'tone', 'brand', 'legal']
+    missing_checks = set(required_checks) - set(compliance_checks)
+    
+    if missing_checks:
+        return False, f"Missing compliance checks: {missing_checks}"
+    
+    return True, "All quality thresholds met"
+```
+
+## Monitoring & Analytics
+
+### Performance Metrics
+
+**Track moderation performance:**
+
+```python
+def track_moderation_metrics():
+    """Track key moderation performance metrics"""
+    
+    metrics = {
+        "total_reviews": 0,
+        "approved_count": 0,
+        "rejected_count": 0,
+        "average_review_time": 0,
+        "quality_scores": [],
+        "compliance_rates": {}
+    }
+    
+    # Collect metrics from completed reviews
+    reviews = client.list_reviews(
+        status="completed",
+        created_after="2024-01-01T00:00:00Z"
+    )
+    
+    for review in reviews:
+        metrics["total_reviews"] += 1
+        
+        if review.result.get("approved"):
+            metrics["approved_count"] += 1
+        else:
+            metrics["rejected_count"] += 1
+        
+        # Track quality scores
+        quality_score = review.result.get("quality_score")
+        if quality_score:
+            metrics["quality_scores"].append(quality_score)
+        
+        # Track compliance rates
+        compliance_checks = review.result.get("compliance_checks", [])
+        for check in compliance_checks:
+            if check not in metrics["compliance_rates"]:
+                metrics["compliance_rates"][check] = 0
+            metrics["compliance_rates"][check] += 1
+    
+    # Calculate averages
+    if metrics["quality_scores"]:
+        metrics["average_quality_score"] = sum(metrics["quality_scores"]) / len(metrics["quality_scores"])
+    
+    return metrics
+```
+
+### Dashboard Integration
+
+**Real-time monitoring:**
+
+```python
+def update_moderation_dashboard():
+    """Update real-time moderation dashboard"""
+    
+    # Get current metrics
+    metrics = track_moderation_metrics()
+    
+    # Update dashboard widgets
+    update_widget("total_reviews", metrics["total_reviews"])
+    update_widget("approval_rate", 
+                 metrics["approved_count"] / metrics["total_reviews"] * 100)
+    update_widget("average_quality", metrics.get("average_quality_score", 0))
+    
+    # Update compliance chart
+    update_compliance_chart(metrics["compliance_rates"])
+    
+    # Send alerts for issues
+    if metrics.get("average_quality_score", 5) < 3.5:
+        send_alert("Quality scores below threshold")
+```
+
+## Best Practices
+
+### Content Guidelines
+
+**Establish clear guidelines:**
+
+- **Quality standards**: Define minimum quality thresholds
+- **Compliance requirements**: List all compliance checks
+- **Brand guidelines**: Specify tone, style, and messaging
+- **Revision process**: Define how revisions are handled
+
+### Moderator Training
+
+**Train your moderators:**
+
+- **Review templates**: Ensure understanding of all fields
+- **Quality standards**: Train on quality assessment
+- **Compliance requirements**: Educate on legal and brand requirements
+- **Feedback quality**: Train on providing actionable feedback
+
+### Performance Optimization
+
+**Optimize the workflow:**
+
+- **Batch processing**: Group similar content for review
+- **Priority management**: Use priority levels effectively
+- **Automated routing**: Route content to appropriate moderators
+- **Quality gates**: Implement automated quality checks
+
+## Next Steps
+
+<Card
+  title="Sales Approval Example"
+  icon="handshake"
+  href="/examples/sales-approval"
+>
+  Learn how to implement sales approval workflows with human oversight.
+</Card>
+
+<Card
+  title="AI Training Example"
+  icon="brain"
+  href="/examples/ai-training"
+>
+  See how to collect human feedback for AI model improvement.
+</Card>
+
+<Card
+  title="Python SDK"
+  icon="python"
+  href="/integrations/python"
+>
+  Explore the full Python SDK for more integration options.
+</Card>

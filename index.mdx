@@ -1,97 +1,171 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "HITL.sh - Human Supervision for AI Agents"
+description: "Add human oversight to your AI workflows with our mobile-first platform. Approve critical actions, review AI outputs, and maintain control over your automated processes."
 ---
 
-## Setting up
+## Human supervision for your AI agents
 
-Get your documentation site up and running in minutes.
+Keep your AI workflows safe and accurate with human oversight. HITL.sh provides a customizable review interface that's easy to integrate and quick to adopt.
 
 <Card
-  title="Start here"
+  title="Get started in minutes"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Follow our quickstart guide to add human supervision to your AI agents.
 </Card>
 
-## Make it yours
+## How it works
 
-Design a docs site that looks great and empowers your users.
+<Steps>
+  <Step title="Setup review">
+    Create a review template with our no-code editor for the type of content to be reviewed and the input to be captured.
+  </Step>
+  <Step title="Send request">
+    Request a human review using any of our integrations, referencing the template and including all relevant content.
+  </Step>
+  <Step title="Human review">
+    Pending items appear in our Agent Inbox or can be opened directly via one of the notification options.
+  </Step>
+  <Step title="Handle webhook">
+    Completed reviews are sent to your workflow via webhook so it can continue with the provided feedback.
+  </Step>
+</Steps>
+
+## Core features
+
+Everything you need to keep a human in the loop
 
 <Columns cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Agent Inbox"
+    icon="inbox"
+    href="/features/inbox"
   >
-    Edit your docs locally and preview them in real time.
+    Centralized dashboard where reviewers find all items that need input - whether reviews were assigned to them or to the whole team.
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Review Templates"
+    icon="file-text"
+    href="/templates/overview"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Customize review templates to capture content of various types with our no-code editor for the right preview and editing tools.
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
+    title="Smart Notifications"
+    icon="bell"
+    href="/features/notifications"
+  >
+    Turn on email digests or Slack notifications with optional short-lived public links for seamless collaboration.
+  </Card>
+  <Card
+    title="Workflow Control"
+    icon="workflow"
+    href="/features/workflows"
+  >
+    Advanced workflows include multiple review steps or manual triggers with easy navigation across workflow runs.
+  </Card>
+</Columns>
+
+## Integrations
+
+Add human supervision without restricting your choice of tooling, framework, or model.
+
+<Columns cols={3}>
+  <Card
+    title="Python SDK"
+    icon="python"
+    href="/integrations/python"
+  >
+    Simple Python integration for your AI applications and workflows.
+  </Card>
+  <Card
+    title="TypeScript SDK"
+    icon="typescript"
+    href="/integrations/typescript"
+  >
+    Full-featured TypeScript SDK for Node.js and browser environments.
+  </Card>
+  <Card
+    title="n8n Node"
+    icon="n8n"
+    href="/integrations/n8n"
+  >
+    Native n8n integration for seamless workflow automation.
+  </Card>
+  <Card
+    title="Make.com"
+    icon="make"
+    href="/integrations/make"
+  >
+    Connect HITL.sh to your Make.com scenarios and workflows.
+  </Card>
+  <Card
+    title="LangGraph"
+    icon="langgraph"
+    href="/integrations/langgraph"
+  >
+    Integrate with LangGraph for sophisticated AI agent workflows.
+  </Card>
+  <Card
+    title="HTTP API"
+    icon="api"
     href="/api-reference/introduction"
   >
-    Auto-generate API documentation from OpenAPI specifications.
+    RESTful API for custom integrations and webhook handling.
   </Card>
 </Columns>
 
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
+## Use cases
 
 <Columns cols={2}>
   <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
+    title="Content Moderation"
+    icon="shield-check"
+    href="/examples/content-moderation"
   >
-    Use MDX to style your docs pages.
+    Review AI-generated content before publication to ensure quality and compliance.
   </Card>
   <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
+    title="Sales Approval"
+    icon="handshake"
+    href="/examples/sales-approval"
   >
-    Add sample code to demonstrate how to use your product.
+    Automate sales processes while maintaining human oversight for critical decisions.
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="AI Training"
+    icon="brain"
+    href="/examples/ai-training"
   >
-    Display images and other media.
+    Collect human feedback to improve AI model performance and create training datasets.
   </Card>
   <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
+    title="Workflow Control"
+    icon="cogs"
+    href="/examples/workflow-control"
   >
-    Write once and reuse across your docs.
+    Add checkpoints and manual triggers to complex automated workflows.
   </Card>
 </Columns>
 
-## Need inspiration?
+## Trusted by innovators
 
 <Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
+  title="PayFacto Case Study"
+  icon="chart-line"
+  href="/examples/payfacto-case-study"
 >
-  Browse our showcase of exceptional documentation sites.
+  See how PayFacto, a leading global payment processing company handling $10 billion in annual transaction volume, uses HITL.sh to automate key sales and marketing processes with AI.
+</Card>
+
+## Get started today
+
+<Card
+  title="Start building"
+  icon="code"
+  href="/quickstart"
+>
+  Add human supervision to your AI agents in minutes with our comprehensive documentation and examples.
 </Card>

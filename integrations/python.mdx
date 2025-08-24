@@ -1,0 +1,518 @@
+---
+title: "Python SDK"
+description: "Integrate HITL.sh with your Python applications and AI workflows. Simple, powerful, and fully typed."
+---
+
+## Python SDK
+
+The HITL.sh Python SDK provides a simple and powerful way to integrate human supervision into your Python applications and AI workflows.
+
+## Installation
+
+Install the SDK using pip:
+
+```bash
+pip install hitl
+```
+
+Or add it to your requirements.txt:
+
+```txt
+hitl>=1.0.0
+```
+
+## Quick Start
+
+### Basic Setup
+
+```python
+from hitl import HITLClient
+
+# Initialize the client
+client = HITLClient(api_key="your_api_key")
+
+# Create a review request
+review = client.create_review(
+    template_id="template_123",
+    content={
+        "text": "AI-generated content to review",
+        "metadata": {"source": "gpt-4", "confidence": 0.95}
+    },
+    assignees=["reviewer@company.com"]
+)
+
+print(f"Review created: {review.id}")
+```
+
+### Handle Review Results
+
+```python
+# Check review status
+status = client.get_review(review.id)
+print(f"Review status: {status.state}")
+
+# Wait for completion
+completed_review = client.wait_for_review(review.id)
+print(f"Result: {completed_review.result}")
+```
+
+## Core Features
+
+### Review Management
+
+**Create reviews:**
+
+```python
+# Simple content review
+review = client.create_review(
+    template_id="content_review",
+    content={"text": "AI-generated article..."},
+    assignees=["editor@company.com"]
+)
+
+# Review with metadata
+review = client.create_review(
+    template_id="code_review",
+    content={
+        "code": "def process_data(data):...",
+        "language": "python",
+        "complexity": "medium"
+    },
+    assignees=["senior_dev@company.com"],
+    priority="high",
+    due_date="2024-01-20T18:00:00Z"
+)
+```
+
+**Update reviews:**
+
+```python
+# Add content to existing review
+client.update_review(
+    review.id,
+    content={"additional_context": "More information..."}
+)
+
+# Reassign review
+client.reassign_review(
+    review.id,
+    assignees=["new_reviewer@company.com"]
+)
+```
+
+**Cancel reviews:**
+
+```python
+# Cancel pending review
+client.cancel_review(review.id)
+```
+
+### Template Management
+
+**Create templates:**
+
+```python
+# Define review template
+template = client.create_template(
+    name="Content Review",
+    fields=[
+        {
+            "name": "content",
+            "type": "text",
+            "label": "Content to review",
+            "required": True
+        },
+        {
+            "name": "approval",
+            "type": "boolean",
+            "label": "Approve content",
+            "required": True
+        },
+        {
+            "name": "feedback",
+            "type": "text",
+            "label": "Feedback or comments",
+            "required": False
+        }
+    ]
+)
+```
+
+**List and manage templates:**
+
+```python
+# Get all templates
+templates = client.list_templates()
+
+# Get specific template
+template = client.get_template("template_123")
+
+# Update template
+client.update_template(
+    "template_123",
+    fields=[...]  # New field configuration
+)
+```
+
+### Webhook Handling
+
+**Set up webhook endpoints:**
+
+```python
+from flask import Flask, request
+from hitl.webhooks import verify_signature
+
+app = Flask(__name__)
+
+@app.route('/webhook', methods=['POST'])
+def handle_webhook():
+    # Verify webhook signature
+    if not verify_signature(request.headers, request.data, "your_webhook_secret"):
+        return "Unauthorized", 401
+    
+    data = request.json
+    
+    if data['event'] == 'review.completed':
+        review_id = data['review']['id']
+        result = data['review']['result']
+        
+        # Process the review result
+        process_review_result(review_id, result)
+    
+    return {'status': 'ok'}, 200
+```
+
+## Advanced Features
+
+### Async Support
+
+**Async client usage:**
+
+```python
+import asyncio
+from hitl import AsyncHITLClient
+
+async def create_reviews():
+    async with AsyncHITLClient(api_key="your_api_key") as client:
+        # Create multiple reviews concurrently
+        tasks = []
+        for i in range(10):
+            task = client.create_review(
+                template_id="template_123",
+                content={"item": f"Item {i}"},
+                assignees=["reviewer@company.com"]
+            )
+            tasks.append(task)
+        
+        # Wait for all reviews to be created
+        reviews = await asyncio.gather(*tasks)
+        return reviews
+
+# Run async function
+reviews = asyncio.run(create_reviews())
+```
+
+### Batch Operations
+
+**Process multiple reviews:**
+
+```python
+# Create multiple reviews
+reviews = client.create_reviews([
+    {
+        "template_id": "template_123",
+        "content": {"text": "Content 1"},
+        "assignees": ["reviewer@company.com"]
+    },
+    {
+        "template_id": "template_123",
+        "content": {"text": "Content 2"},
+        "assignees": ["reviewer@company.com"]
+    }
+])
+
+# Bulk update reviews
+client.update_reviews([
+    {"id": "rev_1", "priority": "high"},
+    {"id": "rev_2", "priority": "medium"}
+])
+```
+
+### Error Handling
+
+**Robust error handling:**
+
+```python
+from hitl.exceptions import HITLError, ReviewNotFoundError
+
+try:
+    review = client.get_review("invalid_id")
+except ReviewNotFoundError:
+    print("Review not found")
+except HITLError as e:
+    print(f"HITL error: {e}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
+```
+
+**Retry logic:**
+
+```python
+from hitl.retry import retry_with_backoff
+
+@retry_with_backoff(max_retries=3)
+def create_review_with_retry(content):
+    return client.create_review(
+        template_id="template_123",
+        content=content,
+        assignees=["reviewer@company.com"]
+    )
+```
+
+## Integration Examples
+
+### AI Content Generation
+
+**Content moderation workflow:**
+
+```python
+import openai
+from hitl import HITLClient
+
+# Initialize clients
+openai_client = openai.OpenAI(api_key="your_openai_key")
+hitl_client = HITLClient(api_key="your_hitl_key")
+
+def generate_and_review_content(prompt):
+    # Generate content with AI
+    response = openai_client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    content = response.choices[0].message.content
+    
+    # Send for human review
+    review = hitl_client.create_review(
+        template_id="content_moderation",
+        content={"text": content, "prompt": prompt},
+        assignees=["moderator@company.com"]
+    )
+    
+    # Wait for review completion
+    completed_review = hitl_client.wait_for_review(review.id)
+    
+    if completed_review.result.get("approved"):
+        return completed_review.result.get("text", content)
+    else:
+        # Handle rejection or request regeneration
+        return None
+```
+
+### Data Processing Pipeline
+
+**Quality assurance workflow:**
+
+```python
+import pandas as pd
+from hitl import HITLClient
+
+def process_data_with_qa(data):
+    hitl_client = HITLClient(api_key="your_api_key")
+    
+    # Process data
+    processed_data = process_raw_data(data)
+    
+    # Create QA review
+    review = hitl_client.create_review(
+        template_id="data_qa",
+        content={
+            "data_sample": processed_data.head().to_dict(),
+            "summary_stats": processed_data.describe().to_dict(),
+            "processing_notes": "Data cleaned and validated"
+        },
+        assignees=["data_scientist@company.com"]
+    )
+    
+    # Wait for approval
+    completed_review = hitl_client.wait_for_review(review.id)
+    
+    if completed_review.result.get("approved"):
+        return processed_data
+    else:
+        # Handle QA feedback
+        feedback = completed_review.result.get("feedback", "")
+        raise ValueError(f"Data QA failed: {feedback}")
+```
+
+### Workflow Orchestration
+
+**Multi-step review process:**
+
+```python
+from hitl import HITLClient
+import time
+
+def multi_step_review_workflow():
+    hitl_client = HITLClient(api_key="your_api_key")
+    
+    # Step 1: Initial review
+    step1_review = hitl_client.create_review(
+        template_id="initial_review",
+        content={"draft": "Initial content draft..."},
+        assignees=["editor@company.com"]
+    )
+    
+    step1_result = hitl_client.wait_for_review(step1_review.id)
+    
+    if not step1_result.result.get("approved"):
+        return None
+    
+    # Step 2: Technical review
+    step2_review = hitl_client.create_review(
+        template_id="technical_review",
+        content={
+            "content": step1_result.result.get("content"),
+            "technical_requirements": "SEO, accessibility, performance"
+        },
+        assignees=["tech_lead@company.com"]
+    )
+    
+    step2_result = hitl_client.wait_for_review(step2_review.id)
+    
+    if step2_result.result.get("approved"):
+        return step2_result.result.get("content")
+    else:
+        return None
+```
+
+## Configuration
+
+### Environment Variables
+
+**Set configuration via environment:**
+
+```bash
+export HITL_API_KEY="your_api_key"
+export HITL_BASE_URL="https://api.hitl.sh"
+export HITL_TIMEOUT="30"
+```
+
+**Use in code:**
+
+```python
+import os
+from hitl import HITLClient
+
+client = HITLClient(
+    api_key=os.getenv("HITL_API_KEY"),
+    base_url=os.getenv("HITL_BASE_URL"),
+    timeout=int(os.getenv("HITL_TIMEOUT", "30"))
+)
+```
+
+### Client Configuration
+
+**Advanced client options:**
+
+```python
+from hitl import HITLClient
+
+client = HITLClient(
+    api_key="your_api_key",
+    base_url="https://api.hitl.sh",
+    timeout=30,
+    max_retries=3,
+    retry_delay=1,
+    user_agent="MyApp/1.0"
+)
+```
+
+## Best Practices
+
+### Performance Optimization
+
+**Efficient API usage:**
+
+```python
+# Use connection pooling
+client = HITLClient(api_key="your_api_key")
+
+# Batch operations when possible
+reviews = client.create_reviews(batch_data)
+
+# Use async for high-volume operations
+async def process_many_reviews():
+    async with AsyncHITLClient(api_key="your_api_key") as client:
+        # Process reviews concurrently
+        pass
+```
+
+### Error Handling
+
+**Comprehensive error handling:**
+
+```python
+def safe_review_creation(content):
+    try:
+        review = client.create_review(
+            template_id="template_123",
+            content=content,
+            assignees=["reviewer@company.com"]
+        )
+        return review
+    except HITLError as e:
+        logger.error(f"Failed to create review: {e}")
+        # Implement fallback logic
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        raise
+```
+
+### Security
+
+**Secure API usage:**
+
+```python
+# Store API keys securely
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+api_key = os.getenv("HITL_API_KEY")
+
+# Use environment-specific keys
+if os.getenv("ENVIRONMENT") == "production":
+    api_key = os.getenv("HITL_PROD_API_KEY")
+else:
+    api_key = os.getenv("HITL_DEV_API_KEY")
+
+client = HITLClient(api_key=api_key)
+```
+
+## Next Steps
+
+<Card
+  title="TypeScript SDK"
+  icon="typescript"
+  href="/integrations/typescript"
+>
+  Use TypeScript for Node.js and browser integrations.
+</Card>
+
+<Card
+  title="Examples"
+  icon="code"
+  href="/examples/python-samples"
+>
+  See more Python integration examples and use cases.
+</Card>
+
+<Card
+  title="API Reference"
+  icon="book"
+  href="/api-reference/introduction"
+>
+  Complete API documentation for custom integrations.
+</Card>
