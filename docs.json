@@ -101,17 +101,17 @@
       "anchors": [
         {
           "anchor": "Documentation",
-          "href": "/",
+          "href": "https://docs.hitl.sh",
           "icon": "book-open-cover"
         },
         {
           "anchor": "Community",
-          "href": "https://discord.gg/hitlsh",
+          "href": "https://discord.gg/jYVrpmnMP9",
           "icon": "slack"
         },
         {
           "anchor": "GitHub",
-          "href": "https://github.com/hitlsh",
+          "href": "https://github.com/hitl-sh",
           "icon": "github"
         }
       ]
