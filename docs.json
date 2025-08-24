@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "HITL.sh",
   "colors": {
-    "primary": "#6366F1",
-    "light": "#8B5CF6",
-    "dark": "#4F46E5"
+    "primary": "#2D3748",
+    "light": "#4A5568",
+    "dark": "#1A202C"
   },
   "favicon": "/favicon.svg",
   "navigation": {
