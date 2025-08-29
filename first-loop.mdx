@@ -1,321 +1,615 @@
 ---
 title: "Creating Your First Loop"
-description: "Step-by-step guide to set up your first human-in-the-loop workflow in HITL.sh"
+description: "Step-by-step guide to set up your first human-in-the-loop workflow with HITL.sh"
 ---
 
 # Creating Your First Loop
 
-A loop in HITL.sh is a human-in-the-loop workflow that routes requests to human reviewers when AI systems need human oversight. This guide will walk you through creating your first loop from start to finish.
+A loop in HITL.sh is a human-in-the-loop workflow that routes requests to human reviewers when AI systems need human oversight. This guide walks you through creating your first loop, adding reviewers, and processing your first request.
 
 ## What You'll Build
 
 In this tutorial, you'll create a **Content Moderation Loop** that:
-- Receives flagged content from your AI system
-- Routes it to human reviewers for approval
-- Returns the human decision to complete the workflow
+- Receives flagged content from your application
+- Automatically invites reviewers with QR codes and invite links
+- Routes requests to human reviewers via mobile notifications
+- Returns structured human decisions back to your system
 
-<Check>
-By the end of this guide, you'll have a fully functional loop that can process real requests.
-</Check>
+<Info>
+By the end of this guide, you'll have a fully functional loop with invite codes, QR codes, and the ability to process real requests.
+</Info>
 
 ## Prerequisites
 
 Before you begin, ensure you have:
 
-- ✅ A HITL.sh account with API access
+- ✅ A HITL.sh account (sign up at [app.hitl.sh](https://app.hitl.sh))
 - ✅ Your API key generated and ready
-- ✅ At least one reviewer added to your team
 - ✅ Basic understanding of REST APIs
+- ✅ Team members who will act as reviewers (with email addresses)
 
-<Card title="Set Up API Keys" icon="key" href="/api-keys">
-If you haven't generated your API key yet, complete this step first.
+<Card title="Generate API Key" icon="key" href="/api-keys">
+If you haven't created your API key yet, complete this step first.
 </Card>
 
 ## Step 1: Create the Loop
 
-### Using the Dashboard
-
-<Steps>
-<Step title="Navigate to Loops">
-From your dashboard, click "Loops" in the sidebar, then click "Create New Loop".
-</Step>
-
-<Step title="Configure Basic Settings">
-Fill in the loop details:
-- **Name**: Content Moderation
-- **Description**: Review flagged content for inappropriate material
-- **Priority**: Normal
-- **Response Time**: 2 hours
-</Step>
-
-<Step title="Set Review Requirements">
-Configure how many reviewers need to approve each request:
-- **Required Approvals**: 1
-- **Auto-approve after**: 4 hours (if no response)
-</Step>
-</Steps>
-
 ### Using the API
 
-Alternatively, create the loop programmatically:
+Create your loop using the HITL.sh API. When you create a loop, you automatically become a member and receive invitation codes for sharing:
 
-<RequestExample>
+<CodeGroup>
 ```bash cURL
 curl -X POST 'https://api.hitl.sh/v1/loops' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -H 'Content-Type: application/json' \
   -d '{
-    "name": "Content Moderation",
-    "description": "Review flagged content for inappropriate material",
-    "settings": {
-      "required_approvals": 1,
-      "auto_approve_after": 14400,
-      "priority": "normal"
-    }
+    "name": "Content Moderation Review",
+    "description": "Review user-generated content for community guidelines compliance",
+    "icon": "shield-check"
   }'
 ```
-</RequestExample>
 
-<ResponseExample>
-```json Success
+```python Python
+import requests
+
+url = "https://api.hitl.sh/v1/loops"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+data = {
+    "name": "Content Moderation Review",
+    "description": "Review user-generated content for community guidelines compliance", 
+    "icon": "shield-check"
+}
+
+response = requests.post(url, headers=headers, json=data)
+loop_data = response.json()
+
+print(f"✅ Loop created: {loop_data['data']['loop']['id']}")
+print(f"📱 Invite code: {loop_data['data']['invite_code']}")
+print(f"🔗 Join URL: {loop_data['data']['join_url']}")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.post('https://api.hitl.sh/v1/loops', {
+  name: 'Content Moderation Review',
+  description: 'Review user-generated content for community guidelines compliance',
+  icon: 'shield-check'
+}, {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  }
+});
+
+const { loop, invite_code, join_url, qr_code_url } = response.data.data;
+console.log('✅ Loop created:', loop.id);
+console.log('📱 Invite code:', invite_code);
+console.log('🔗 Join URL:', join_url);
+console.log('📱 QR code URL:', qr_code_url);
+```
+</CodeGroup>
+
+**Expected Response:**
+```json
 {
-  "id": "loop_abc123",
-  "name": "Content Moderation",
-  "description": "Review flagged content for inappropriate material",
-  "status": "active",
-  "settings": {
-    "required_approvals": 1,
-    "auto_approve_after": 14400,
-    "priority": "normal"
-  },
-  "created_at": "2024-01-15T10:30:00Z"
+  "error": false,
+  "msg": "Loop created successfully with QR code",
+  "data": {
+    "loop": {
+      "id": "65f1234567890abcdef12345",
+      "name": "Content Moderation Review",
+      "description": "Review user-generated content for community guidelines compliance",
+      "icon": "shield-check",
+      "creator_id": "65f1234567890abcdef12346",
+      "member_count": 1,
+      "pending_count": 0,
+      "created_at": "2024-03-15T10:30:00Z"
+    },
+    "invite_code": "ABC123DEF",
+    "qr_code_base64": "data:image/png;base64,iVBORw0KGg...",
+    "qr_code_url": "https://api.hitl.sh/qr/ABC123DEF.png", 
+    "join_url": "https://app.hitl.sh/join/ABC123DEF"
+  }
 }
 ```
-</ResponseExample>
+
+<Info>
+Save the `invite_code`, `join_url`, and `qr_code_url` from the response - you'll need these to invite reviewers to your loop.
+</Info>
 
 ## Step 2: Add Reviewers
 
-Your loop needs human reviewers to process requests. Add team members who will review content:
+Your loop needs human reviewers to process requests. Share the invitation information from Step 1 to add team members:
 
-<Steps>
-<Step title="Invite Reviewers">
-From the loop settings, click "Add Reviewers" and enter email addresses.
-</Step>
-
-<Step title="Set Skills">
-Assign content moderation expertise to reviewers:
-- **Primary Skills**: Content Moderation, Safety
-- **Secondary Skills**: Language, Cultural Context
-</Step>
-
-<Step title="Configure Availability">
-Set when reviewers are available to respond to requests.
-</Step>
-</Steps>
-
-<Info>
-Reviewers will receive email invitations and can join using the mobile app or web interface.
-</Info>
-
-## Step 3: Configure Request Fields
-
-Define what information reviewers need to make decisions:
-
-<AccordionGroup>
-<Accordion title="Required Fields">
-- **Content**: The flagged text, image, or video
-- **Flag Reason**: Why the AI flagged this content
-- **Confidence Score**: AI's confidence in the flag
-</Accordion>
-
-<Accordion title="Optional Fields">
-- **User Context**: Information about the content creator
-- **Previous Flags**: History of similar content
-- **Category**: Type of content (text, image, video)
-</Accordion>
-</AccordionGroup>
-
-## Step 4: Set Response Options
-
-Configure what decisions reviewers can make:
+### Invitation Methods
 
 <CardGroup cols={2}>
-<Card title="Approved" icon="check">
-Content passes moderation and can be published.
+<Card title="Share Invite Code" icon="hash">
+Give reviewers the **invite code** (e.g., `ABC123DEF`) to enter in the mobile app.
 </Card>
 
-<Card title="Rejected" icon="x">
-Content violates guidelines and should be removed.
+<Card title="Share Join URL" icon="link">
+Send the **join URL** via email or chat for one-click joining.
 </Card>
 
-<Card title="Needs Changes" icon="edit">
-Content requires modifications before approval.
+<Card title="Share QR Code" icon="qr-code">
+Display or share the **QR code image** for quick mobile scanning.
 </Card>
 
-<Card title="Escalate" icon="alert">
-Send to senior moderator for review.
+<Card title="Email Invitation" icon="envelope">
+Send invitation emails directly through your dashboard.
 </Card>
 </CardGroup>
 
-## Step 5: Test Your Loop
+### Mobile App Setup
 
-Before going live, test your loop with sample requests:
-
-<RequestExample>
-```bash cURL
-curl -X POST 'https://api.hitl.sh/v1/loops/loop_abc123/requests' \
-  -H 'Authorization: Bearer YOUR_API_KEY' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "content": "This is a test message for content moderation",
-    "flag_reason": "Potential inappropriate language",
-    "confidence_score": 0.75,
-    "category": "text"
-  }'
-```
-</RequestExample>
-
-<ResponseExample>
-```json Success
-{
-  "id": "req_xyz789",
-  "loop_id": "loop_abc123",
-  "status": "pending",
-  "content": "This is a test message for content moderation",
-  "created_at": "2024-01-15T10:35:00Z"
-}
-```
-</ResponseExample>
-
-## Step 6: Monitor and Respond
-
-Once your loop is active:
+Reviewers need the HITL.sh mobile app to receive notifications and respond to requests:
 
 <Steps>
-<Step title="Reviewer Notification">
-Reviewers receive push notifications and emails about new requests.
+<Step title="Download App">
+Reviewers download the HITL.sh mobile app from their app store.
 </Step>
 
-<Step title="Mobile Review">
-Reviewers can respond using the HITL.sh mobile app.
+<Step title="Join Loop">
+Using one of the invitation methods above (code, URL, or QR scan).
 </Step>
 
-<Step title="Decision Processing">
-Human decisions are automatically sent back to your system via webhooks.
+<Step title="Enable Notifications">
+Ensure push notifications are enabled for instant request alerts.
+</Step>
+
+<Step title="Test Connection">
+Reviewers should see the loop appear in their app and receive a welcome notification.
 </Step>
 </Steps>
 
-## Integration with Your System
+<Card title="Mobile App Guide" icon="mobile" href="/mobile/join-loop">
+Step-by-step guide for reviewers to join loops using the mobile app.
+</Card>
 
-### Webhook Configuration
+## Step 3: Create Your First Request
 
-Set up webhooks to receive human decisions:
+Now that your loop is set up with reviewers, create your first request to test the workflow:
 
-<RequestExample>
+### Request Structure
+
+Requests in HITL.sh consist of:
+
+<AccordionGroup>
+<Accordion title="Required Fields">
+- **processing_type**: `time-sensitive` or `deferred`
+- **type**: Content type (`markdown` or `image`)
+- **priority**: `low`, `medium`, `high`, or `critical`
+- **request_text**: The main content to review (1-2000 characters)
+- **response_type**: Expected response format
+- **response_config**: Configuration for the response type
+- **default_response**: Fallback response if timeout occurs
+- **platform**: Source platform creating the request
+</Accordion>
+
+<Accordion title="Optional Fields">
+- **image_url**: Required when type is `image`
+- **context**: Additional JSON data for context
+- **timeout_seconds**: Custom timeout (60-86400 seconds)
+- **callback_url**: Webhook URL for response notifications
+- **platform_version**: Version of the creating platform
+</Accordion>
+</AccordionGroup>
+
+### Response Type Options
+
+Configure what decisions reviewers can make:
+
+<CardGroup cols={3}>
+<Card title="Single Select" icon="circle-dot">
+Choose one option (Approve, Reject, Escalate)
+</Card>
+
+<Card title="Multi Select" icon="check-square">
+Select multiple issues or categories
+</Card>
+
+<Card title="Text" icon="message">
+Provide detailed written feedback
+</Card>
+
+<Card title="Rating" icon="star">
+Rate content on a numeric scale
+</Card>
+
+<Card title="Number" icon="hashtag">
+Enter specific numeric values
+</Card>
+
+<Card title="Boolean" icon="toggle-on">
+Simple yes/no or true/false decisions
+</Card>
+</CardGroup>
+
+## Step 4: Submit Your First Request
+
+Create a test request to verify your loop is working properly. Use the loop ID from Step 1:
+
+<CodeGroup>
 ```bash cURL
-curl -X POST 'https://api.hitl.sh/v1/webhooks' \
+curl -X POST 'https://api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -H 'Content-Type: application/json' \
   -d '{
-    "url": "https://your-app.com/webhooks/hitl",
-    "events": ["request.completed"],
-    "loop_id": "loop_abc123"
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please review this user comment: \"This post is amazing! Thanks for sharing.\"",
+    "context": {
+      "user_id": "user123", 
+      "post_id": "post456",
+      "automated_flags": ["potential_spam"]
+    },
+    "timeout_seconds": 3600,
+    "response_type": "single_select",
+    "response_config": {
+      "options": ["Approve", "Reject", "Needs Changes", "Escalate"]
+    },
+    "default_response": "Approve",
+    "platform": "api",
+    "callback_url": "https://your-app.com/webhook/response"
   }'
 ```
-</RequestExample>
 
-### Processing Responses
+```python Python
+import requests
 
-Handle webhook payloads in your application:
+url = f"https://api.hitl.sh/v1/loops/{LOOP_ID}/requests"
+headers = {
+    "Authorization": f"Bearer {YOUR_API_KEY}",
+    "Content-Type": "application/json"
+}
+data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown", 
+    "priority": "medium",
+    "request_text": "Please review this user comment for compliance.",
+    "context": {
+        "user_id": "user123",
+        "post_id": "post456"
+    },
+    "timeout_seconds": 3600,
+    "response_type": "single_select",
+    "response_config": {
+        "options": ["Approve", "Reject", "Needs Changes", "Escalate"]
+    },
+    "default_response": "Approve",
+    "platform": "api"
+}
+
+response = requests.post(url, headers=headers, json=data)
+request_data = response.json()
+
+print(f"✅ Request created: {request_data['data']['request_id']}")
+print(f"📱 Broadcasted to: {request_data['data']['broadcasted_to']} reviewers")
+print(f"🔔 Notifications sent: {request_data['data']['notifications_sent']}")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.post(
+  `https://api.hitl.sh/v1/loops/${loopId}/requests`,
+  {
+    processing_type: 'time-sensitive',
+    type: 'markdown',
+    priority: 'medium',
+    request_text: 'Please review this user comment for compliance.',
+    context: {
+      user_id: 'user123',
+      post_id: 'post456'
+    },
+    timeout_seconds: 3600,
+    response_type: 'single_select',
+    response_config: {
+      options: ['Approve', 'Reject', 'Needs Changes', 'Escalate']
+    },
+    default_response: 'Approve',
+    platform: 'api'
+  },
+  {
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    }
+  }
+);
+
+console.log('✅ Request created:', response.data.data.request_id);
+console.log('📱 Broadcasted to:', response.data.data.broadcasted_to, 'reviewers');
+```
+</CodeGroup>
+
+**Expected Response:**
+```json
+{
+  "error": false,
+  "msg": "Request created and broadcasted successfully",
+  "data": {
+    "request_id": "65f1234567890abcdef12348",
+    "status": "pending",
+    "processing_type": "time-sensitive",
+    "type": "markdown", 
+    "priority": "medium",
+    "timeout_at": "2024-03-15T11:30:00Z",
+    "broadcasted_to": 4,
+    "notifications_sent": 3,
+    "polling_url": "/v1/api/requests/65f1234567890abcdef12348"
+  }
+}
+```
+
+<Info>
+Your reviewers will immediately receive push notifications on their mobile devices about this new request!
+</Info>
+
+## Step 5: Monitor Request Progress
+
+Track your request and wait for reviewer responses:
+
+### Check Request Status
+
+Use the polling URL from the response to check status:
 
 ```python
-from flask import Flask, request
-import json
+import requests
+import time
 
-app = Flask(__name__)
+def wait_for_response(request_id, api_key, max_wait=300):
+    """Poll for request completion"""
+    url = f"https://api.hitl.sh/v1/api/requests/{request_id}"
+    headers = {"Authorization": f"Bearer {api_key}"}
+    
+    start_time = time.time()
+    while time.time() - start_time < max_wait:
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        
+        status = data['data']['status']
+        print(f"📊 Request status: {status}")
+        
+        if status == 'completed':
+            response_data = data['data']['response_data'] 
+            print(f"✅ Human decision: {response_data}")
+            return response_data
+        elif status == 'cancelled':
+            print("❌ Request was cancelled")
+            return None
+        elif status == 'timed_out':
+            print("⏰ Request timed out, using default response")
+            return data['data']['default_response']
+            
+        time.sleep(10)  # Wait 10 seconds before checking again
+    
+    print("⏰ Polling timeout reached")
+    return None
 
-@app.route('/webhooks/hitl', methods=['POST'])
+# Check your request
+response = wait_for_response("YOUR_REQUEST_ID", "YOUR_API_KEY")
+```
+
+### Request Lifecycle
+
+<Steps>
+<Step title="Created & Broadcasted">
+Request is created and push notifications sent to all active reviewers.
+</Step>
+
+<Step title="Pending Review">
+Waiting for a reviewer to claim and respond to the request.
+</Step>
+
+<Step title="Claimed">
+A reviewer has opened the request and is working on it.
+</Step>
+
+<Step title="Completed">
+Reviewer has submitted their response - human decision is ready!
+</Step>
+
+<Step title="Webhook Notification">
+If configured, your callback URL receives the response data.
+</Step>
+</Steps>
+
+## Receiving Human Decisions
+
+### Using Webhooks (Recommended)
+
+Set up webhooks for real-time notifications when requests complete:
+
+```python
+# Your webhook endpoint
+@app.route('/webhook/hitl', methods=['POST'])
 def handle_hitl_webhook():
     payload = request.json
     
-    if payload['event'] == 'request.completed':
+    if payload.get('event') == 'request.completed':
         request_id = payload['data']['request_id']
-        decision = payload['data']['decision']
+        response_data = payload['data']['response_data']
+        
+        print(f"📥 Received response for {request_id}: {response_data}")
         
         # Process the human decision
-        if decision == 'approved':
-            publish_content(request_id)
-        elif decision == 'rejected':
-            remove_content(request_id)
-        elif decision == 'needs_changes':
-            request_changes(request_id)
+        if response_data == 'Approve':
+            approve_content(request_id)
+        elif response_data == 'Reject':
+            reject_content(request_id) 
+        elif response_data == 'Escalate':
+            escalate_to_manager(request_id)
     
-    return {'status': 'success'}, 200
+    return {'status': 'received'}, 200
+```
+
+### Using Polling
+
+If webhooks aren't available, poll the request status periodically:
+
+```javascript
+async function pollForResponse(requestId) {
+    const maxAttempts = 30; // 5 minutes with 10s intervals
+    
+    for (let i = 0; i < maxAttempts; i++) {
+        try {
+            const response = await axios.get(
+                `https://api.hitl.sh/v1/api/requests/${requestId}`,
+                { headers: { 'Authorization': `Bearer ${apiKey}` }}
+            );
+            
+            const { status, response_data } = response.data.data;
+            
+            if (status === 'completed') {
+                console.log('✅ Human decision received:', response_data);
+                return response_data;
+            } else if (status === 'timed_out') {
+                console.log('⏰ Request timed out');
+                return null;
+            }
+            
+            // Wait 10 seconds before next poll
+            await new Promise(resolve => setTimeout(resolve, 10000));
+            
+        } catch (error) {
+            console.error('Error polling request:', error);
+            break;
+        }
+    }
+    
+    console.log('⏰ Polling timeout reached');
+    return null;
+}
 ```
 
 ## Best Practices
 
 <CardGroup cols={2}>
-<Card title="Clear Guidelines" icon="book">
-Provide reviewers with clear criteria for making decisions.
+<Card title="Clear Request Context" icon="message-circle">
+Provide sufficient context in `request_text` and `context` fields for informed decisions.
 </Card>
 
-<Card title="Regular Training" icon="graduation-cap">
-Keep reviewers updated on policy changes and edge cases.
+<Card title="Appropriate Timeouts" icon="clock">
+Set realistic `timeout_seconds` based on request complexity and reviewer availability.
 </Card>
 
-<Card title="Performance Monitoring" icon="chart">
-Track response times and decision consistency.
+<Card title="Meaningful Default Responses" icon="shield">
+Choose safe default responses that represent the best fallback decision.
 </Card>
 
-<Card title="Feedback Loop" icon="refresh">
-Use reviewer feedback to improve AI flagging accuracy.
+<Card title="Response Type Selection" icon="target">
+Match response types to your use case - single select for decisions, text for feedback.
 </Card>
 </CardGroup>
+
+### Request Optimization
+
+<AccordionGroup>
+<Accordion title="Priority Levels">
+- **Critical**: Security issues, policy violations (< 15 min response)
+- **High**: Time-sensitive content decisions (< 1 hour)  
+- **Medium**: Standard content review (< 4 hours)
+- **Low**: Quality improvements, feedback (< 24 hours)
+</Accordion>
+
+<Accordion title="Context Information">
+Include relevant context to help reviewers make informed decisions:
+- User information and history
+- Automated system flags and confidence scores
+- Related content or previous decisions
+- Business context and implications
+</Accordion>
+
+<Accordion title="Response Configuration">
+Design response options that are:
+- **Mutually exclusive** for single select
+- **Comprehensive** covering all possible decisions
+- **Clear and actionable** with no ambiguity
+- **Consistent** with your business logic
+</Accordion>
+</AccordionGroup>
 
 ## Troubleshooting
 
 <AccordionGroup>
-<Accordion title="Reviewers Not Responding">
-- Check notification settings
-- Verify email addresses are correct
-- Ensure reviewers have accepted invitations
-- Consider adjusting response time expectations
+<Accordion title="No Notifications Sent">
+**Symptoms:** `notifications_sent: 0` in response
+
+**Solutions:**
+- Verify reviewers have joined the loop successfully
+- Check if reviewers have push notifications enabled
+- Ensure reviewers are active (not in do-not-disturb mode)
+- Confirm the mobile app is installed and logged in
 </Accordion>
 
-<Accordion title="Webhook Not Receiving Data">
-- Verify webhook URL is accessible
-- Check authentication headers
-- Review webhook configuration
-- Monitor webhook delivery logs
+<Accordion title="Request Not Appearing for Reviewers">
+**Symptoms:** Request created but reviewers don't see it
+
+**Solutions:**
+- Check if `broadcasted_to` count matches expected reviewers
+- Verify reviewers are members of the correct loop
+- Ensure loop ID in the request URL is correct
+- Check if reviewers are filtering requests by priority
 </Accordion>
 
-<Accordion title="Loop Performance Issues">
-- Review response time settings
-- Check reviewer availability
-- Monitor queue size and processing
-- Consider adding more reviewers
+<Accordion title="Polling Not Working">
+**Symptoms:** Request status always shows "pending"
+
+**Solutions:**
+- Verify the request ID is correct
+- Check API key permissions for request access
+- Ensure you're polling the correct endpoint
+- Wait for reviewers to actually respond to the request
+</Accordion>
+
+<Accordion title="Webhook Not Triggered">
+**Symptoms:** No webhook calls when request completes
+
+**Solutions:**
+- Verify `callback_url` is publicly accessible
+- Check webhook endpoint returns 200 status
+- Ensure webhook URL uses HTTPS
+- Test with webhook debugging tools like ngrok
 </Accordion>
 </AccordionGroup>
 
 ## Next Steps
 
-Congratulations! You've created your first loop. Now explore:
+🎉 **Congratulations!** You've successfully created your first loop and processed a request. Here's what to explore next:
 
 <CardGroup cols={2}>
-<Card title="Advanced Loop Features" icon="settings">
-Configure escalations, routing rules, and advanced settings.
+<Card title="Response Types Guide" icon="layers" href="/responses/types">
+Learn about all available response types and their configurations.
 </Card>
 
-<Card title="Mobile App Setup" icon="smartphone" href="/mobile/home-screen">
-Get your team set up with the mobile app for on-the-go reviews.
+<Card title="Mobile App Guide" icon="mobile" href="/mobile/home-screen">
+Help your reviewers master the mobile app interface.
 </Card>
 
-<Card title="Analytics Dashboard" icon="chart">
-Monitor loop performance and optimize your workflows.
+<Card title="Webhook Setup" icon="webhook" href="/webhooks/global">
+Configure webhooks for real-time response notifications.
 </Card>
 
-<Card title="Additional Integrations" icon="link" href="/integrations/n8n">
-Connect HITL.sh with your existing tools and platforms.
+<Card title="API Reference" icon="book" href="/api-reference/loops/create-loop">
+Explore all available API endpoints and advanced features.
 </Card>
 </CardGroup>
+
+### Production Checklist
+
+Before deploying to production:
+
+- ✅ **Test with multiple reviewers** to ensure proper load distribution
+- ✅ **Configure webhooks** for automated response processing  
+- ✅ **Set up monitoring** for request volume and response times
+- ✅ **Train reviewers** on your specific guidelines and criteria
+- ✅ **Test timeout scenarios** to validate default response handling
+- ✅ **Implement retry logic** for API calls and webhook handling
