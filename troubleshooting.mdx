@@ -1,0 +1,1080 @@
+---
+title: "Troubleshooting & FAQ"
+description: "Common issues, solutions, and frequently asked questions for HITL.sh API integration. Get answers to technical problems and implementation questions."
+---
+
+Find solutions to common problems and answers to frequently asked questions about integrating with HITL.sh. This guide covers API issues, authentication problems, webhook troubleshooting, and mobile app concerns.
+
+## API Authentication Issues
+
+### 401 Unauthorized Errors
+
+<AccordionGroup>
+<Accordion title="Invalid API Key">
+**Error**: `{"error": true, "msg": "Invalid API key"}`
+
+**Common Causes**:
+- API key is incorrect or mistyped
+- API key has been regenerated or revoked
+- Using the wrong environment (dev vs. prod) API key
+
+**Solutions**:
+```bash
+# Test your API key
+curl -X GET https://api.hitl.sh/v1/loops \
+  -H "Authorization: Bearer your_api_key_here" \
+  -v
+
+# Check response for detailed error information
+```
+
+1. Verify API key in your dashboard
+2. Generate a new API key if needed
+3. Ensure no extra spaces or characters
+4. Check environment variables are loaded correctly
+</Accordion>
+
+<Accordion title="Wrong Header Format">
+**Error**: `{"error": true, "msg": "Missing or invalid authorization header"}`
+
+**Common Mistakes**:
+- Using `X-API-Key` instead of `Authorization: Bearer`
+- Missing the header entirely
+- Incorrect header name capitalization
+- Missing "Bearer " prefix
+
+**Correct Format**:
+```python
+headers = {
+    "Authorization": "Bearer your_api_key_here",  # Correct
+    "Content-Type": "application/json"
+}
+
+# Wrong formats:
+# "Authorization": "Bearer your_api_key_here"             # Wrong header name
+# "authorization": "Bearer your_api_key_here"  # Wrong case
+# "Authorization": "your_api_key_here"         # Missing Bearer prefix
+```
+</Accordion>
+
+<Accordion title="API Key Permissions">
+**Error**: `{"error": true, "msg": "Access denied to this resource"}`
+
+**Cause**: API key doesn't have access to the requested resource (loops, requests created by other users)
+
+**Solution**: 
+- Verify you're accessing resources created by your account
+- Check if API key has been restricted to specific operations
+- Ensure you're using the correct API key for the environment
+</Accordion>
+</AccordionGroup>
+
+### Rate Limiting
+
+<AccordionGroup>
+<Accordion title="429 Too Many Requests">
+**Error**: `{"error": true, "msg": "API rate limit exceeded", "usage_count": 100, "usage_limit": 100, "remaining": 0}`
+
+**Current Limits**:
+- Free tier: 100 requests per hour
+- Pro tier: 1,000 requests per hour  
+- Enterprise: Custom limits
+
+**Solutions**:
+```python
+import time
+import random
+from requests.exceptions import HTTPError
+
+def api_call_with_backoff(func, max_retries=3):
+    """Make API call with exponential backoff for rate limiting"""
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except HTTPError as e:
+            if e.response.status_code == 429:
+                # Extract retry-after header if available
+                retry_after = e.response.headers.get('Retry-After', '60')
+                wait_time = int(retry_after) + random.uniform(1, 5)
+                
+                print(f"Rate limited. Waiting {wait_time:.1f} seconds...")
+                time.sleep(wait_time)
+                continue
+            raise
+    raise Exception("Max retries exceeded")
+
+# Usage
+def make_request():
+    return requests.post(url, headers=headers, json=data)
+
+result = api_call_with_backoff(make_request)
+```
+
+**Best Practices**:
+1. Cache loop IDs and reuse them
+2. Batch operations when possible
+3. Use webhooks instead of frequent polling
+4. Implement exponential backoff
+5. Monitor your usage in the dashboard
+</Accordion>
+</AccordionGroup>
+
+## Request Creation Issues
+
+### Invalid Request Parameters
+
+<AccordionGroup>
+<Accordion title="Missing Required Fields">
+**Error**: `{"error": true, "msg": "Missing required field: loop_id"}`
+
+**Common Missing Fields**:
+- `loop_id`: The loop to send the request to
+- `request_text`: The content to be reviewed  
+- `response_type`: How reviewers should respond
+
+**Complete Example**:
+```python
+# Minimum required fields
+request_data = {
+    "loop_id": "65f1234567890abcdef12345",  # Required
+    "request_text": "Please review this content...",  # Required
+    "response_type": "single_select",  # Required
+    "response_config": {  # Required for most response types
+        "options": ["Approve", "Reject"]
+    }
+}
+```
+</Accordion>
+
+<Accordion title="Invalid Response Type Configuration">
+**Error**: `{"error": true, "msg": "Invalid response_config for response_type 'single_select'"}`
+
+**Common Issues**:
+- Missing `options` array for single_select/multi_select
+- Invalid rating range (min > max)
+- Empty or too many options
+- Missing required configuration fields
+
+**Correct Configurations**:
+```python
+# Single Select
+{
+    "response_type": "single_select",
+    "response_config": {
+        "options": ["Option 1", "Option 2", "Option 3"]  # 2-10 options
+    }
+}
+
+# Rating
+{
+    "response_type": "rating", 
+    "response_config": {
+        "min_value": 1,  # Must be less than max_value
+        "max_value": 5,  # Must be greater than min_value
+        "labels": {"1": "Poor", "5": "Excellent"}  # Optional
+    }
+}
+
+# Text
+{
+    "response_type": "text",
+    "response_config": {
+        "max_length": 1000,  # Optional, default 1000
+        "placeholder": "Enter feedback..."  # Optional
+    }
+}
+```
+</Accordion>
+
+<Accordion title="Loop Not Found">
+**Error**: `{"error": true, "msg": "Loop not found"}`
+
+**Common Causes**:
+- Incorrect loop ID (check for typos)
+- Loop was deleted
+- Loop belongs to different account
+- Using loop ID from different environment
+
+**Debug Steps**:
+```python
+# Verify loop exists and get correct ID
+response = requests.get(
+    "https://api.hitl.sh/v1/loops",
+    headers={"Authorization": "Bearer your_api_key_here"}
+)
+
+loops = response.json()["data"]["loops"]
+for loop in loops:
+    print(f"Loop: {loop['name']} - ID: {loop['id']}")
+```
+</Accordion>
+
+<Accordion title="Request Text Too Long">
+**Error**: `{"error": true, "msg": "Request text exceeds maximum length"}`
+
+**Limits**:
+- Maximum request text: 10,000 characters
+- Includes any formatted text and line breaks
+
+**Solution**:
+```python
+def create_request_with_length_check(request_text, **kwargs):
+    MAX_LENGTH = 10000
+    
+    if len(request_text) > MAX_LENGTH:
+        # Truncate and add notice
+        truncated_text = request_text[:MAX_LENGTH-100]  # Leave room for notice
+        request_text = f"{truncated_text}... [Content truncated due to length]"
+    
+    return create_request(request_text=request_text, **kwargs)
+```
+</Accordion>
+</AccordionGroup>
+
+## Loop Management Issues
+
+### Loop Creation Problems
+
+<AccordionGroup>
+<Accordion title="Invalid Loop Names">
+**Error**: `{"error": true, "msg": "Loop name must be between 1 and 100 characters"}`
+
+**Requirements**:
+- Length: 1-100 characters
+- Can contain letters, numbers, spaces, and basic punctuation
+- Must be unique within your account
+
+**Examples**:
+```python
+# Good loop names
+"Content Moderation Team"
+"AI Safety Review - Internal"
+"Customer Support Escalation Q3"
+
+# Invalid names
+""  # Too short
+"A" * 101  # Too long
+"Loop-Name-With-Too@Many#Special$Characters%"  # Invalid characters
+```
+</Accordion>
+
+<Accordion title="Loop Permissions">
+**Error**: `{"error": true, "msg": "Access denied to this loop"}`
+
+**Cause**: Trying to access a loop you didn't create
+
+**Solution**: Only loop creators can:
+- Update loop settings
+- View member details
+- Delete loops
+- Create requests in loops (unless member)
+
+Members can only:
+- View basic loop information
+- Respond to requests
+- Leave the loop
+</Accordion>
+</AccordionGroup>
+
+### Member Management Issues
+
+<AccordionGroup>
+<Accordion title="No Active Reviewers">
+**Issue**: Requests stay "pending" indefinitely
+
+**Causes**:
+- No one has joined the loop yet
+- All members have disabled notifications
+- Members are inactive or unavailable
+- Loop invite code expired or invalid
+
+**Solutions**:
+1. **Verify members joined**:
+```python
+response = requests.get(f"{BASE_URL}/loops/{loop_id}/members", headers=headers)
+members = response.json()["data"]
+print(f"Active members: {members['active_count']}")
+print(f"Pending invitations: {members['pending_count']}")
+```
+
+2. **Share working invite**:
+```python
+response = requests.get(f"{BASE_URL}/loops/{loop_id}", headers=headers)
+loop = response.json()["data"]["loop"]
+print(f"Invite code: {loop['invite_code']}")
+print(f"QR code: {loop['qr_code_url']}")
+```
+
+3. **Test by joining yourself**: Download the mobile app and join with the invite code to test the process
+</Accordion>
+
+<Accordion title="Members Can't Join Loop">
+**Common Issues**:
+- Invalid invite code format
+- Loop at maximum capacity
+- Members using wrong mobile app
+- Regional restrictions
+
+**Troubleshooting**:
+1. Verify invite code is exactly 6 characters
+2. Check loop capacity isn't exceeded
+3. Ensure members download official HITL app
+4. Try creating a new loop for testing
+</Accordion>
+</AccordionGroup>
+
+## Webhook Issues
+
+### Webhook Not Receiving Events
+
+<AccordionGroup>
+<Accordion title="Webhook URL Not Accessible">
+**Common Issues**:
+- URL not publicly accessible (localhost, internal network)
+- HTTPS required (HTTP not supported)
+- Firewall blocking incoming requests
+- Invalid SSL certificate
+
+**Testing Your Webhook URL**:
+```bash
+# Test if your webhook URL is accessible
+curl -X POST https://your-domain.com/webhook/hitl \
+  -H "Content-Type: application/json" \
+  -d '{"test": "webhook accessibility"}'
+
+# Should return 200 OK or your custom response
+```
+
+**Development Solutions**:
+```bash
+# Use ngrok for local development
+npm install -g ngrok
+ngrok http 3000
+
+# Use the https URL provided by ngrok
+# https://abc123.ngrok.io/webhook/hitl
+```
+</Accordion>
+
+<Accordion title="Webhook Signature Verification Failing">
+**Error**: Webhook receives requests but signature verification fails
+
+**Common Issues**:
+- Using wrong webhook secret
+- Signature calculation incorrect
+- Raw payload not used for signature verification
+- Wrong header name
+
+**Correct Implementation**:
+```python
+import hmac
+import hashlib
+
+def verify_webhook_signature(payload, signature, secret):
+    """Verify HITL webhook signature"""
+    
+    # Remove sha256= prefix if present
+    if signature.startswith('sha256='):
+        signature = signature[7:]
+    
+    # Calculate expected signature using raw payload
+    expected_signature = hmac.new(
+        secret.encode('utf-8'),
+        payload.encode('utf-8') if isinstance(payload, str) else payload,
+        hashlib.sha256
+    ).hexdigest()
+    
+    # Use secure comparison
+    return hmac.compare_digest(expected_signature, signature)
+
+# Flask example
+@app.route('/webhook/hitl', methods=['POST'])
+def handle_webhook():
+    # Get raw payload - don't parse JSON first!
+    payload = request.get_data(as_text=True)
+    signature = request.headers.get('X-HITL-Signature-256')
+    
+    if not verify_webhook_signature(payload, signature, WEBHOOK_SECRET):
+        return {'error': 'Invalid signature'}, 401
+    
+    # Now parse the JSON
+    data = json.loads(payload)
+    # ... process webhook
+```
+</Accordion>
+
+<Accordion title="Webhook Timeouts">
+**Error**: HITL stops sending webhooks after timeouts
+
+**Causes**:
+- Webhook endpoint taking too long to respond (>30 seconds)
+- Webhook endpoint returning error status codes
+- Network connectivity issues
+
+**Solutions**:
+```python
+# Return 200 immediately, process asynchronously
+from flask import Flask, request
+import threading
+
+app = Flask(__name__)
+
+@app.route('/webhook/hitl', methods=['POST'])
+def handle_webhook_quickly():
+    # Verify signature first
+    if not verify_signature(request.get_data(), request.headers.get('X-HITL-Signature-256')):
+        return {'error': 'Invalid signature'}, 401
+    
+    # Return success immediately
+    webhook_data = request.json
+    
+    # Process in background thread
+    threading.Thread(target=process_webhook_async, args=(webhook_data,)).start()
+    
+    return {'status': 'received'}, 200
+
+def process_webhook_async(data):
+    # Long-running processing here
+    # Database updates, external API calls, etc.
+    pass
+```
+
+**Best Practices**:
+- Respond within 10 seconds (ideally < 5 seconds)
+- Always return HTTP 200 for successful processing
+- Use background processing for long operations
+- Implement idempotency for duplicate webhook deliveries
+</Accordion>
+</AccordionGroup>
+
+### Webhook Configuration Issues
+
+<AccordionGroup>
+<Accordion title="Missing Webhook Events">
+**Issue**: Only receiving some event types
+
+**Check Configuration**:
+```python
+# Verify webhook is configured for all needed events
+webhook_config = {
+    "url": "https://your-domain.com/webhook/hitl",
+    "events": [
+        "request.completed",  # When requests are completed
+        "request.claimed",    # When requests are claimed  
+        "request.cancelled",  # When requests are cancelled
+        "request.timeout",    # When requests time out
+        "loop.member_joined", # When new members join
+        # Add all events you need
+    ],
+    "secret": "your_webhook_secret"
+}
+```
+
+**Event Types Available**:
+- `request.completed` - Request finished with response
+- `request.claimed` - Request claimed by reviewer  
+- `request.cancelled` - Request cancelled by creator
+- `request.timeout` - Request expired without response
+- `loop.member_joined` - New member joined loop
+- `loop.member_left` - Member left loop
+- `loop.updated` - Loop settings changed
+</Accordion>
+
+<Accordion title="Webhook Payload Format Issues">
+**Issue**: Unexpected or missing data in webhook payloads
+
+**Standard Webhook Format**:
+```json
+{
+  "event": "request.completed",
+  "timestamp": "2024-03-15T14:30:00Z",
+  "data": {
+    "request": {
+      "id": "65f1234567890abcdef12348",
+      "loop_id": "65f1234567890abcdef12345", 
+      "status": "completed",
+      "response_data": "Approve",
+      "response_by": "65f1234567890abcdef12350",
+      "response_at": "2024-03-15T14:30:00Z"
+      // ... other request fields
+    },
+    "loop": {
+      "id": "65f1234567890abcdef12345",
+      "name": "Content Moderation Team"
+    },
+    "reviewer": {
+      "user_id": "65f1234567890abcdef12350",
+      "email": "reviewer@example.com"
+    }
+  }
+}
+```
+
+**Processing Different Event Types**:
+```python
+def process_webhook(event_data):
+    event_type = event_data['event']
+    data = event_data['data']
+    
+    if event_type == 'request.completed':
+        request = data['request']
+        reviewer = data['reviewer']
+        # Process completed request
+        handle_completed_request(request, reviewer)
+        
+    elif event_type == 'request.claimed':
+        request = data['request'] 
+        reviewer = data['reviewer']
+        # Handle request claimed
+        handle_claimed_request(request, reviewer)
+        
+    elif event_type == 'loop.member_joined':
+        loop = data['loop']
+        member = data['member']
+        # Handle new member
+        handle_new_member(loop, member)
+```
+</Accordion>
+</AccordionGroup>
+
+## Mobile App Issues
+
+### App Installation and Setup
+
+<AccordionGroup>
+<Accordion title="Can't Find HITL App in App Store">
+**Solutions**:
+1. Search for "HITL" or "Human in the Loop"  
+2. Check if your device meets minimum requirements:
+   - iOS: 14.0 or later
+   - Android: 8.0 (API level 26) or later
+3. Try different app store regions if traveling
+4. Use direct download links from HITL website
+</Accordion>
+
+<Accordion title="App Won't Install">
+**Common Issues**:
+- Insufficient storage space
+- Outdated operating system
+- Corporate device restrictions
+- Network connectivity problems
+
+**Solutions**:
+- Free up device storage (need ~100MB)
+- Update to latest iOS/Android version
+- Check with IT department for corporate devices
+- Try installing on different network (WiFi vs cellular)
+</Accordion>
+</AccordionGroup>
+
+### Loop Joining Issues
+
+<AccordionGroup>
+<Accordion title="QR Code Won't Scan">
+**Troubleshooting**:
+1. Ensure QR code is displayed clearly and fully visible
+2. Try scanning in better lighting conditions
+3. Clean camera lens
+4. Hold phone steady at appropriate distance
+5. Try manual invite code entry instead
+
+**Alternative Methods**:
+```python
+# Get invite code for manual entry
+response = requests.get(f"{BASE_URL}/loops/{loop_id}", headers=headers)
+loop = response.json()["data"]["loop"]
+print(f"Manual invite code: {loop['invite_code']}")
+```
+</Accordion>
+
+<Accordion title="Invalid Invite Code Error">
+**Common Causes**:
+- Typo in invite code (codes are case-sensitive)
+- Loop was deleted
+- Invite code expired
+- Loop at capacity
+
+**Verification**:
+```python
+# Check if loop still exists and get fresh invite code
+def verify_loop_invite(loop_id):
+    try:
+        response = requests.get(f"{BASE_URL}/loops/{loop_id}", headers=headers)
+        if response.status_code == 200:
+            loop = response.json()["data"]["loop"]
+            return {
+                "exists": True,
+                "invite_code": loop["invite_code"], 
+                "member_count": loop["member_count"],
+                "name": loop["name"]
+            }
+    except:
+        return {"exists": False}
+```
+</Accordion>
+</AccordionGroup>
+
+### Notification Issues
+
+<AccordionGroup>
+<Accordion title="Not Receiving Push Notifications">
+**Check List**:
+1. **Phone Settings**: Settings > Notifications > HITL > Allow Notifications
+2. **App Settings**: HITL app > Settings > Notifications > Enable all relevant types
+3. **Do Not Disturb**: Ensure DND isn't blocking notifications
+4. **Battery Optimization**: Disable battery optimization for HITL app (Android)
+5. **Background App Refresh**: Enable for HITL app (iOS)
+
+**Testing Notifications**:
+- Create a test request in your loop
+- Check if you receive the notification within 1-2 minutes
+- Try with different priority levels (high priority should be immediate)
+</Accordion>
+
+<Accordion title="Too Many/Too Few Notifications">
+**Customization Options**:
+1. Open HITL app > Settings > Notifications
+2. Configure per notification type:
+   - New Requests: All loops or specific loops only
+   - Priority Alerts: High/Critical only
+   - Loop Updates: Disable if too noisy
+   - Quiet Hours: Set times for no notifications
+3. Set notification sounds and vibration patterns
+4. Configure badge count display
+</Accordion>
+</AccordionGroup>
+
+## Performance Issues
+
+### Slow API Response Times
+
+<AccordionGroup>
+<Accordion title="Request Taking Too Long">
+**Typical Response Times**:
+- Simple requests (get loop, get request): < 500ms
+- Request creation: < 1000ms  
+- Complex operations: < 3000ms
+
+**Optimization Strategies**:
+```python
+# Use connection pooling
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+session = requests.Session()
+
+# Configure retries and connection pooling
+retry_strategy = Retry(
+    total=3,
+    status_forcelist=[429, 500, 502, 503, 504],
+    backoff_factor=1
+)
+
+adapter = HTTPAdapter(
+    pool_connections=10,
+    pool_maxsize=20,
+    max_retries=retry_strategy
+)
+
+session.mount("http://", adapter)
+session.mount("https://", adapter)
+
+# Use session for all requests
+response = session.get(url, headers=headers)
+```
+
+**Caching Strategies**:
+```python
+# Cache loop IDs to avoid repeated lookups
+import functools
+import time
+
+@functools.lru_cache(maxsize=100)
+def get_loop_id_by_name(loop_name):
+    """Cache loop ID lookups"""
+    response = requests.get(f"{BASE_URL}/loops", headers=headers)
+    loops = response.json()["data"]["loops"]
+    
+    for loop in loops:
+        if loop["name"] == loop_name:
+            return loop["id"]
+    return None
+
+# Cache expires after 1 hour
+@functools.lru_cache(maxsize=100)
+def get_cached_loop_details(loop_id, cache_time=3600):
+    """Cache loop details with TTL"""
+    current_time = int(time.time())
+    cache_key = f"{loop_id}_{current_time // cache_time}"  # TTL buckets
+    
+    response = requests.get(f"{BASE_URL}/loops/{loop_id}", headers=headers)
+    return response.json()["data"]["loop"]
+```
+</Accordion>
+
+<Accordion title="High Request Latency">
+**Network Optimization**:
+```python
+# Use appropriate timeouts
+import requests
+
+# Configure reasonable timeouts
+response = requests.post(
+    url,
+    json=data,
+    headers=headers,
+    timeout=(5, 30)  # (connection_timeout, read_timeout)
+)
+
+# Implement request compression
+headers = {
+    "Authorization": "Bearer your_api_key",
+    "Content-Type": "application/json",
+    "Accept-Encoding": "gzip, deflate"
+}
+
+# Use async requests for parallel operations
+import aiohttp
+import asyncio
+
+async def create_multiple_requests(request_data_list):
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for data in request_data_list:
+            task = session.post(
+                f"{BASE_URL}/requests",
+                json=data,
+                headers=headers
+            )
+            tasks.append(task)
+        
+        responses = await asyncio.gather(*tasks)
+        return [await resp.json() for resp in responses]
+```
+</Accordion>
+</AccordionGroup>
+
+## Data and Response Issues
+
+### Request Status Problems
+
+<AccordionGroup>
+<Accordion title="Requests Stuck in Pending">
+**Common Causes**:
+- No active reviewers in loop
+- All reviewers have notifications disabled
+- Request priority too low
+- Request content unclear or problematic
+
+**Debugging Steps**:
+```python
+def diagnose_pending_request(request_id):
+    # Get request details
+    req_response = requests.get(f"{BASE_URL}/requests/{request_id}", headers=headers)
+    request = req_response.json()["data"]["request"]
+    
+    # Get loop member status  
+    loop_response = requests.get(f"{BASE_URL}/loops/{request['loop_id']}/members", headers=headers)
+    members = loop_response.json()["data"]
+    
+    diagnosis = {
+        "request_age_minutes": calculate_age(request["created_at"]),
+        "priority": request["priority"],
+        "active_reviewers": members["active_count"],
+        "timeout_minutes": request.get("timeout_minutes", 60)
+    }
+    
+    # Provide recommendations
+    if members["active_count"] == 0:
+        diagnosis["issue"] = "No active reviewers in loop"
+        diagnosis["solution"] = "Invite reviewers or check existing members' status"
+    elif diagnosis["request_age_minutes"] > diagnosis["timeout_minutes"]:
+        diagnosis["issue"] = "Request has timed out"
+        diagnosis["solution"] = "Check for timeout response or create new request"
+    
+    return diagnosis
+```
+</Accordion>
+
+<Accordion title="Unexpected Response Data Format">
+**Issue**: Response data doesn't match expected format
+
+**Common Cases**:
+```python
+def handle_response_data_safely(request_data):
+    """Safely handle different response data formats"""
+    response_type = request_data["response_type"]
+    response_data = request_data["response_data"]
+    
+    if response_type == "single_select":
+        # Should be string
+        assert isinstance(response_data, str)
+        return response_data
+    
+    elif response_type == "multi_select":  
+        # Should be array of strings
+        assert isinstance(response_data, list)
+        return [str(item) for item in response_data]
+    
+    elif response_type == "rating":
+        # Should be number
+        assert isinstance(response_data, (int, float))
+        return float(response_data)
+    
+    elif response_type == "text":
+        # Should be string
+        assert isinstance(response_data, str)
+        return response_data.strip()
+    
+    elif response_type == "boolean":
+        # Should be boolean
+        assert isinstance(response_data, bool)
+        return response_data
+        
+    elif response_type == "number":
+        # Should be number
+        assert isinstance(response_data, (int, float))
+        return response_data
+    
+    else:
+        raise ValueError(f"Unknown response type: {response_type}")
+```
+</Accordion>
+</AccordionGroup>
+
+## SDK Specific Issues
+
+### Python SDK Issues
+
+<AccordionGroup>
+<Accordion title="Import Errors">
+**Error**: `ModuleNotFoundError: No module named 'hitl'`
+
+**Solutions**:
+```bash
+# Install the SDK
+pip install hitl-python
+
+# Or if using conda
+conda install -c conda-forge hitl-python
+
+# Verify installation
+python -c "import hitl; print(hitl.__version__)"
+```
+
+**Virtual Environment Issues**:
+```bash
+# Make sure you're in the right virtual environment
+which python
+which pip
+
+# Install in correct environment  
+pip install hitl-python
+
+# Or create new environment
+python -m venv hitl_env
+source hitl_env/bin/activate  # On Windows: hitl_env\Scripts\activate
+pip install hitl-python
+```
+</Accordion>
+
+<Accordion title="SSL Certificate Errors">
+**Error**: `SSLError: certificate verify failed`
+
+**Solutions**:
+```python
+# For development only - don't use in production
+import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+import ssl
+
+# Disable SSL warnings (development only)
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Create custom session with SSL settings
+session = requests.Session()
+session.verify = True  # Keep True for production
+
+# Or specify certificate bundle location
+session.verify = '/path/to/certificate/bundle.pem'
+
+# Use with HITL client
+from hitl import HITLClient
+client = HITLClient(api_key="your_key", session=session)
+```
+</Accordion>
+</AccordionGroup>
+
+### Node.js SDK Issues
+
+<AccordionGroup>
+<Accordion title="Module Resolution Errors">
+**Error**: `Cannot find module 'hitl-js'`
+
+**Solutions**:
+```bash
+# Install SDK
+npm install hitl-js
+
+# Or with yarn
+yarn add hitl-js
+
+# Check installation
+npm list hitl-js
+
+# Clear npm cache if needed
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**ES6 Import Issues**:
+```javascript
+// ES6 modules (newer Node.js or with "type": "module" in package.json)
+import { HITLClient } from 'hitl-js';
+
+// CommonJS (older Node.js)
+const { HITLClient } = require('hitl-js');
+
+// TypeScript
+import { HITLClient, Loop, Request } from 'hitl-js';
+```
+</Accordion>
+
+<Accordion title="Async/Await Issues">
+**Error**: `SyntaxError: Unexpected token 'await'`
+
+**Solutions**:
+```javascript
+// Make sure function is async
+async function main() {
+  const client = new HITLClient({ apiKey: 'your_key' });
+  
+  try {
+    const loops = await client.loops.list();
+    console.log(loops);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Or use promises
+function mainPromises() {
+  const client = new HITLClient({ apiKey: 'your_key' });
+  
+  client.loops.list()
+    .then(loops => console.log(loops))
+    .catch(error => console.error('Error:', error));
+}
+
+// Top-level await (Node.js 14+)
+const loops = await client.loops.list();
+```
+</Accordion>
+</AccordionGroup>
+
+## Getting Additional Help
+
+### Debug Information to Collect
+
+When reporting issues, include:
+
+```python
+import sys
+import requests
+import json
+from datetime import datetime
+
+def collect_debug_info():
+    """Collect information for support requests"""
+    debug_info = {
+        "timestamp": datetime.now().isoformat(),
+        "python_version": sys.version,
+        "requests_version": requests.__version__,
+        "platform": sys.platform,
+    }
+    
+    # Test basic connectivity
+    try:
+        response = requests.get("https://api.hitl.sh/v1/health", timeout=10)
+        debug_info["api_status"] = response.status_code
+        debug_info["api_response_time_ms"] = response.elapsed.total_seconds() * 1000
+    except Exception as e:
+        debug_info["api_connection_error"] = str(e)
+    
+    # Test authentication (don't include actual API key in debug info)
+    try:
+        response = requests.get(
+            "https://api.hitl.sh/v1/loops",
+            headers={"Authorization": "Bearer your_api_key_here"},
+            timeout=10
+        )
+        debug_info["auth_status"] = response.status_code
+        if response.status_code != 200:
+            debug_info["auth_error"] = response.text
+    except Exception as e:
+        debug_info["auth_connection_error"] = str(e)
+    
+    return debug_info
+
+# Run and include output in support requests
+print(json.dumps(collect_debug_info(), indent=2))
+```
+
+### Support Channels
+
+<CardGroup cols={2}>
+<Card title="Email Support" icon="envelope">
+**support@hitl.sh**
+<br />
+Technical issues, account problems, billing questions
+<br />
+*Response time: Within 24 hours*
+</Card>
+
+<Card title="Developer Discord" icon="discord">
+**Community Support**
+<br />
+Integration help, best practices, feature discussions
+<br />
+*Active community with fast responses*
+</Card>
+
+<Card title="GitHub Issues" icon="github">
+**SDK and Documentation Issues**
+<br />
+Bug reports, feature requests, code examples
+<br />
+*Public issue tracking*
+</Card>
+
+<Card title="Status Page" icon="activity">
+**api-status.hitl.sh**
+<br />
+Current system status, maintenance notices, incident reports
+<br />
+*Real-time status updates*
+</Card>
+</CardGroup>
+
+### When to Contact Support
+
+**Contact Support For**:
+- API authentication issues that persist after troubleshooting
+- Unexpected API behavior or error responses
+- Account or billing questions
+- Security concerns
+- Feature requests or integration advice
+
+**Try Self-Service First For**:
+- Basic integration questions (check documentation)
+- Common error codes (use this troubleshooting guide)
+- SDK installation issues (check language-specific docs)
+- Mobile app usage questions (see mobile app guide)
+
+---
+
+**Still need help?** If you can't find the solution here, don't hesitate to reach out to our support team at support@hitl.sh with your specific issue and any relevant error messages or debug information.

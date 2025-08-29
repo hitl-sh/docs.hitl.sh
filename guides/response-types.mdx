@@ -1,0 +1,1012 @@
+---
+title: "Response Types Guide"
+description: "Complete guide to configuring different response types for your HITL requests. Learn how to collect text, selections, ratings, and more from human reviewers."
+---
+
+Choose the right response type to collect exactly the information you need from human reviewers. Each response type is optimized for different use cases and provides structured data that's easy to process programmatically.
+
+<Info>
+Response types determine how reviewers interact with your requests in the mobile app and what format the response data takes when returned to your application.
+</Info>
+
+## Response Type Overview
+
+<CardGroup cols={2}>
+<Card title="Text Response" icon="text">
+**Best for**: Open-ended feedback, explanations, detailed reviews
+<br />
+**Returns**: String value with reviewer's text input
+</Card>
+
+<Card title="Single Select" icon="check-circle">
+**Best for**: Yes/No decisions, choosing one option from a list
+<br />
+**Returns**: String value of the selected option
+</Card>
+
+<Card title="Multi Select" icon="list-check">
+**Best for**: Selecting multiple items, feature identification, tagging
+<br />
+**Returns**: Array of selected option strings
+</Card>
+
+<Card title="Rating" icon="star">
+**Best for**: Quality assessment, scoring content, performance evaluation
+<br />
+**Returns**: Number value within configured range
+</Card>
+
+<Card title="Number Input" icon="hashtag">
+**Best for**: Quantities, measurements, counting tasks
+<br />
+**Returns**: Number value with optional validation
+</Card>
+
+<Card title="Boolean" icon="toggle">
+**Best for**: Simple true/false decisions, feature flags
+<br />
+**Returns**: Boolean true or false value
+</Card>
+</CardGroup>
+
+## Text Response
+
+Perfect for collecting detailed feedback, explanations, and open-ended responses from reviewers.
+
+### Configuration
+
+<CodeGroup>
+
+```json Basic Text
+{
+  "response_type": "text",
+  "response_config": {
+    "placeholder": "Enter your feedback here...",
+    "max_length": 500,
+    "required": true
+  }
+}
+```
+
+```json Text with Guidelines
+{
+  "response_type": "text",
+  "response_config": {
+    "placeholder": "Provide detailed feedback on the content quality...",
+    "max_length": 1000,
+    "min_length": 50,
+    "required": true,
+    "guidelines": "Please explain your reasoning and provide specific examples."
+  }
+}
+```
+
+</CodeGroup>
+
+### Configuration Options
+
+<ParamField body="placeholder" type="string">
+  Hint text shown in the input field
+</ParamField>
+
+<ParamField body="max_length" type="integer">
+  Maximum character limit (default: 1000, max: 5000)
+</ParamField>
+
+<ParamField body="min_length" type="integer">
+  Minimum character requirement (default: 0)
+</ParamField>
+
+<ParamField body="required" type="boolean">
+  Whether response is required (default: true)
+</ParamField>
+
+<ParamField body="guidelines" type="string">
+  Additional instructions displayed to reviewers
+</ParamField>
+
+### Use Cases & Examples
+
+<AccordionGroup>
+<Accordion title="Content Quality Review">
+```python
+# AI-generated content review
+text_config = {
+    "response_type": "text",
+    "response_config": {
+        "placeholder": "Explain what makes this content high or low quality...",
+        "max_length": 800,
+        "min_length": 100,
+        "guidelines": "Consider accuracy, clarity, usefulness, and engagement factors."
+    }
+}
+
+# Example response: "The content is well-structured and informative, but contains several factual errors about renewable energy statistics that need correction."
+```
+</Accordion>
+
+<Accordion title="Customer Support Escalation">
+```python
+# Support ticket resolution
+support_config = {
+    "response_type": "text", 
+    "response_config": {
+        "placeholder": "Describe how you would resolve this customer issue...",
+        "max_length": 600,
+        "guidelines": "Include specific steps and any additional resources needed."
+    }
+}
+
+# Example response: "1. Issue refund within 24 hours 2. Send apology email with discount code 3. Follow up in 1 week to ensure satisfaction"
+```
+</Accordion>
+
+<Accordion title="Code Review Feedback">
+```python
+# Software code review
+code_review_config = {
+    "response_type": "text",
+    "response_config": {
+        "placeholder": "Provide code review feedback...",
+        "max_length": 1200,
+        "min_length": 50,
+        "guidelines": "Focus on correctness, performance, security, and maintainability."
+    }
+}
+
+# Example response: "Good use of error handling. Consider extracting the validation logic into a separate function for reusability. Line 45 has a potential memory leak."
+```
+</Accordion>
+</AccordionGroup>
+
+## Single Select
+
+Ideal for binary decisions or choosing one option from multiple choices.
+
+### Configuration
+
+<CodeGroup>
+
+```json Basic Single Select
+{
+  "response_type": "single_select",
+  "response_config": {
+    "options": ["Approve", "Reject", "Needs Review"],
+    "required": true
+  }
+}
+```
+
+```json Single Select with Descriptions
+{
+  "response_type": "single_select", 
+  "response_config": {
+    "options": [
+      "High Priority - Requires immediate attention",
+      "Medium Priority - Address within 24 hours", 
+      "Low Priority - Can wait for next batch"
+    ],
+    "allow_other": false,
+    "required": true
+  }
+}
+```
+
+</CodeGroup>
+
+### Configuration Options
+
+<ParamField body="options" type="array" required>
+  Array of option strings to choose from (2-10 options recommended)
+</ParamField>
+
+<ParamField body="required" type="boolean">
+  Whether a selection is required (default: true)
+</ParamField>
+
+<ParamField body="allow_other" type="boolean">
+  Allow reviewers to enter custom text option (default: false)
+</ParamField>
+
+<ParamField body="randomize_order" type="boolean">
+  Randomize option display order to reduce bias (default: false)
+</ParamField>
+
+### Use Cases & Examples
+
+<AccordionGroup>
+<Accordion title="Content Moderation">
+```python
+# User-generated content approval
+moderation_config = {
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            "✅ Approve - Follows community guidelines",
+            "⚠️ Approve with Warning - Minor guideline issues", 
+            "❌ Reject - Violates guidelines",
+            "🚨 Reject and Flag - Serious violation"
+        ],
+        "randomize_order": false  # Keep logical order
+    }
+}
+
+# Example response: "❌ Reject - Violates guidelines"
+```
+</Accordion>
+
+<Accordion title="Document Classification">
+```python
+# Legal document categorization
+classification_config = {
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            "Contract", 
+            "Invoice",
+            "Legal Notice",
+            "Insurance Claim",
+            "Other Business Document"
+        ],
+        "allow_other": true,  # Allow custom categories
+        "randomize_order": true  # Reduce bias
+    }
+}
+
+# Example response: "Contract"
+```
+</Accordion>
+
+<Accordion title="Quality Assessment">
+```python
+# Translation quality review
+translation_config = {
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            "Excellent - Perfect translation",
+            "Good - Minor improvements needed",
+            "Fair - Several issues to fix", 
+            "Poor - Needs complete rework"
+        ]
+    }
+}
+
+# Example response: "Good - Minor improvements needed"
+```
+</Accordion>
+</AccordionGroup>
+
+## Multi Select
+
+Perfect when reviewers need to select multiple items or identify several features.
+
+### Configuration
+
+<CodeGroup>
+
+```json Basic Multi Select
+{
+  "response_type": "multi_select",
+  "response_config": {
+    "options": ["Grammar Issues", "Factual Errors", "Tone Problems", "Formatting Issues"],
+    "min_selections": 0,
+    "max_selections": 4,
+    "required": false
+  }
+}
+```
+
+```json Feature Detection
+{
+  "response_type": "multi_select",
+  "response_config": {
+    "options": [
+      "Contains Personal Information",
+      "Includes External Links", 
+      "Has Promotional Content",
+      "Contains Sensitive Topics",
+      "Includes Code/Technical Content"
+    ],
+    "min_selections": 1,
+    "max_selections": 3,
+    "allow_other": true
+  }
+}
+```
+
+</CodeGroup>
+
+### Configuration Options
+
+<ParamField body="options" type="array" required>
+  Array of selectable options (3-15 options recommended)
+</ParamField>
+
+<ParamField body="min_selections" type="integer">
+  Minimum number of selections required (default: 0)
+</ParamField>
+
+<ParamField body="max_selections" type="integer">
+  Maximum selections allowed (default: unlimited)
+</ParamField>
+
+<ParamField body="required" type="boolean">
+  Whether at least one selection is required (default: false)
+</ParamField>
+
+<ParamField body="allow_other" type="boolean">
+  Allow custom text entries (default: false)
+</ParamField>
+
+### Use Cases & Examples
+
+<AccordionGroup>
+<Accordion title="Content Issue Identification">
+```python
+# Identify multiple issues in content
+issue_detection = {
+    "response_type": "multi_select",
+    "response_config": {
+        "options": [
+            "Spelling/Grammar Errors",
+            "Factual Inaccuracies", 
+            "Inappropriate Tone",
+            "Missing Information",
+            "Poor Structure",
+            "Copyright Issues"
+        ],
+        "min_selections": 0,  # Issues are optional
+        "max_selections": 6,
+        "allow_other": true
+    }
+}
+
+# Example response: ["Spelling/Grammar Errors", "Missing Information"]
+```
+</Accordion>
+
+<Accordion title="Product Feature Verification">
+```python
+# Verify product features mentioned
+feature_check = {
+    "response_type": "multi_select",
+    "response_config": {
+        "options": [
+            "Free Shipping",
+            "24/7 Support", 
+            "Money-back Guarantee",
+            "Mobile App Available",
+            "International Shipping",
+            "Bulk Discounts"
+        ],
+        "min_selections": 1,
+        "max_selections": 6
+    }
+}
+
+# Example response: ["Free Shipping", "Money-back Guarantee", "Mobile App Available"]
+```
+</Accordion>
+
+<Accordion title="Image Content Analysis">
+```python
+# Identify elements in an image
+image_analysis = {
+    "response_type": "multi_select",
+    "response_config": {
+        "options": [
+            "People",
+            "Text/Writing",
+            "Logos/Branding", 
+            "Products",
+            "Buildings/Architecture",
+            "Nature/Landscape",
+            "Vehicles"
+        ],
+        "min_selections": 1,
+        "max_selections": 4
+    }
+}
+
+# Example response: ["People", "Products", "Logos/Branding"]
+```
+</Accordion>
+</AccordionGroup>
+
+## Rating Response
+
+Collect numerical ratings and scores from reviewers for quantitative assessment.
+
+### Configuration
+
+<CodeGroup>
+
+```json 5-Star Rating
+{
+  "response_type": "rating",
+  "response_config": {
+    "min_value": 1,
+    "max_value": 5,
+    "labels": {
+      "1": "Poor",
+      "3": "Average", 
+      "5": "Excellent"
+    },
+    "required": true
+  }
+}
+```
+
+```json 10-Point Scale
+{
+  "response_type": "rating",
+  "response_config": {
+    "min_value": 0,
+    "max_value": 10,
+    "step": 1,
+    "labels": {
+      "0": "Completely Unacceptable",
+      "5": "Meets Minimum Standards",
+      "10": "Exceeds All Expectations"
+    },
+    "show_numeric_labels": true
+  }
+}
+```
+
+</CodeGroup>
+
+### Configuration Options
+
+<ParamField body="min_value" type="number" required>
+  Minimum rating value (typically 0 or 1)
+</ParamField>
+
+<ParamField body="max_value" type="number" required>
+  Maximum rating value (typically 5 or 10)
+</ParamField>
+
+<ParamField body="step" type="number">
+  Rating increment (default: 1, can use 0.5 for half-stars)
+</ParamField>
+
+<ParamField body="labels" type="object">
+  Text labels for specific rating values
+</ParamField>
+
+<ParamField body="show_numeric_labels" type="boolean">
+  Show numeric values alongside labels (default: false)
+</ParamField>
+
+<ParamField body="required" type="boolean">
+  Whether a rating is required (default: true)
+</ParamField>
+
+### Use Cases & Examples
+
+<AccordionGroup>
+<Accordion title="Content Quality Scoring">
+```python
+# Rate AI-generated article quality
+quality_rating = {
+    "response_type": "rating",
+    "response_config": {
+        "min_value": 1,
+        "max_value": 5,
+        "labels": {
+            "1": "Poor - Major issues",
+            "2": "Below Average - Multiple problems", 
+            "3": "Average - Acceptable quality",
+            "4": "Good - Minor improvements needed",
+            "5": "Excellent - Publication ready"
+        }
+    }
+}
+
+# Example response: 4
+```
+</Accordion>
+
+<Accordion title="Customer Service Evaluation">
+```python
+# Rate customer interaction quality
+service_rating = {
+    "response_type": "rating",
+    "response_config": {
+        "min_value": 1,
+        "max_value": 10,
+        "step": 1,
+        "labels": {
+            "1": "Unacceptable",
+            "5": "Meets Standards", 
+            "10": "Exceptional"
+        },
+        "show_numeric_labels": true
+    }
+}
+
+# Example response: 8
+```
+</Accordion>
+
+<Accordion title="Translation Accuracy">
+```python
+# Rate translation accuracy with half-points
+translation_rating = {
+    "response_type": "rating", 
+    "response_config": {
+        "min_value": 1,
+        "max_value": 5,
+        "step": 0.5,  # Allow half-star ratings
+        "labels": {
+            "1": "Completely Incorrect",
+            "2.5": "Partially Accurate",
+            "5": "Perfect Translation"
+        }
+    }
+}
+
+# Example response: 3.5
+```
+</Accordion>
+</AccordionGroup>
+
+## Number Input
+
+Collect specific numerical values like counts, measurements, or quantities.
+
+### Configuration
+
+<CodeGroup>
+
+```json Basic Number Input
+{
+  "response_type": "number",
+  "response_config": {
+    "min_value": 0,
+    "max_value": 1000,
+    "placeholder": "Enter count...",
+    "required": true
+  }
+}
+```
+
+```json Decimal Numbers
+{
+  "response_type": "number",
+  "response_config": {
+    "min_value": 0,
+    "max_value": 100,
+    "step": 0.1,
+    "unit": "percentage",
+    "placeholder": "e.g., 85.5",
+    "validation_message": "Enter percentage between 0 and 100"
+  }
+}
+```
+
+</CodeGroup>
+
+### Configuration Options
+
+<ParamField body="min_value" type="number">
+  Minimum allowed value (optional)
+</ParamField>
+
+<ParamField body="max_value" type="number">
+  Maximum allowed value (optional)
+</ParamField>
+
+<ParamField body="step" type="number">
+  Number increment/precision (default: 1)
+</ParamField>
+
+<ParamField body="unit" type="string">
+  Unit label displayed with input (e.g., "items", "percentage", "$")
+</ParamField>
+
+<ParamField body="placeholder" type="string">
+  Hint text shown in input field
+</ParamField>
+
+<ParamField body="required" type="boolean">
+  Whether input is required (default: true)
+</ParamField>
+
+### Use Cases & Examples
+
+<AccordionGroup>
+<Accordion title="Content Analysis Counting">
+```python
+# Count specific elements in content
+counting_config = {
+    "response_type": "number",
+    "response_config": {
+        "min_value": 0,
+        "max_value": 50,
+        "unit": "instances",
+        "placeholder": "Count occurrences...",
+        "validation_message": "Enter number between 0 and 50"
+    }
+}
+
+# Example response: 7
+```
+</Accordion>
+
+<Accordion title="Performance Metrics">
+```python
+# Measure response time or performance
+performance_config = {
+    "response_type": "number",
+    "response_config": {
+        "min_value": 0,
+        "max_value": 60,
+        "step": 0.1,
+        "unit": "seconds",
+        "placeholder": "e.g., 2.5"
+    }
+}
+
+# Example response: 3.2
+```
+</Accordion>
+
+<Accordion title="Price Validation">
+```python
+# Verify pricing information
+price_config = {
+    "response_type": "number",
+    "response_config": {
+        "min_value": 0,
+        "max_value": 10000,
+        "step": 0.01,
+        "unit": "USD",
+        "placeholder": "e.g., 29.99"
+    }
+}
+
+# Example response: 49.99
+```
+</Accordion>
+</AccordionGroup>
+
+## Boolean Response
+
+Simple true/false responses for binary decisions and feature flags.
+
+### Configuration
+
+<CodeGroup>
+
+```json Basic Boolean
+{
+  "response_type": "boolean",
+  "response_config": {
+    "true_label": "Yes",
+    "false_label": "No",
+    "required": true
+  }
+}
+```
+
+```json Custom Labels
+{
+  "response_type": "boolean", 
+  "response_config": {
+    "true_label": "Contains Sensitive Information",
+    "false_label": "Safe for Public Use",
+    "default_value": false,
+    "required": true
+  }
+}
+```
+
+</CodeGroup>
+
+### Configuration Options
+
+<ParamField body="true_label" type="string">
+  Label for true/yes option (default: "Yes")
+</ParamField>
+
+<ParamField body="false_label" type="string">
+  Label for false/no option (default: "No")
+</ParamField>
+
+<ParamField body="default_value" type="boolean">
+  Pre-selected value (optional)
+</ParamField>
+
+<ParamField body="required" type="boolean">
+  Whether selection is required (default: true)
+</ParamField>
+
+### Use Cases & Examples
+
+<AccordionGroup>
+<Accordion title="Content Safety Check">
+```python
+# Check if content is safe for publication
+safety_check = {
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "Safe to Publish",
+        "false_label": "Requires Review",
+        "default_value": false  # Conservative default
+    }
+}
+
+# Example response: true
+```
+</Accordion>
+
+<Accordion title="Feature Presence">
+```python
+# Check if specific feature is mentioned
+feature_check = {
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "Free Trial Mentioned",
+        "false_label": "No Free Trial Mentioned"
+    }
+}
+
+# Example response: false
+```
+</Accordion>
+
+<Accordion title="Compliance Verification">
+```python
+# GDPR compliance check
+compliance_check = {
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "GDPR Compliant",
+        "false_label": "GDPR Issues Found", 
+        "required": true
+    }
+}
+
+# Example response: true
+```
+</Accordion>
+</AccordionGroup>
+
+## Advanced Response Configurations
+
+### Combining Multiple Response Types
+
+For complex reviews, create multiple requests with different response types:
+
+```python
+# Multi-stage content review
+def comprehensive_content_review(content, loop_id):
+    # Stage 1: Overall quality rating
+    quality_request = create_request({
+        "loop_id": loop_id,
+        "request_text": f"Rate the overall quality of this content:\n\n{content}",
+        "response_type": "rating",
+        "response_config": {
+            "min_value": 1,
+            "max_value": 5,
+            "labels": {"1": "Poor", "5": "Excellent"}
+        },
+        "metadata": {"stage": "quality_rating"}
+    })
+    
+    # Stage 2: Issue identification  
+    issues_request = create_request({
+        "loop_id": loop_id,
+        "request_text": f"Identify any issues in this content:\n\n{content}",
+        "response_type": "multi_select",
+        "response_config": {
+            "options": ["Grammar", "Factual Errors", "Tone", "Structure"],
+            "min_selections": 0
+        },
+        "metadata": {"stage": "issue_detection"}
+    })
+    
+    # Stage 3: Detailed feedback
+    feedback_request = create_request({
+        "loop_id": loop_id,
+        "request_text": f"Provide detailed improvement suggestions:\n\n{content}",
+        "response_type": "text",
+        "response_config": {
+            "min_length": 50,
+            "max_length": 500
+        },
+        "metadata": {"stage": "detailed_feedback"}
+    })
+    
+    return [quality_request, issues_request, feedback_request]
+```
+
+### Dynamic Response Configuration
+
+Adjust response types based on content characteristics:
+
+```python
+def get_dynamic_response_config(content_type, content_length):
+    """Return appropriate response config based on content"""
+    
+    if content_type == "image":
+        return {
+            "response_type": "multi_select",
+            "response_config": {
+                "options": ["People", "Text", "Logos", "Products", "Inappropriate Content"],
+                "min_selections": 1
+            }
+        }
+    
+    elif content_type == "short_text" and content_length < 100:
+        return {
+            "response_type": "single_select", 
+            "response_config": {
+                "options": ["Approve", "Reject", "Needs More Info"]
+            }
+        }
+    
+    else:  # Long form content
+        return {
+            "response_type": "text",
+            "response_config": {
+                "min_length": 100,
+                "max_length": 1000,
+                "placeholder": "Provide detailed feedback..."
+            }
+        }
+```
+
+### Response Validation
+
+Add custom validation for response data:
+
+```python
+def validate_response_data(response_type, response_data, config):
+    """Validate response data meets requirements"""
+    
+    if response_type == "rating":
+        min_val = config.get("min_value", 1)
+        max_val = config.get("max_value", 5)
+        if not (min_val <= response_data <= max_val):
+            raise ValueError(f"Rating must be between {min_val} and {max_val}")
+    
+    elif response_type == "text":
+        min_len = config.get("min_length", 0)
+        max_len = config.get("max_length", 1000)
+        if not (min_len <= len(response_data) <= max_len):
+            raise ValueError(f"Text length must be {min_len}-{max_len} characters")
+    
+    elif response_type == "multi_select":
+        min_sel = config.get("min_selections", 0)
+        max_sel = config.get("max_selections", len(config["options"]))
+        if not (min_sel <= len(response_data) <= max_sel):
+            raise ValueError(f"Must select {min_sel}-{max_sel} options")
+    
+    return True
+```
+
+## Best Practices
+
+### Response Type Selection
+
+<AccordionGroup>
+<Accordion title="Choose Based on Use Case">
+**Text**: Use for subjective feedback, explanations, or when you need qualitative insights
+**Single Select**: Perfect for binary decisions or when one clear choice is needed  
+**Multi Select**: When multiple aspects need to be identified or tagged
+**Rating**: For quantitative assessment or when you need to compare/rank items
+**Number**: When you need specific measurements, counts, or calculations
+**Boolean**: For simple yes/no questions or feature detection
+</Accordion>
+
+<Accordion title="Optimize for Mobile Experience">
+- Keep option lists concise (max 8-10 options for single/multi select)
+- Use clear, descriptive labels that work on small screens
+- Provide appropriate placeholder text and guidelines
+- Test response times on mobile devices
+</Accordion>
+
+<Accordion title="Reduce Reviewer Cognitive Load">
+- Use consistent response types within similar request categories  
+- Provide clear instructions and examples
+- Use logical ordering for options (e.g., severity levels)
+- Consider randomizing options to reduce position bias
+</Accordion>
+
+<Accordion title="Design for Data Quality">
+- Set appropriate validation rules (min/max lengths, value ranges)
+- Use required fields judiciously - only for truly essential data
+- Provide "Other" or "Not Applicable" options when appropriate
+- Include quality checks in your webhook processing
+</Accordion>
+</AccordionGroup>
+
+### Response Processing
+
+```python
+class ResponseProcessor:
+    def process_response(self, request_data, response_data):
+        """Process different response types appropriately"""
+        response_type = request_data['response_type']
+        
+        if response_type == 'rating':
+            return self.process_rating(response_data, request_data['response_config'])
+        elif response_type == 'text':
+            return self.process_text(response_data, request_data['response_config'])
+        elif response_type == 'multi_select':
+            return self.process_multi_select(response_data, request_data['response_config'])
+        # ... handle other types
+    
+    def process_rating(self, rating, config):
+        """Convert rating to actionable insights"""
+        min_val = config.get('min_value', 1)
+        max_val = config.get('max_value', 5)
+        
+        # Normalize to 0-1 scale
+        normalized = (rating - min_val) / (max_val - min_val)
+        
+        # Categorize rating
+        if normalized >= 0.8:
+            category = "excellent"
+        elif normalized >= 0.6:
+            category = "good" 
+        elif normalized >= 0.4:
+            category = "average"
+        elif normalized >= 0.2:
+            category = "poor"
+        else:
+            category = "unacceptable"
+        
+        return {
+            "raw_rating": rating,
+            "normalized_score": normalized,
+            "category": category,
+            "actionable": category in ["poor", "unacceptable"]
+        }
+    
+    def process_text(self, text, config):
+        """Extract insights from text responses"""
+        import re
+        
+        # Basic sentiment analysis (you'd use a proper library)
+        positive_words = ["good", "excellent", "great", "perfect", "approve"]
+        negative_words = ["poor", "bad", "terrible", "reject", "inappropriate"]
+        
+        positive_count = sum(1 for word in positive_words if word in text.lower())
+        negative_count = sum(1 for word in negative_words if word in text.lower())
+        
+        # Extract action items (sentences with "should", "need", "must")
+        action_pattern = r'[^.!?]*(?:should|need|must)[^.!?]*[.!?]'
+        action_items = re.findall(action_pattern, text, re.IGNORECASE)
+        
+        return {
+            "text": text,
+            "word_count": len(text.split()),
+            "sentiment_score": positive_count - negative_count,
+            "action_items": action_items,
+            "has_specific_feedback": len(action_items) > 0
+        }
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+  Try different response types in our step-by-step tutorial.
+</Card>
+
+<Card title="API Playground" icon="play" href="/api-reference/playground">
+  Test response configurations interactively before implementing.
+</Card>
+
+<Card title="Mobile App Preview" icon="mobile" href="/mobile/overview">
+  See how different response types appear to reviewers in the mobile app.
+</Card>
+
+<Card title="Best Practices" icon="star" href="/guides/best-practices">
+  Learn advanced techniques for optimizing reviewer experience and data quality.
+</Card>
+</CardGroup>

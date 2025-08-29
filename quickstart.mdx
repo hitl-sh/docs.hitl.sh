@@ -1,249 +1,806 @@
 ---
 title: "Quickstart Guide"
-description: "Get started with HITL.sh in minutes. Learn how to add human supervision to your AI workflows."
+description: "Get started with HITL.sh in under 10 minutes. Build your first human-in-the-loop application with step-by-step instructions and real-world examples."
 ---
 
-## Get started in minutes
+Build your first HITL (Human-in-the-Loop) application in under 10 minutes. This tutorial walks you through creating a content moderation system where human reviewers evaluate user-generated content.
 
-Add human supervision to your AI agents with HITL.sh. This guide will walk you through setting up your first review workflow.
+<Info>
+**What You'll Build**: A content moderation system that automatically sends user comments to human reviewers for approval or rejection, with real-time webhook notifications.
+</Info>
 
 ## Prerequisites
 
-- A HITL.sh account ([sign up here](https://app.hitl.sh))
-- Basic knowledge of your chosen integration method
-- An AI workflow or application that needs human oversight
-
-## Step 1: Create a review template
-
-Start by creating a template that defines what content will be reviewed and what input you need from humans.
-
-<Card
-  title="Template Editor"
-  icon="edit"
-  href="/templates/editor"
->
-  Learn more about creating custom review templates with our no-code editor.
+<CardGroup cols={2}>
+<Card title="HITL.sh Account" icon="user">
+[Sign up for free](https://hitl.sh/signup) and get your API key from the dashboard.
 </Card>
 
-### Basic template example
+<Card title="Development Environment" icon="laptop">
+Python 3.7+, Node.js 16+, or your preferred language with HTTP client support.
+</Card>
+</CardGroup>
 
-```json
-{
-  "name": "Content Review",
-  "fields": [
-    {
-      "name": "content",
-      "type": "text",
-      "label": "Content to review",
-      "required": true
-    },
-    {
-      "name": "approval",
-      "type": "boolean",
-      "label": "Approve content",
-      "required": true
-    },
-    {
-      "name": "feedback",
-      "type": "text",
-      "label": "Feedback or comments",
-      "required": false
-    }
-  ]
-}
-```
+## Step 1: Get Your API Key
 
-## Step 2: Integrate with your workflow
+<Steps>
+<Step title="Sign Up">
+Create your free account at [hitl.sh/signup](https://hitl.sh/signup)
+</Step>
 
-Choose your preferred integration method to send review requests to HITL.sh.
+<Step title="Generate API Key">
+Go to your dashboard and create a new API key. Copy and save it securely.
+</Step>
 
-### Python SDK
-
-```python
-from hitl import HITLClient
-
-# Initialize client
-client = HITLClient(api_key="your_api_key")
-
-# Create review request
-review = client.create_review(
-    template_id="template_123",
-    content={
-        "content": "AI-generated article content...",
-        "metadata": {"source": "gpt-4", "topic": "technology"}
-    },
-    assignees=["reviewer@company.com"]
-)
-
-print(f"Review created: {review.id}")
-```
-
-### TypeScript SDK
-
-```typescript
-import { HITLClient } from '@hitl/typescript';
-
-// Initialize client
-const client = new HITLClient({ apiKey: 'your_api_key' });
-
-// Create review request
-const review = await client.createReview({
-  templateId: 'template_123',
-  content: {
-    content: 'AI-generated article content...',
-    metadata: { source: 'gpt-4', topic: 'technology' }
-  },
-  assignees: ['reviewer@company.com']
-});
-
-console.log(`Review created: ${review.id}`);
-```
-
-### HTTP API
+<Step title="Test Connection">
+Verify your API key works using the dedicated test endpoint:
 
 ```bash
-curl -X POST https://api.hitl.sh/v1/reviews \
-  -H "Authorization: Bearer your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "template_id": "template_123",
-    "content": {
-      "content": "AI-generated article content...",
-      "metadata": {"source": "gpt-4", "topic": "technology"}
-    },
-    "assignees": ["reviewer@company.com"]
-  }'
+curl -X GET https://api.hitl.sh/v1/test \
+  -H "Authorization: Bearer your_api_key_here"
 ```
 
-## Step 3: Handle the review process
+You should get a JSON response confirming your API key is valid and showing your account information.
+</Step>
+</Steps>
 
-Once a review is created, reviewers can access it through:
+## Step 2: Create Your First Loop
 
-- **Agent Inbox**: Centralized dashboard for all pending reviews
-- **Direct links**: Email or Slack notifications with review links
-- **Mobile app**: Review on-the-go with our mobile-first interface
+A **loop** is a group of human reviewers who will evaluate your requests. Let's create a content moderation team:
 
-<Card
-  title="Agent Inbox"
-  icon="inbox"
-  href="/features/inbox"
->
-  Learn more about managing reviews in the Agent Inbox.
-</Card>
+<Tabs>
+<Tab title="Python">
+```python
+import requests
 
-## Step 4: Process the result
+# Your API credentials
+API_KEY = "your_api_key_here"
+BASE_URL = "https://api.hitl.sh/v1"
 
-When a review is completed, HITL.sh sends the result to your workflow via webhook.
+headers = {
+    "Authorization": f"Bearer {API_KEY}",
+    "Content-Type": "application/json"
+}
 
-### Webhook endpoint example
+# Create a content moderation loop
+loop_data = {
+    "name": "Content Moderation Team",
+    "description": "Reviews user-generated content for community guidelines compliance",
+    "icon": "🛡️"
+}
+
+response = requests.post(f"{BASE_URL}/loops", headers=headers, json=loop_data)
+loop = response.json()
+
+print(f"✅ Created loop: {loop['data']['loop']['name']}")
+print(f"   Loop ID: {loop['data']['loop']['id']}")
+print(f"   Invite Code: {loop['data']['loop']['invite_code']}")
+
+# Save the loop ID for the next steps
+LOOP_ID = loop['data']['loop']['id']
+```
+</Tab>
+
+<Tab title="Node.js">
+```javascript
+const axios = require('axios');
+
+// Your API credentials
+const API_KEY = 'your_api_key_here';
+const BASE_URL = 'https://api.hitl.sh/v1';
+
+const headers = {
+  'Authorization': `Bearer ${API_KEY}`,
+  'Content-Type': 'application/json'
+};
+
+async function createLoop() {
+  try {
+    const loopData = {
+      name: 'Content Moderation Team',
+      description: 'Reviews user-generated content for community guidelines compliance',
+      icon: '🛡️'
+    };
+
+    const response = await axios.post(`${BASE_URL}/loops`, loopData, { headers });
+    const loop = response.data.data.loop;
+
+    console.log(`✅ Created loop: ${loop.name}`);
+    console.log(`   Loop ID: ${loop.id}`);
+    console.log(`   Invite Code: ${loop.invite_code}`);
+
+    return loop.id;
+  } catch (error) {
+    console.error('Error creating loop:', error.response?.data || error.message);
+  }
+}
+
+createLoop();
+```
+</Tab>
+
+<Tab title="cURL">
+```bash
+# Create content moderation loop
+curl -X POST https://api.hitl.sh/v1/loops \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Content Moderation Team",
+    "description": "Reviews user-generated content for community guidelines compliance",
+    "icon": "🛡️"
+  }'
+```
+</Tab>
+</Tabs>
+
+<Warning>
+**Save the Loop ID**: You'll need the `loop_id` from the response for creating requests. Also note the `invite_code` - you'll use this to invite reviewers to your loop.
+</Warning>
+
+## Step 3: Invite Reviewers
+
+Your loop needs human reviewers to evaluate requests. You have several options:
+
+<Tabs>
+<Tab title="QR Code (Recommended)">
+The easiest way is to share the QR code from your loop response:
 
 ```python
-from flask import Flask, request
+import qrcode
+import requests
+
+# Get loop details with QR code
+response = requests.get(f"{BASE_URL}/loops/{LOOP_ID}", headers=headers)
+loop_details = response.json()['data']['loop']
+
+print("📱 Share this QR code with reviewers:")
+print(f"   QR Code URL: {loop_details['qr_code_url']}")
+print(f"   Or share invite code: {loop_details['invite_code']}")
+```
+
+Reviewers scan the QR code with the HITL mobile app to join your loop.
+</Tab>
+
+<Tab title="Invite Code">
+Share the invite code directly:
+
+```python
+print(f"🔗 Invite Code: {loop['data']['loop']['invite_code']}")
+print("📱 Reviewers can:")
+print("   1. Download the HITL mobile app")
+print("   2. Tap 'Join Loop' and enter the code")
+print("   3. Start reviewing requests immediately")
+```
+</Tab>
+
+<Tab title="Join URL">
+Create a direct join link:
+
+```python
+invite_code = loop['data']['loop']['invite_code']
+join_url = f"https://hitl.sh/join/{invite_code}"
+
+print(f"🌐 Direct Join URL: {join_url}")
+print("   Share this link with reviewers")
+```
+</Tab>
+</Tabs>
+
+<Info>
+**For Testing**: You can proceed without reviewers for now. Later, you can test by downloading the HITL mobile app yourself and joining your loop.
+</Info>
+
+## Step 4: Create Your First Request
+
+Now let's create a content moderation request. This represents user-generated content that needs human review:
+
+<Tabs>
+<Tab title="Python">
+```python
+# Sample user comment to moderate
+user_comment = """
+Hey everyone! Just wanted to share my experience with this amazing product. 
+It's been life-changing and I think you should all try it too! 
+Check out my link in bio for a special discount. 
+BTW, anyone who disagrees with me is totally wrong!
+"""
+
+# Create moderation request
+request_data = {
+    "loop_id": LOOP_ID,
+    "request_text": f"Please review this user comment for community guidelines compliance:\n\n\"{user_comment}\"",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            "✅ Approve - Follows guidelines",
+            "⚠️ Approve with Warning - Minor issues",
+            "❌ Reject - Violates guidelines", 
+            "🚨 Reject and Flag - Serious violation"
+        ]
+    },
+    "priority": "medium",
+    "processing_type": "time-sensitive",
+    "default_response": "❌ Reject - Review timeout",
+    "timeout_minutes": 60
+}
+
+response = requests.post(f"{BASE_URL}/requests", headers=headers, json=request_data)
+request = response.json()
+
+if response.status_code == 201:
+    print("✅ Content moderation request created!")
+    print(f"   Request ID: {request['data']['request']['id']}")
+    print(f"   Status: {request['data']['request']['status']}")
+    print("   📱 Reviewers will receive this on their mobile app")
+    
+    REQUEST_ID = request['data']['request']['id']
+else:
+    print("❌ Error creating request:", request)
+```
+</Tab>
+
+<Tab title="Node.js">
+```javascript
+async function createModerationRequest(loopId) {
+  // Sample user comment to moderate
+  const userComment = `
+    Hey everyone! Just wanted to share my experience with this amazing product. 
+    It's been life-changing and I think you should all try it too! 
+    Check out my link in bio for a special discount. 
+    BTW, anyone who disagrees with me is totally wrong!
+  `;
+
+  const requestData = {
+    loop_id: loopId,
+    request_text: `Please review this user comment for community guidelines compliance:\n\n"${userComment}"`,
+    response_type: 'single_select',
+    response_config: {
+      options: [
+        '✅ Approve - Follows guidelines',
+        '⚠️ Approve with Warning - Minor issues',
+        '❌ Reject - Violates guidelines',
+        '🚨 Reject and Flag - Serious violation'
+      ]
+    },
+    priority: 'medium',
+    processing_type: 'time-sensitive',
+    default_response: '❌ Reject - Review timeout',
+    timeout_minutes: 60
+  };
+
+  try {
+    const response = await axios.post(`${BASE_URL}/requests`, requestData, { headers });
+    const request = response.data.data.request;
+
+    console.log('✅ Content moderation request created!');
+    console.log(`   Request ID: ${request.id}`);
+    console.log(`   Status: ${request.status}`);
+    console.log('   📱 Reviewers will receive this on their mobile app');
+
+    return request.id;
+  } catch (error) {
+    console.error('❌ Error creating request:', error.response?.data || error.message);
+  }
+}
+```
+</Tab>
+
+<Tab title="cURL">
+```bash
+# Create content moderation request
+curl -X POST https://api.hitl.sh/v1/requests \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "loop_id": "your_loop_id_here",
+    "request_text": "Please review this user comment for community guidelines compliance:\n\nHey everyone! Just wanted to share my experience with this amazing product...",
+    "response_type": "single_select",
+    "response_config": {
+      "options": [
+        "✅ Approve - Follows guidelines",
+        "⚠️ Approve with Warning - Minor issues", 
+        "❌ Reject - Violates guidelines",
+        "🚨 Reject and Flag - Serious violation"
+      ]
+    },
+    "priority": "medium",
+    "processing_type": "time-sensitive",
+    "default_response": "❌ Reject - Review timeout",
+    "timeout_minutes": 60
+  }'
+```
+</Tab>
+</Tabs>
+
+## Step 5: Monitor Request Status
+
+You can check the status of your request and see when it gets completed:
+
+<Tabs>
+<Tab title="Python">
+```python
+import time
+
+def check_request_status(request_id):
+    """Check and display request status"""
+    response = requests.get(f"{BASE_URL}/requests/{request_id}", headers=headers)
+    
+    if response.status_code == 200:
+        request_data = response.json()['data']['request']
+        status = request_data['status']
+        
+        print(f"📊 Request Status: {status}")
+        
+        if status == 'completed':
+            print(f"✅ Review completed!")
+            print(f"   Decision: {request_data['response_data']}")
+            print(f"   Reviewed by: {request_data.get('response_by', 'Unknown')}")
+            print(f"   Response time: {request_data.get('response_time_seconds', 0):.1f} seconds")
+            return True
+        elif status == 'claimed':
+            print(f"👤 Request claimed by reviewer (in progress)")
+        elif status == 'pending':
+            print(f"⏳ Waiting for reviewer to claim")
+        elif status == 'cancelled':
+            print(f"❌ Request was cancelled")
+            return True
+        elif status == 'timeout':
+            print(f"⏰ Request timed out")
+            print(f"   Default response used: {request_data.get('default_response')}")
+            return True
+    else:
+        print(f"❌ Error checking status: {response.status_code}")
+    
+    return False
+
+# Monitor the request
+print("🔍 Monitoring request status...")
+for i in range(12):  # Check for up to 2 minutes
+    if check_request_status(REQUEST_ID):
+        break
+    time.sleep(10)  # Wait 10 seconds between checks
+else:
+    print("⏰ Still waiting for review after 2 minutes")
+    print("   Request will continue processing in the background")
+```
+</Tab>
+
+<Tab title="Node.js">
+```javascript
+async function checkRequestStatus(requestId) {
+  try {
+    const response = await axios.get(`${BASE_URL}/requests/${requestId}`, { headers });
+    const request = response.data.data.request;
+    const status = request.status;
+
+    console.log(`📊 Request Status: ${status}`);
+
+    switch (status) {
+      case 'completed':
+        console.log('✅ Review completed!');
+        console.log(`   Decision: ${request.response_data}`);
+        console.log(`   Reviewed by: ${request.response_by || 'Unknown'}`);
+        console.log(`   Response time: ${(request.response_time_seconds || 0).toFixed(1)} seconds`);
+        return true;
+      case 'claimed':
+        console.log('👤 Request claimed by reviewer (in progress)');
+        break;
+      case 'pending':
+        console.log('⏳ Waiting for reviewer to claim');
+        break;
+      case 'cancelled':
+        console.log('❌ Request was cancelled');
+        return true;
+      case 'timeout':
+        console.log('⏰ Request timed out');
+        console.log(`   Default response used: ${request.default_response}`);
+        return true;
+    }
+  } catch (error) {
+    console.error('❌ Error checking status:', error.response?.data || error.message);
+  }
+  
+  return false;
+}
+
+async function monitorRequest(requestId) {
+  console.log('🔍 Monitoring request status...');
+  
+  for (let i = 0; i < 12; i++) {  // Check for up to 2 minutes
+    if (await checkRequestStatus(requestId)) {
+      break;
+    }
+    await new Promise(resolve => setTimeout(resolve, 10000));  // Wait 10 seconds
+  }
+  
+  console.log('⏰ Still waiting for review after 2 minutes');
+  console.log('   Request will continue processing in the background');
+}
+```
+</Tab>
+</Tabs>
+
+## Step 6: Set Up Real-time Webhooks (Optional)
+
+Instead of polling for updates, you can receive instant notifications when requests are completed:
+
+<Tabs>
+<Tab title="Python (Flask)">
+```python
+from flask import Flask, request, jsonify
+import hmac
+import hashlib
 import json
 
 app = Flask(__name__)
 
-@app.route('/webhook', methods=['POST'])
+# Your webhook secret (set this in your HITL dashboard)
+WEBHOOK_SECRET = "your_webhook_secret_here"
+
+def verify_webhook_signature(payload, signature, secret):
+    """Verify webhook signature for security"""
+    expected_signature = hmac.new(
+        secret.encode('utf-8'),
+        payload.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(f"sha256={expected_signature}", signature)
+
+@app.route('/webhook/hitl', methods=['POST'])
 def handle_webhook():
-    data = request.json
+    # Get the raw payload and signature
+    payload = request.get_data(as_text=True)
+    signature = request.headers.get('X-HITL-Signature-256')
     
-    if data['event'] == 'review.completed':
-        review_id = data['review']['id']
-        result = data['review']['result']
-        
-        # Process the review result
-        if result['approval']:
-            # Continue with approved content
-            process_approved_content(result['content'])
-        else:
-            # Handle rejected content
-            handle_rejected_content(result['feedback'])
+    # Verify the webhook signature
+    if not verify_webhook_signature(payload, signature, WEBHOOK_SECRET):
+        return jsonify({'error': 'Invalid signature'}), 401
     
-    return {'status': 'ok'}, 200
+    # Parse the webhook data
+    webhook_data = json.loads(payload)
+    event_type = webhook_data['event']
+    data = webhook_data['data']
+    
+    if event_type == 'request.completed':
+        handle_request_completed(data)
+    elif event_type == 'request.claimed':
+        handle_request_claimed(data)
+    
+    return jsonify({'status': 'success'})
+
+def handle_request_completed(data):
+    """Process completed moderation request"""
+    request_data = data['request']
+    reviewer = data['reviewer']
+    
+    print("🎉 Content moderation completed!")
+    print(f"   Request ID: {request_data['id']}")
+    print(f"   Decision: {request_data['response_data']}")
+    print(f"   Reviewer: {reviewer['email']}")
+    
+    # Apply the moderation decision
+    decision = request_data['response_data']
+    if "Approve" in decision:
+        print("✅ Content approved - taking no action")
+    elif "Reject" in decision:
+        print("❌ Content rejected - hiding from users")
+        # Your logic to hide/remove content
+    elif "Flag" in decision:
+        print("🚨 Content flagged - escalating for review")
+        # Your logic to escalate serious violations
+
+def handle_request_claimed(data):
+    """Process when request is claimed by reviewer"""
+    request_data = data['request']
+    reviewer = data['reviewer']
+    
+    print(f"👤 Request {request_data['id']} claimed by {reviewer['email']}")
+
+if __name__ == '__main__':
+    print("🔗 Webhook server starting...")
+    print("   Configure webhook URL: http://your-domain.com/webhook/hitl")
+    app.run(debug=True, port=5000)
 ```
+</Tab>
 
-### Webhook payload structure
+<Tab title="Node.js (Express)">
+```javascript
+const express = require('express');
+const crypto = require('crypto');
 
-```json
-{
-  "event": "review.completed",
-  "review": {
-    "id": "rev_123",
-    "template_id": "template_123",
-    "result": {
-      "approval": true,
-      "content": "AI-generated article content...",
-      "feedback": "Great content, approved with minor edits"
-    },
-    "completed_at": "2024-01-15T10:30:00Z"
+const app = express();
+app.use(express.json());
+
+const WEBHOOK_SECRET = 'your_webhook_secret_here';
+
+function verifyWebhookSignature(payload, signature, secret) {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload, 'utf8')
+    .digest('hex');
+  
+  return crypto.timingSafeEqual(
+    Buffer.from(`sha256=${expectedSignature}`),
+    Buffer.from(signature)
+  );
+}
+
+app.post('/webhook/hitl', (req, res) => {
+  const payload = JSON.stringify(req.body);
+  const signature = req.headers['x-hitl-signature-256'];
+
+  // Verify webhook signature
+  if (!verifyWebhookSignature(payload, signature, WEBHOOK_SECRET)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  const { event, data } = req.body;
+
+  if (event === 'request.completed') {
+    handleRequestCompleted(data);
+  } else if (event === 'request.claimed') {
+    handleRequestClaimed(data);
+  }
+
+  res.json({ status: 'success' });
+});
+
+function handleRequestCompleted(data) {
+  const request = data.request;
+  const reviewer = data.reviewer;
+
+  console.log('🎉 Content moderation completed!');
+  console.log(`   Request ID: ${request.id}`);
+  console.log(`   Decision: ${request.response_data}`);
+  console.log(`   Reviewer: ${reviewer.email}`);
+
+  // Apply moderation decision
+  const decision = request.response_data;
+  if (decision.includes('Approve')) {
+    console.log('✅ Content approved - taking no action');
+  } else if (decision.includes('Reject')) {
+    console.log('❌ Content rejected - hiding from users');
+    // Your logic to hide/remove content
+  } else if (decision.includes('Flag')) {
+    console.log('🚨 Content flagged - escalating for review');
+    // Your logic to escalate serious violations
   }
 }
+
+function handleRequestClaimed(data) {
+  const request = data.request;
+  const reviewer = data.reviewer;
+  
+  console.log(`👤 Request ${request.id} claimed by ${reviewer.email}`);
+}
+
+app.listen(5000, () => {
+  console.log('🔗 Webhook server running on port 5000');
+  console.log('   Configure webhook URL: http://your-domain.com/webhook/hitl');
+});
 ```
+</Tab>
+</Tabs>
 
-## Step 5: Advanced features
+## Step 7: Complete Integration Example
 
-Once you have the basics working, explore these advanced features:
+Here's a complete content moderation system that ties everything together:
 
-<Columns cols={2}>
-  <Card
-    title="Retry Loops"
-    icon="refresh"
-    href="/features/retry-loops"
-  >
-    Enable reviewers to request AI regeneration of content with modified prompts.
-  </Card>
-  <Card
-    title="Workflow Navigation"
-    icon="map"
-    href="/features/workflows"
-  >
-    Link multiple review steps together with metadata and navigation controls.
-  </Card>
-  <Card
-    title="Custom Notifications"
-    icon="bell"
-    href="/features/notifications"
-  >
-    Configure email, Slack, and custom notification channels.
-  </Card>
-  <Card
-    title="Team Management"
-    icon="users"
-    href="/features/teams"
-  >
-    Organize reviewers into teams with role-based permissions.
-  </Card>
-</Columns>
+<Tabs>
+<Tab title="Python">
+```python
+import requests
+import time
 
-## Next steps
+class ContentModerationSystem:
+    def __init__(self, api_key, loop_id):
+        self.api_key = api_key
+        self.loop_id = loop_id
+        self.base_url = "https://api.hitl.sh/v1"
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+    
+    def moderate_content(self, user_id, content, content_type="comment"):
+        """Submit content for human moderation"""
+        
+        print(f"🔍 Submitting {content_type} from user {user_id} for moderation...")
+        
+        request_data = {
+            "loop_id": self.loop_id,
+            "request_text": f"Review this {content_type} from user {user_id}:\n\n\"{content}\"\n\nDoes this content follow community guidelines?",
+            "response_type": "single_select",
+            "response_config": {
+                "options": [
+                    "✅ Approve - Follows guidelines",
+                    "⚠️ Approve with Warning", 
+                    "❌ Reject - Violates guidelines",
+                    "🚨 Reject and Flag User"
+                ]
+            },
+            "priority": "medium",
+            "processing_type": "time-sensitive",
+            "metadata": {
+                "user_id": user_id,
+                "content_type": content_type,
+                "original_content": content[:100]  # First 100 chars for reference
+            }
+        }
+        
+        response = requests.post(f"{self.base_url}/requests", headers=self.headers, json=request_data)
+        
+        if response.status_code == 201:
+            request = response.json()['data']['request']
+            print(f"✅ Moderation request created: {request['id']}")
+            return request['id']
+        else:
+            print(f"❌ Error creating request: {response.text}")
+            return None
+    
+    def get_moderation_stats(self):
+        """Get overall moderation statistics"""
+        response = requests.get(f"{self.base_url}/requests?limit=100", headers=self.headers)
+        
+        if response.status_code == 200:
+            requests_data = response.json()['data']['requests']
+            
+            total = len(requests_data)
+            completed = len([r for r in requests_data if r['status'] == 'completed'])
+            pending = len([r for r in requests_data if r['status'] == 'pending'])
+            
+            if completed > 0:
+                approved = len([r for r in requests_data if r['status'] == 'completed' and 'Approve' in r.get('response_data', '')])
+                approval_rate = (approved / completed) * 100
+            else:
+                approval_rate = 0
+            
+            return {
+                'total_requests': total,
+                'completed': completed,
+                'pending': pending,
+                'approval_rate': approval_rate
+            }
+        return None
 
-<Card
-  title="Explore integrations"
-  icon="plug"
-  href="/integrations/overview"
->
-  Discover all available integration methods and frameworks.
+# Example usage
+API_KEY = "your_api_key_here"
+LOOP_ID = "your_loop_id_here"
+
+moderation_system = ContentModerationSystem(API_KEY, LOOP_ID)
+
+# Test with sample content
+test_content = [
+    ("user123", "This is a great product! Really helped me out.", "comment"),
+    ("user456", "Buy my crypto course! Link in bio! Make money fast!", "comment"),
+    ("user789", "I disagree with your opinion but respect your perspective.", "comment")
+]
+
+request_ids = []
+for user_id, content, content_type in test_content:
+    request_id = moderation_system.moderate_content(user_id, content, content_type)
+    if request_id:
+        request_ids.append(request_id)
+    time.sleep(1)  # Avoid rate limiting
+
+print(f"\n📊 Created {len(request_ids)} moderation requests")
+print("🔍 Monitor these requests in your HITL dashboard or via webhooks")
+
+# Get stats
+stats = moderation_system.get_moderation_stats()
+if stats:
+    print(f"\n📈 Moderation Statistics:")
+    print(f"   Total requests: {stats['total_requests']}")
+    print(f"   Completed: {stats['completed']}")
+    print(f"   Pending: {stats['pending']}")
+    print(f"   Approval rate: {stats['approval_rate']:.1f}%")
+```
+</Tab>
+</Tabs>
+
+## What's Next?
+
+Congratulations! 🎉 You've built a complete human-in-the-loop content moderation system. Here's what you can explore next:
+
+<CardGroup cols={2}>
+<Card title="Response Types" icon="list" href="/guides/response-types">
+Learn about different response types: text, multiple choice, ratings, and more.
 </Card>
 
-<Card
-  title="View examples"
-  icon="code"
-  href="/examples"
->
-  See real-world examples and use cases for inspiration.
+<Card title="Webhooks Integration" icon="webhook" href="/api-reference/webhooks">
+Set up real-time webhooks for instant notifications when requests are completed.
 </Card>
 
-<Card
-  title="API reference"
-  icon="book"
-  href="/api-reference/introduction"
->
-  Complete API documentation for custom integrations.
+<Card title="Mobile App Guide" icon="mobile" href="/mobile/overview">
+Learn how reviewers use the mobile app to respond to your requests.
 </Card>
 
-## Need help?
+<Card title="Best Practices" icon="star" href="/guides/best-practices">
+Optimize your loops for better performance and reviewer experience.
+</Card>
 
-- **Documentation**: Browse our comprehensive guides
-- **Community**: Join our [Discord community](https://discord.gg/hitlsh)
-- **Support**: Email us at [support@hitl.sh](mailto:support@hitl.sh)
-- **GitHub**: Check out our [open source examples](https://github.com/hitlsh)
+<Card title="SDKs" icon="code" href="/sdks">
+Use our official SDKs for easier integration in Python, Node.js, Go, and PHP.
+</Card>
+
+<Card title="API Playground" icon="play" href="/api-reference/playground">
+Test API endpoints interactively in your browser.
+</Card>
+</CardGroup>
+
+## Real-World Use Cases
+
+Now that you understand the basics, consider these practical applications:
+
+<AccordionGroup>
+<Accordion title="Content Moderation at Scale">
+**Challenge**: Moderate thousands of user posts per day
+**Solution**: Create multiple specialized loops (text content, images, reported content) with different priorities and response types
+
+```python
+# Different loops for different content types
+loops = {
+    'text_moderation': create_loop("Text Content Review", "Review text posts and comments"),
+    'image_moderation': create_loop("Image Content Review", "Review uploaded images"),
+    'reported_content': create_loop("Reported Content", "Priority review of user-reported content")
+}
+```
+</Accordion>
+
+<Accordion title="Data Verification">
+**Challenge**: Verify accuracy of user-submitted business information
+**Solution**: Human reviewers check addresses, phone numbers, and business details
+
+```python
+business_verification = {
+    "request_text": f"Verify this business information:\nName: {business_name}\nAddress: {address}\nPhone: {phone}",
+    "response_type": "multi_select",
+    "response_config": {
+        "options": ["Address verified", "Phone verified", "Hours verified", "Website verified"]
+    }
+}
+```
+</Accordion>
+
+<Accordion title="AI Quality Assurance">
+**Challenge**: Review AI-generated content before publication
+**Solution**: Human editors review AI-written articles, code, or creative content
+
+```python
+ai_review = {
+    "request_text": f"Review this AI-generated article:\n\n{ai_content}",
+    "response_type": "rating",
+    "response_config": {
+        "min_value": 1,
+        "max_value": 5,
+        "labels": {"1": "Poor quality", "5": "Excellent quality"}
+    }
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Support
+
+Need help? We're here for you:
+
+<CardGroup cols={2}>
+<Card title="Documentation" icon="book">
+Browse our complete API documentation and guides
+</Card>
+
+<Card title="Community" icon="users">
+Join our Discord community for developer discussions and support
+</Card>
+
+<Card title="Email Support" icon="envelope">
+Contact support@hitl.sh for technical questions and account issues
+</Card>
+
+<Card title="Status Page" icon="activity">
+Check api-status.hitl.sh for current system status and maintenance updates
+</Card>
+</CardGroup>
+
+**You're all set!** 🚀 You now have a working human-in-the-loop system that can scale to handle real production workloads.

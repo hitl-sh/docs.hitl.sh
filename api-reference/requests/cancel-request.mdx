@@ -1,0 +1,670 @@
+---
+title: "Cancel Request"
+api: "DELETE https://api.hitl.sh/v1/requests/{id}"
+description: "Cancel a pending or claimed request. Only requests that haven't been completed can be cancelled."
+---
+
+Cancel an active request before it's completed. This is useful when a request is no longer needed or when you want to modify the request parameters. Only pending or claimed requests can be cancelled.
+
+<Warning>
+Cancelled requests cannot be restored. If you need the same request processed, you'll need to create a new one.
+</Warning>
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the request to cancel
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message confirming cancellation
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="request_id" type="string">
+      ID of the cancelled request for confirmation
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      New status of the request (always "cancelled")
+    </ResponseField>
+    <ResponseField name="cancelled_at" type="string">
+      ISO timestamp when the request was cancelled
+    </ResponseField>
+    <ResponseField name="previous_status" type="string">
+      Status of the request before cancellation
+    </ResponseField>
+    <ResponseField name="refund_info" type="object">
+      Information about API usage refund (if applicable)
+      <Expandable title="refund_info">
+        <ResponseField name="refunded" type="boolean">
+          Whether the API call was refunded to usage quota
+        </ResponseField>
+        <ResponseField name="reason" type="string">
+          Reason for refund decision
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE https://api.hitl.sh/v1/requests/65f1234567890abcdef12348 \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+```python Python
+import requests
+
+def cancel_request(request_id, confirm=True):
+    """Cancel a request with optional confirmation"""
+    
+    if confirm:
+        # Get request details first
+        get_response = requests.get(
+            f"https://api.hitl.sh/v1/requests/{request_id}",
+            headers={"Authorization": "Bearer your_api_key_here"}
+        )
+        
+        if get_response.status_code == 200:
+            request_data = get_response.json()["data"]["request"]
+            print(f"Request to cancel:")
+            print(f"  ID: {request_data['id']}")
+            print(f"  Status: {request_data['status']}")
+            print(f"  Text: {request_data['request_text'][:100]}...")
+            
+            confirmation = input("Are you sure you want to cancel this request? (yes/no): ")
+            if confirmation.lower() != 'yes':
+                return {"cancelled": False, "reason": "User cancelled operation"}
+    
+    # Proceed with cancellation
+    url = f"https://api.hitl.sh/v1/requests/{request_id}"
+    headers = {"Authorization": "Bearer your_api_key_here"}
+    
+    response = requests.delete(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return {"error": True, "msg": response.json().get("msg", "Cancellation failed")}
+
+# Usage
+result = cancel_request("65f1234567890abcdef12348")
+if not result.get("error"):
+    print(f"Request cancelled successfully at {result['data']['cancelled_at']}")
+else:
+    print(f"Failed to cancel: {result['msg']}")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+async function cancelRequest(requestId, options = {}) {
+    const { confirm = true, reason = null } = options;
+    
+    try {
+        if (confirm) {
+            // Get request details for confirmation
+            const getResponse = await axios.get(
+                `https://api.hitl.sh/v1/requests/${requestId}`,
+                { headers: { 'Authorization': 'Bearer your_api_key_here' } }
+            );
+            
+            const requestData = getResponse.data.data.request;
+            console.log(`About to cancel request:`);
+            console.log(`  ID: ${requestData.id}`);
+            console.log(`  Status: ${requestData.status}`);
+            console.log(`  Priority: ${requestData.priority}`);
+            
+            // In a real app, you'd show a confirmation dialog
+            const confirmed = confirm(`Cancel request ${requestId}?`);
+            if (!confirmed) {
+                return { cancelled: false, reason: 'User cancelled operation' };
+            }
+        }
+        
+        // Proceed with cancellation
+        const response = await axios.delete(
+            `https://api.hitl.sh/v1/requests/${requestId}`,
+            {
+                headers: { 'Authorization': 'Bearer your_api_key_here' },
+                data: reason ? { reason } : undefined
+            }
+        );
+        
+        console.log(`✅ Request cancelled successfully`);
+        return response.data;
+        
+    } catch (error) {
+        console.error(`❌ Failed to cancel request:`, error.response?.data?.msg);
+        return { 
+            error: true, 
+            msg: error.response?.data?.msg || 'Cancellation failed' 
+        };
+    }
+}
+
+// Usage examples
+await cancelRequest('65f1234567890abcdef12348');
+await cancelRequest('65f1234567890abcdef12349', { confirm: false, reason: 'Request no longer needed' });
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Pending Request Cancelled
+{
+  "error": false,
+  "msg": "Request cancelled successfully",
+  "data": {
+    "request_id": "65f1234567890abcdef12348",
+    "status": "cancelled",
+    "cancelled_at": "2024-03-15T11:15:00Z",
+    "previous_status": "pending",
+    "refund_info": {
+      "refunded": true,
+      "reason": "Request cancelled before processing began"
+    }
+  }
+}
+```
+
+```json Claimed Request Cancelled
+{
+  "error": false,
+  "msg": "Request cancelled successfully",
+  "data": {
+    "request_id": "65f1234567890abcdef12349",
+    "status": "cancelled",
+    "cancelled_at": "2024-03-15T11:20:00Z",
+    "previous_status": "claimed",
+    "refund_info": {
+      "refunded": false,
+      "reason": "Request was already being processed by reviewer"
+    }
+  }
+}
+```
+
+</ResponseExample>
+
+## Cancellation Rules
+
+### What Can Be Cancelled
+
+<CardGroup cols={2}>
+<Card title="Pending Requests" icon="clock">
+**Status**: `pending`
+- Not yet claimed by a reviewer
+- Full API usage refund typically granted
+- No reviewer impact
+</Card>
+
+<Card title="Claimed Requests" icon="user-check">
+**Status**: `claimed`
+- Reviewer is actively working on it
+- May impact reviewer workflow
+- No API usage refund (reviewer time invested)
+</Card>
+</CardGroup>
+
+### What Cannot Be Cancelled
+
+<CardGroup cols={2}>
+<Card title="Completed Requests" icon="check-circle">
+**Status**: `completed`
+- Reviewer has submitted response
+- Use feedback system instead
+- Response data is final
+</Card>
+
+<Card title="Final Status Requests" icon="x-circle">
+**Status**: `timeout`, `cancelled`
+- Already in final state
+- No further action possible
+- Historical record preserved
+</Card>
+</CardGroup>
+
+## Impact of Cancellation
+
+### On API Usage
+
+<AccordionGroup>
+<Accordion title="Pending Request Cancellation">
+**Refund Policy**: Usually refunded to API quota
+- Request never reached a reviewer
+- No processing time invested
+- Full refund to your hourly limit
+
+**Example**: If you've used 45/100 API calls this hour and cancel a pending request, you'll have 46/100 remaining.
+</Accordion>
+
+<Accordion title="Claimed Request Cancellation">
+**Refund Policy**: Usually no refund
+- Reviewer time already invested
+- Notification sent to reviewer about cancellation
+- Count remains against your quota
+
+**Example**: Cancelling a claimed request won't restore your API call count.
+</Accordion>
+</AccordionGroup>
+
+### On Reviewers
+
+<AccordionGroup>
+<Accordion title="Reviewer Notification">
+When you cancel a claimed request:
+- Reviewer receives cancellation notification
+- They can't submit a response anymore
+- Their work-in-progress is discarded
+- May affect reviewer satisfaction metrics
+</Accordion>
+
+<Accordion title="Reviewer Impact Mitigation">
+Best practices to minimize reviewer impact:
+- Cancel as early as possible
+- Provide cancellation reason when available
+- Avoid frequent cancellations of claimed requests
+- Consider request parameters more carefully before submitting
+</Accordion>
+</AccordionGroup>
+
+## Cancellation Strategies
+
+### Batch Cancellation
+
+Cancel multiple requests efficiently:
+
+<CodeGroup>
+
+```python Python
+def batch_cancel_requests(request_ids, max_concurrent=5):
+    """Cancel multiple requests with rate limiting"""
+    import concurrent.futures
+    import time
+    
+    def cancel_single_request(request_id):
+        try:
+            response = requests.delete(
+                f"https://api.hitl.sh/v1/requests/{request_id}",
+                headers={"Authorization": "Bearer your_api_key_here"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()["data"]
+                return {
+                    "request_id": request_id,
+                    "status": "cancelled",
+                    "refunded": data["refund_info"]["refunded"],
+                    "previous_status": data["previous_status"]
+                }
+            else:
+                return {
+                    "request_id": request_id,
+                    "status": "error",
+                    "error": response.json().get("msg", "Unknown error")
+                }
+        except Exception as e:
+            return {
+                "request_id": request_id,
+                "status": "exception",
+                "error": str(e)
+            }
+    
+    results = []
+    
+    # Process in batches to respect rate limits
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent) as executor:
+        # Submit all requests
+        future_to_id = {
+            executor.submit(cancel_single_request, req_id): req_id 
+            for req_id in request_ids
+        }
+        
+        for future in concurrent.futures.as_completed(future_to_id):
+            result = future.result()
+            results.append(result)
+            
+            # Small delay to avoid hitting rate limits
+            time.sleep(0.1)
+    
+    # Summarize results
+    summary = {
+        "total_requests": len(request_ids),
+        "successfully_cancelled": sum(1 for r in results if r["status"] == "cancelled"),
+        "errors": [r for r in results if r["status"] in ["error", "exception"]],
+        "refunds_granted": sum(1 for r in results if r.get("refunded", False)),
+        "details": results
+    }
+    
+    return summary
+
+# Usage
+request_ids = ["65f1234567890abcdef12348", "65f1234567890abcdef12349", "65f1234567890abcdef12350"]
+results = batch_cancel_requests(request_ids)
+
+print(f"Cancelled {results['successfully_cancelled']}/{results['total_requests']} requests")
+print(f"Refunds granted: {results['refunds_granted']}")
+
+for error in results['errors']:
+    print(f"Error cancelling {error['request_id']}: {error['error']}")
+```
+
+```javascript Node.js
+async function batchCancelRequests(requestIds, maxConcurrent = 5) {
+    const results = [];
+    const semaphore = new Semaphore(maxConcurrent);
+    
+    const cancelPromises = requestIds.map(async (requestId) => {
+        await semaphore.acquire();
+        
+        try {
+            const response = await axios.delete(
+                `https://api.hitl.sh/v1/requests/${requestId}`,
+                { headers: { 'Authorization': 'Bearer your_api_key_here' } }
+            );
+            
+            return {
+                requestId,
+                status: 'cancelled',
+                refunded: response.data.data.refund_info.refunded,
+                previousStatus: response.data.data.previous_status
+            };
+            
+        } catch (error) {
+            return {
+                requestId,
+                status: 'error',
+                error: error.response?.data?.msg || error.message
+            };
+        } finally {
+            semaphore.release();
+            // Small delay to respect rate limits
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+    });
+    
+    const results = await Promise.all(cancelPromises);
+    
+    // Summarize results
+    const summary = {
+        totalRequests: requestIds.length,
+        successfullyCancelled: results.filter(r => r.status === 'cancelled').length,
+        errors: results.filter(r => r.status === 'error'),
+        refundsGranted: results.filter(r => r.refunded).length,
+        details: results
+    };
+    
+    return summary;
+}
+
+// Simple semaphore implementation for rate limiting
+class Semaphore {
+    constructor(count) {
+        this.count = count;
+        this.waiting = [];
+    }
+    
+    async acquire() {
+        return new Promise(resolve => {
+            if (this.count > 0) {
+                this.count--;
+                resolve();
+            } else {
+                this.waiting.push(resolve);
+            }
+        });
+    }
+    
+    release() {
+        this.count++;
+        if (this.waiting.length > 0) {
+            const resolve = this.waiting.shift();
+            this.count--;
+            resolve();
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+### Smart Cancellation Logic
+
+Implement intelligent cancellation based on request status:
+
+```python
+def smart_cancel_requests(filter_criteria):
+    """Cancel requests based on smart criteria"""
+    
+    # Get requests matching criteria
+    params = {}
+    if filter_criteria.get('status'):
+        params['status'] = filter_criteria['status']
+    if filter_criteria.get('priority'):
+        params['priority'] = filter_criteria['priority']
+    if filter_criteria.get('created_before'):
+        params['created_before'] = filter_criteria['created_before']
+    
+    response = requests.get(
+        "https://api.hitl.sh/v1/requests",
+        headers={"Authorization": "Bearer your_api_key_here"},
+        params=params
+    )
+    
+    requests_to_cancel = response.json()["data"]["requests"]
+    
+    # Smart filtering
+    smart_candidates = []
+    
+    for req in requests_to_cancel:
+        should_cancel = False
+        reason = ""
+        
+        # Only cancel if safe to do so
+        if req["status"] == "pending":
+            # Check if request is old and likely not urgent
+            created_at = datetime.fromisoformat(req["created_at"].replace("Z", "+00:00"))
+            age_hours = (datetime.now(timezone.utc) - created_at).total_seconds() / 3600
+            
+            if age_hours > 24 and req["priority"] in ["low", "medium"]:
+                should_cancel = True
+                reason = f"Old {req['priority']} priority request ({age_hours:.1f}h old)"
+        
+        elif req["status"] == "claimed":
+            # Only cancel claimed requests in special circumstances
+            created_at = datetime.fromisoformat(req["created_at"].replace("Z", "+00:00"))
+            age_hours = (datetime.now(timezone.utc) - created_at).total_seconds() / 3600
+            
+            if age_hours > 4 and req["priority"] == "low":  # Very conservative
+                should_cancel = True
+                reason = f"Low priority request claimed for {age_hours:.1f}h"
+        
+        if should_cancel:
+            smart_candidates.append({
+                "request_id": req["id"],
+                "reason": reason,
+                "status": req["status"],
+                "priority": req["priority"],
+                "age_hours": age_hours
+            })
+    
+    # Show candidates and get confirmation
+    if not smart_candidates:
+        return {"message": "No requests meet smart cancellation criteria"}
+    
+    print(f"Found {len(smart_candidates)} requests for smart cancellation:")
+    for candidate in smart_candidates:
+        print(f"  {candidate['request_id']}: {candidate['reason']}")
+    
+    confirmation = input(f"\nCancel {len(smart_candidates)} requests? (yes/no): ")
+    if confirmation.lower() != 'yes':
+        return {"cancelled": False, "reason": "User cancelled operation"}
+    
+    # Cancel the selected requests
+    cancel_results = batch_cancel_requests([c["request_id"] for c in smart_candidates])
+    cancel_results["smart_criteria"] = smart_candidates
+    
+    return cancel_results
+```
+
+## Error Handling
+
+### Common Error Scenarios
+
+<AccordionGroup>
+<Accordion title="Request Not Found">
+```json
+{
+  "error": true,
+  "msg": "Request not found"
+}
+```
+
+**Causes:**
+- Invalid request ID
+- Request doesn't exist
+- Request doesn't belong to your API key
+</Accordion>
+
+<Accordion title="Cannot Cancel Completed Request">
+```json
+{
+  "error": true,
+  "msg": "Request cannot be cancelled in current state"
+}
+```
+
+**Cause:** Request is already completed, timed out, or cancelled.
+**Solution:** Use the feedback endpoint for completed requests instead.
+</Accordion>
+
+<Accordion title="Access Denied">
+```json
+{
+  "error": true,
+  "msg": "Access denied to this request"
+}
+```
+
+**Cause:** Request was created by a different API key.
+**Solution:** Ensure you're using the correct API key that created the request.
+</Accordion>
+</AccordionGroup>
+
+### Error Recovery
+
+Handle cancellation errors gracefully:
+
+```javascript
+async function safeCancel(requestId, retries = 2) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            const response = await axios.delete(
+                `https://api.hitl.sh/v1/requests/${requestId}`,
+                { headers: { 'Authorization': 'Bearer your_api_key_here' } }
+            );
+            
+            return { success: true, data: response.data };
+            
+        } catch (error) {
+            const errorMsg = error.response?.data?.msg;
+            
+            // Don't retry certain errors
+            if (errorMsg?.includes('cannot be cancelled') || 
+                errorMsg?.includes('not found') || 
+                errorMsg?.includes('access denied')) {
+                return { 
+                    success: false, 
+                    error: errorMsg, 
+                    retryable: false 
+                };
+            }
+            
+            // Retry for network errors or rate limits
+            if (attempt < retries) {
+                const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+                console.log(`Retrying cancellation in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+            
+            return { 
+                success: false, 
+                error: errorMsg || 'Cancellation failed after retries',
+                retryable: true
+            };
+        }
+    }
+}
+```
+
+## Alternative Actions
+
+### Instead of Cancelling
+
+Consider these alternatives:
+
+<AccordionGroup>
+<Accordion title="Wait for Completion">
+If the request is already claimed, consider waiting for completion and then providing feedback on the response quality.
+</Accordion>
+
+<Accordion title="Create Refined Request">
+Create a new request with improved parameters rather than cancelling and losing the original request history.
+</Accordion>
+
+<Accordion title="Add Context">
+Some use cases: Add additional context to help reviewers rather than cancelling. (Note: This feature may be added in the future)
+</Accordion>
+
+<Accordion title="Priority Adjustment">
+Future feature: Adjust request priority instead of cancelling. (This feature may be added in the future)
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+### When to Cancel
+
+1. **Early Cancellation**: Cancel as soon as you know the request is no longer needed
+2. **Batch Processing**: If cancelling multiple requests, use batch operations
+3. **Communication**: Provide cancellation reasons when possible (future feature)
+4. **Timing**: Avoid cancelling requests that are likely to be completed soon
+
+### When Not to Cancel
+
+1. **Claimed Requests**: Avoid cancelling unless absolutely necessary
+2. **High Priority**: Don't cancel urgent requests without good reason
+3. **Near Completion**: If a request is likely to complete soon, wait instead
+4. **Frequent Pattern**: Avoid creating a pattern of frequent cancellations
+
+## Next Steps
+
+<Card title="Create New Request" icon="plus" href="/api-reference/requests/create-request">
+  Create a new request to replace the cancelled one with improved parameters.
+</Card>
+
+<Card title="Request Feedback" icon="comment" href="/api-reference/requests/add-feedback">
+  Learn how to provide feedback on completed requests instead of cancelling.
+</Card>
+
+<Card title="Monitor Requests" icon="chart-line" href="/api-reference/requests/get-requests">
+  Track your request patterns to optimize future request parameters.
+</Card>

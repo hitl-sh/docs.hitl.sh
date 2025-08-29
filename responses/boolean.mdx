@@ -1,0 +1,791 @@
+---
+title: "Boolean Responses"
+description: "Complete guide to implementing boolean responses for binary decisions, yes/no workflows, and simple true/false evaluations with custom labeling"
+---
+
+# Boolean Responses
+
+Boolean responses provide the simplest form of human decision-making: true or false, yes or no, approve or reject. With customizable labels and colors, they're perfect for binary decisions that don't require complex analysis or multiple options.
+
+## When to Use Boolean Responses
+
+Boolean responses are ideal for:
+
+<CardGroup cols={2}>
+<Card title="Simple Approvals" icon="check-circle">
+Basic approve/reject workflows, go/no-go decisions, or binary authorization processes
+</Card>
+
+<Card title="Binary Classification" icon="split">
+Categorizing content as compliant/non-compliant, safe/unsafe, or valid/invalid
+</Card>
+
+<Card title="Feature Flags" icon="toggle-on">
+Enabling or disabling features, settings, or capabilities based on human judgment
+</Card>
+
+<Card title="Quick Verification" icon="eye">
+Fast verification tasks where detailed analysis isn't needed, just confirmation or denial
+</Card>
+</CardGroup>
+
+## Configuration Options
+
+Boolean responses support custom labeling and visual styling for both true and false states:
+
+### Optional Parameters
+
+<ParamField body="true_label" type="string" optional default="True">
+Display text for the true/yes option (max 100 characters)
+</ParamField>
+
+<ParamField body="false_label" type="string" optional default="False">
+Display text for the false/no option (max 100 characters)
+</ParamField>
+
+<ParamField body="true_color" type="string" optional default="#16a34a">
+Hex color code for the true option visual styling
+</ParamField>
+
+<ParamField body="false_color" type="string" optional default="#dc2626">
+Hex color code for the false option visual styling
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a decision is mandatory for completion
+</ParamField>
+
+## Implementation Examples
+
+### Content Approval Workflow
+
+Simple approve/reject decision for content moderation:
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Does this user-generated post comply with our community guidelines?\n\n**Post Content:**\n'Just finished reading an amazing book on productivity! \"Getting Things Done\" by David Allen completely changed how I organize my work. The key insight for me was the two-minute rule - if something takes less than two minutes, just do it immediately instead of adding it to your todo list. Has anyone else read this? What productivity methods work best for you?'\n\n**Community Guidelines Check:**\n- No spam or promotional content ✓\n- Respectful tone ✓  \n- Relevant to community topic ✓\n- No personal attacks ✓\n- Encourages discussion ✓",
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "✅ Approve Post",
+        "false_label": "❌ Reject Post", 
+        "true_color": "#16a34a",
+        "false_color": "#dc2626",
+        "required": True
+    },
+    "default_response": False,  # Conservative default - reject if timeout
+    "timeout_seconds": 1800,  # 30 minutes
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "high",
+    request_text: "Does this user-generated post comply with our community guidelines?\n\n**Post Content:**\n'Just finished reading an amazing book on productivity! \"Getting Things Done\" by David Allen completely changed how I organize my work. The key insight for me was the two-minute rule - if something takes less than two minutes, just do it immediately instead of adding it to your todo list. Has anyone else read this? What productivity methods work best for you?'\n\n**Community Guidelines Check:**\n- No spam or promotional content ✓\n- Respectful tone ✓\n- Relevant to community topic ✓\n- No personal attacks ✓\n- Encourages discussion ✓",
+    response_type: "boolean",
+    response_config: {
+        true_label: "✅ Approve Post",
+        false_label: "❌ Reject Post",
+        true_color: "#16a34a", 
+        false_color: "#dc2626",
+        required: true
+    },
+    default_response: false,
+    timeout_seconds: 1800,
+    platform: "api"
+};
+```
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown", 
+    "priority": "high",
+    "request_text": "Does this user-generated post comply with our community guidelines?...",
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "✅ Approve Post",
+        "false_label": "❌ Reject Post",
+        "true_color": "#16a34a",
+        "false_color": "#dc2626", 
+        "required": true
+    },
+    "default_response": false,
+    "timeout_seconds": 1800,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+### Security Threat Assessment
+
+Binary risk evaluation for security incidents:
+
+<CodeGroup>
+
+```python Python
+# Security threat classification
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "critical",
+    "request_text": "Is this network activity indicative of a security threat requiring immediate response?\n\n**Alert Details:**\n- Source IP: 203.0.113.45 (Known malicious IP from threat feed)\n- Target: Internal server 10.0.1.15 (Database server)\n- Activity: Multiple SSH brute force attempts\n- Timeline: 200+ failed attempts in last 10 minutes\n- User accounts targeted: admin, root, postgres, backup\n\n**Context:**\n- Database contains customer PII and financial data\n- Server has internet-facing SSH (port 22) enabled\n- No legitimate admin access expected at this time\n- Similar pattern matches APT campaign signatures",
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "🚨 SECURITY THREAT - Immediate Response",
+        "false_label": "ℹ️ False Positive - Monitor Only",
+        "true_color": "#dc2626",
+        "false_color": "#059669", 
+        "required": True
+    },
+    "default_response": True,  # Conservative default - treat as threat
+    "timeout_seconds": 600,  # 10 minutes - urgent response needed
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+// Transaction verification
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "high",
+    request_text: "Is this financial transaction legitimate and safe to process?\n\n**Transaction Details:**\n- Amount: $2,847.50\n- From: Sarah Johnson (verified customer since 2019)\n- To: ABC Electronics Ltd (established merchant)\n- Payment Method: Credit card ending in 4532\n- Location: Chicago, IL (matches customer's registered address)\n- Time: 2:30 PM CST (normal business hours)\n\n**Risk Factors:**\n- Transaction amount is 15% higher than customer's usual purchases\n- Merchant category matches customer's purchase history\n- No recent fraud reports on this card\n- Customer's device and browser fingerprint match previous sessions",
+    response_type: "boolean", 
+    response_config: {
+        true_label: "✅ Approve Transaction",
+        false_label: "🛑 Block & Review",
+        true_color: "#16a34a",
+        false_color: "#dc2626",
+        required: true
+    },
+    default_response: false, // Block by default for financial safety
+    timeout_seconds: 900, // 15 minutes
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+### Feature Release Decision
+
+Go/no-go decision for feature deployment:
+
+<CodeGroup>
+
+```python Python
+# Feature release approval
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown", 
+    "priority": "medium",
+    "request_text": "Should we proceed with the scheduled release of the new user dashboard feature?\n\n**Release Readiness Check:**\n\n**✅ Completed Items:**\n- All unit tests passing (247/247)\n- Integration tests successful\n- Security audit completed with no critical findings\n- Performance testing shows 15% improvement in load times\n- Documentation updated\n- Support team training completed\n\n**⚠️ Outstanding Items:**\n- 2 minor UI bugs in Safari (non-blocking)\n- Analytics tracking for new features (nice-to-have)\n- A/B testing framework integration (planned for next sprint)\n\n**Risk Assessment:**\n- Low risk deployment\n- Rollback plan tested and ready\n- Feature flags enabled for gradual rollout\n- Customer support prepared for potential issues",
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "🚀 GO - Proceed with Release",
+        "false_label": "⏸️ NO-GO - Delay Release",
+        "true_color": "#16a34a",
+        "false_color": "#f59e0b",
+        "required": True
+    },
+    "default_response": False,  # Conservative - don't release without explicit approval
+    "timeout_seconds": 86400,  # 24 hours
+    "platform": "api"
+}
+```
+
+</CodeGroup>
+
+## Response Format
+
+When a reviewer makes a boolean decision, you'll receive both the boolean value and associated label:
+
+```json
+{
+  "response_data": {
+    "boolean": true,
+    "boolean_label": "✅ Approve Post"
+  }
+}
+```
+
+## Use Case Examples
+
+### 1. Content Moderation
+
+<Tabs>
+<Tab title="Configuration">
+```python
+content_moderation_config = {
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "✅ Content Approved",
+        "false_label": "❌ Content Rejected",
+        "true_color": "#16a34a",
+        "false_color": "#dc2626",
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "boolean": true,
+    "boolean_label": "✅ Content Approved"
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_content_moderation(response_data, content_id, user_id):
+    is_approved = response_data["boolean"]
+    decision_label = response_data["boolean_label"]
+    
+    if is_approved:
+        # Approve content for publication
+        approve_content(content_id)
+        set_content_status(content_id, "published")
+        notify_user(user_id, "content_approved", {
+            "content_id": content_id,
+            "message": "Your content has been approved and is now live."
+        })
+        
+        # Track positive moderation
+        log_moderation_decision(content_id, "approved", decision_label)
+        update_user_reputation(user_id, +1)  # Slight reputation boost
+        
+    else:
+        # Reject content
+        reject_content(content_id)
+        set_content_status(content_id, "rejected")
+        notify_user(user_id, "content_rejected", {
+            "content_id": content_id, 
+            "message": "Your content was not approved. Please review our community guidelines.",
+            "guidelines_url": "https://example.com/guidelines"
+        })
+        
+        # Track negative moderation
+        log_moderation_decision(content_id, "rejected", decision_label)
+        
+        # Check for repeated violations
+        recent_rejections = get_recent_rejections(user_id, days=30)
+        if len(recent_rejections) >= 3:
+            escalate_user_review(user_id, "multiple_rejections")
+    
+    # Update moderation analytics
+    update_moderation_metrics(is_approved, content_id)
+    
+    # Store decision for audit trail
+    store_moderation_audit({
+        "content_id": content_id,
+        "moderator_decision": is_approved,
+        "decision_timestamp": datetime.utcnow(),
+        "review_duration_seconds": get_review_duration(content_id)
+    })
+```
+</Tab>
+</Tabs>
+
+### 2. Financial Transaction Verification
+
+<Tabs>
+<Tab title="Configuration">
+```python
+transaction_verification_config = {
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "💳 Approve Transaction",
+        "false_label": "🛡️ Block Transaction",
+        "true_color": "#059669",
+        "false_color": "#dc2626",
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "boolean": false,
+    "boolean_label": "🛡️ Block Transaction"
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_transaction_verification(response_data, transaction_id):
+    is_approved = response_data["boolean"]
+    decision_label = response_data["boolean_label"]
+    
+    transaction = get_transaction(transaction_id)
+    
+    if is_approved:
+        # Process the transaction
+        process_payment(transaction_id)
+        set_transaction_status(transaction_id, "completed")
+        
+        # Notify customer of successful transaction
+        send_transaction_confirmation(
+            customer_id=transaction["customer_id"],
+            transaction_id=transaction_id,
+            amount=transaction["amount"]
+        )
+        
+        # Update fraud detection systems
+        report_legitimate_transaction(transaction)
+        
+        # Log approval
+        log_transaction_decision(transaction_id, "approved", decision_label)
+        
+    else:
+        # Block the transaction
+        block_transaction(transaction_id)
+        set_transaction_status(transaction_id, "blocked_fraud_review")
+        
+        # Notify customer with fraud alert
+        send_fraud_alert(
+            customer_id=transaction["customer_id"], 
+            transaction_id=transaction_id,
+            blocked_amount=transaction["amount"],
+            contact_number=get_fraud_hotline()
+        )
+        
+        # Update fraud detection model
+        report_suspicious_transaction(transaction)
+        
+        # Create fraud case
+        create_fraud_investigation_case({
+            "transaction_id": transaction_id,
+            "customer_id": transaction["customer_id"],
+            "blocked_amount": transaction["amount"],
+            "risk_factors": transaction.get("risk_factors", []),
+            "review_timestamp": datetime.utcnow()
+        })
+        
+        # Check for pattern of blocked transactions
+        recent_blocks = get_recent_blocks(transaction["customer_id"], days=7)
+        if len(recent_blocks) >= 2:
+            escalate_to_fraud_team(transaction["customer_id"])
+    
+    # Update transaction analytics
+    update_fraud_detection_metrics(is_approved, transaction)
+    
+    # Store audit record
+    store_transaction_audit({
+        "transaction_id": transaction_id,
+        "human_decision": is_approved,
+        "decision_confidence": get_reviewer_confidence(),
+        "audit_timestamp": datetime.utcnow()
+    })
+    
+    return {
+        "transaction_processed": is_approved,
+        "status": "completed" if is_approved else "blocked",
+        "next_steps": get_next_steps(is_approved, transaction)
+    }
+
+def get_next_steps(approved, transaction):
+    if approved:
+        return "Transaction completed successfully"
+    else:
+        return f"Customer contacted for verification. Case #{create_case_number()}"
+```
+</Tab>
+</Tabs>
+
+### 3. System Health Monitoring
+
+<Tabs>
+<Tab title="Configuration">
+```python
+system_health_config = {
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "🟢 System Healthy - Continue Operation",
+        "false_label": "🔴 System Issue - Investigate Required",
+        "true_color": "#16a34a", 
+        "false_color": "#dc2626",
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "boolean": false,
+    "boolean_label": "🔴 System Issue - Investigate Required"
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_system_health_check(response_data, system_id, alert_id):
+    system_healthy = response_data["boolean"]
+    status_label = response_data["boolean_label"]
+    
+    system_info = get_system_info(system_id)
+    
+    if system_healthy:
+        # Mark system as healthy
+        update_system_status(system_id, "healthy")
+        resolve_alert(alert_id, "false_positive")
+        
+        # Clear any maintenance flags
+        clear_maintenance_mode(system_id)
+        
+        # Update monitoring sensitivity if frequent false positives
+        recent_false_positives = get_recent_false_positives(system_id, days=7)
+        if len(recent_false_positives) >= 3:
+            adjust_monitoring_thresholds(system_id, direction="less_sensitive")
+        
+        # Log resolution
+        log_system_decision(system_id, "healthy", status_label)
+        
+    else:
+        # System has issues - initiate incident response
+        update_system_status(system_id, "degraded")
+        escalate_alert(alert_id, priority="high")
+        
+        # Create incident
+        incident_id = create_incident({
+            "system_id": system_id,
+            "alert_id": alert_id,
+            "severity": determine_incident_severity(system_info),
+            "description": f"System health issue confirmed by human review",
+            "created_timestamp": datetime.utcnow()
+        })
+        
+        # Notify on-call team
+        notify_oncall_team(incident_id, system_info)
+        
+        # Check if system should be taken offline
+        if is_critical_system(system_id):
+            evaluate_for_maintenance_mode(system_id, incident_id)
+        
+        # Update incident response metrics
+        update_mttr_tracking(incident_id)
+        
+        # Log issue confirmation
+        log_system_decision(system_id, "issue_confirmed", status_label)
+    
+    # Update system health dashboard
+    update_health_dashboard(system_id, system_healthy)
+    
+    # Store decision for analysis
+    store_health_check_audit({
+        "system_id": system_id,
+        "alert_id": alert_id,
+        "human_assessment": system_healthy,
+        "reviewer_confidence": get_reviewer_confidence(),
+        "decision_timestamp": datetime.utcnow(),
+        "system_metrics_at_review": get_system_metrics(system_id)
+    })
+    
+    return {
+        "system_status": "healthy" if system_healthy else "issue_detected",
+        "incident_created": not system_healthy,
+        "next_actions": get_system_next_actions(system_healthy, system_id)
+    }
+
+def determine_incident_severity(system_info):
+    if system_info.get("is_customer_facing", False):
+        return "P1"  # Customer impact
+    elif system_info.get("is_business_critical", False):
+        return "P2"  # Business impact
+    else:
+        return "P3"  # Internal impact
+```
+</Tab>
+</Tabs>
+
+## Validation and Error Handling
+
+### Automatic Validation
+
+The mobile app automatically validates boolean responses:
+
+- **Type validation**: Ensures response is exactly true or false
+- **Required validation**: Prevents submission when required=true and no selection made
+- **Null prevention**: Blocks null, undefined, or empty responses
+
+### Server-Side Validation
+
+Your application should validate received boolean responses:
+
+```python
+def validate_boolean_response(response_data, response_config):
+    """Validate boolean response against configuration"""
+    
+    if not isinstance(response_data, dict):
+        return False, "Response must be an object"
+    
+    if "boolean" not in response_data:
+        return False, "Missing boolean field"
+    
+    boolean_value = response_data["boolean"]
+    
+    # Validate boolean type  
+    if not isinstance(boolean_value, bool):
+        return False, "Value must be true or false"
+    
+    # Check required
+    if response_config.get("required", False) and boolean_value is None:
+        return False, "Boolean decision is required"
+    
+    # Validate associated label exists
+    if "boolean_label" not in response_data:
+        return False, "Missing boolean_label field"
+    
+    return True, "Valid"
+
+# Usage example
+is_valid, error_message = validate_boolean_response(
+    response_data={
+        "boolean": True,
+        "boolean_label": "✅ Approve Post"
+    },
+    response_config={
+        "required": True
+    }
+)
+```
+
+## Best Practices
+
+### Label Design
+
+<AccordionGroup>
+<Accordion title="Make Labels Action-Oriented">
+- Use active verbs: "Approve Content" vs "Content is Good"
+- Be specific about consequences: "Block Transaction" vs "No"
+- Include outcomes: "Publish Article" vs "Yes"
+- Consider what happens next: "Schedule Meeting" vs "Agree"
+</Accordion>
+
+<Accordion title="Use Visual Indicators">
+- Add emojis for quick visual recognition (✅❌🚨⚠️)
+- Choose appropriate colors (green for positive, red for negative)
+- Maintain consistency across similar decision types
+- Consider colorblind accessibility with emojis/text
+</Accordion>
+
+<Accordion title="Balance True/False Options">
+- Make both options equally clear and understandable
+- Avoid biased language that pushes toward one choice
+- Ensure both options are valid business outcomes
+- Test label clarity with actual reviewers
+</Accordion>
+
+<Accordion title="Context-Appropriate Wording">
+- Match tone to the severity (formal for legal, casual for features)
+- Use domain-specific language when appropriate
+- Consider cultural differences in yes/no interpretation
+- Keep labels concise but descriptive (under 50 characters ideal)
+</Accordion>
+</AccordionGroup>
+
+### Processing Best Practices
+
+<AccordionGroup>
+<Accordion title="Clear Branching Logic">
+```python
+# Simple, readable boolean processing
+def process_boolean_decision(response_data, context):
+    decision = response_data["boolean"]
+    
+    if decision:
+        return handle_positive_case(context)
+    else:
+        return handle_negative_case(context)
+
+# Avoid complex nested logic for boolean responses
+# If you need complex logic, consider single_select instead
+```
+</Accordion>
+
+<Accordion title="Defensive Default Values">
+```python
+# Always choose the safer default for timeout scenarios
+safe_defaults = {
+    "content_approval": False,      # Reject unknown content
+    "financial_transaction": False, # Block suspicious payments  
+    "system_deployment": False,     # Don't deploy without approval
+    "user_access_grant": False,     # Deny access by default
+    "data_deletion": False          # Don't delete without confirmation
+}
+```
+</Accordion>
+
+<Accordion title="Audit and Analytics">
+```python
+# Track boolean decision patterns
+def analyze_boolean_decisions(decision_type, time_period_days=30):
+    decisions = get_boolean_decisions(decision_type, time_period_days)
+    
+    total_decisions = len(decisions)
+    true_decisions = sum(1 for d in decisions if d["boolean"])
+    false_decisions = total_decisions - true_decisions
+    
+    # Calculate rates
+    approval_rate = (true_decisions / total_decisions) * 100 if total_decisions > 0 else 0
+    
+    # Track decision consistency among reviewers
+    reviewer_consistency = calculate_reviewer_agreement(decisions)
+    
+    return {
+        "total_decisions": total_decisions,
+        "approval_rate": f"{approval_rate:.1f}%",
+        "rejection_rate": f"{100 - approval_rate:.1f}%",
+        "reviewer_consistency": reviewer_consistency,
+        "most_common_decision": "approve" if true_decisions > false_decisions else "reject"
+    }
+```
+</Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### Progressive Decision Making
+
+```python
+# Use boolean responses in sequence for complex workflows
+def create_progressive_approval_workflow(content_id):
+    """Create multi-stage boolean approval process"""
+    
+    # Stage 1: Initial safety check
+    safety_check = create_boolean_request(
+        loop_id="safety_team",
+        request_text=f"Is content {content_id} safe for general audiences?",
+        true_label="✅ Content is Safe",
+        false_label="⚠️ Content Needs Review"
+    )
+    
+    # Stage 2: Quality assessment (only if safety approved)
+    if safety_check["response"]["boolean"]:
+        quality_check = create_boolean_request(
+            loop_id="quality_team", 
+            request_text=f"Does content {content_id} meet quality standards?",
+            true_label="⭐ High Quality",
+            false_label="📝 Needs Improvement"
+        )
+        
+        # Stage 3: Final publication decision
+        if quality_check["response"]["boolean"]:
+            final_approval = create_boolean_request(
+                loop_id="editorial_team",
+                request_text=f"Approve content {content_id} for publication?",
+                true_label="🚀 Publish Now",
+                false_label="📅 Schedule for Later"
+            )
+```
+
+### Consensus Building
+
+```python
+# Multiple boolean responses for consensus decisions
+def build_consensus_decision(request_text, reviewer_count=3):
+    """Create multiple boolean requests for consensus building"""
+    
+    requests = []
+    for i in range(reviewer_count):
+        request = create_boolean_request(
+            loop_id="consensus_loop",
+            request_text=request_text,
+            true_label="👍 Approve",
+            false_label="👎 Reject"
+        )
+        requests.append(request)
+    
+    # Wait for all responses
+    responses = wait_for_all_responses(requests)
+    
+    # Calculate consensus
+    approvals = sum(1 for r in responses if r["response"]["boolean"])
+    consensus_threshold = len(responses) // 2 + 1  # Majority
+    
+    return {
+        "decision": approvals >= consensus_threshold,
+        "approval_count": approvals,
+        "total_reviewers": len(responses),
+        "consensus_strength": approvals / len(responses)
+    }
+```
+
+### A/B Testing Integration
+
+```python
+# Use boolean responses to evaluate A/B test results
+def evaluate_ab_test_results(test_id, variant_a_metrics, variant_b_metrics):
+    """Human evaluation of A/B test statistical significance"""
+    
+    request_text = f"""
+    Based on these A/B test results, should we proceed with Variant B?
+    
+    **Test Duration:** 14 days
+    **Sample Size:** {variant_a_metrics['users']} vs {variant_b_metrics['users']} users
+    
+    **Variant A (Control):**
+    - Conversion Rate: {variant_a_metrics['conversion_rate']:.2%}
+    - Revenue per User: ${variant_a_metrics['revenue_per_user']:.2f}
+    - User Satisfaction: {variant_a_metrics['satisfaction']:.1f}/10
+    
+    **Variant B (Test):**
+    - Conversion Rate: {variant_b_metrics['conversion_rate']:.2%}
+    - Revenue per User: ${variant_b_metrics['revenue_per_user']:.2f}
+    - User Satisfaction: {variant_b_metrics['satisfaction']:.1f}/10
+    
+    **Statistical Significance:** {calculate_statistical_significance(variant_a_metrics, variant_b_metrics)}
+    """
+    
+    return create_boolean_request(
+        loop_id="data_science_team",
+        request_text=request_text,
+        true_label="📊 Deploy Variant B",
+        false_label="🔄 Keep Current Version"
+    )
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Response Types Overview" icon="list" href="/responses/types">
+Compare all six response types and choose the right one for your use case
+</Card>
+
+<Card title="Single Select Responses" icon="circle-dot" href="/responses/single-select">
+When you need more than two options, upgrade to single select
+</Card>
+
+<Card title="Response Processing" icon="cog" href="/concepts/responses">
+Learn advanced patterns for handling and analyzing boolean decisions
+</Card>
+
+<Card title="Mobile Experience" icon="mobile" href="/mobile/responding">
+See how reviewers interact with boolean choices on mobile devices
+</Card>
+</CardGroup>

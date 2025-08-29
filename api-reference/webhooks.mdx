@@ -1,0 +1,940 @@
+---
+title: "Webhooks"
+description: "Real-time notifications for request lifecycle events and loop activities. Configure webhooks to receive instant updates when requests are completed, claimed, or cancelled."
+---
+
+Webhooks provide real-time notifications when important events occur in your loops and requests. Instead of polling the API repeatedly, webhooks push updates directly to your application when requests are completed, claimed, cancelled, or when other significant events happen.
+
+## Webhook Overview
+
+<CardGroup cols={2}>
+<Card title="Request Events" icon="bell">
+Get notified when requests are claimed, completed, cancelled, or time out.
+</Card>
+
+<Card title="Loop Events" icon="users">
+Receive updates when members join loops or when loop settings change.
+</Card>
+
+<Card title="Real-time Updates" icon="zap">
+Eliminate polling with instant push notifications to your endpoints.
+</Card>
+
+<Card title="Secure Delivery" icon="shield">
+All webhook payloads are signed with HMAC-SHA256 for verification.
+</Card>
+</CardGroup>
+
+## Webhook Configuration
+
+### Setting Up Webhooks
+
+Configure webhook endpoints in your API settings or through the dashboard:
+
+```bash
+# Configure webhook endpoint (future API endpoint)
+curl -X POST https://api.hitl.sh/v1/webhooks \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/webhooks/hitl",
+    "events": ["request.completed", "request.claimed", "request.cancelled"],
+    "secret": "your-webhook-secret-key"
+  }'
+```
+
+### Supported Events
+
+<AccordionGroup>
+<Accordion title="Request Events">
+- `request.created` - New request created
+- `request.claimed` - Request claimed by reviewer
+- `request.completed` - Request completed with response
+- `request.cancelled` - Request cancelled by creator
+- `request.timeout` - Request timed out
+</Accordion>
+
+<Accordion title="Loop Events">
+- `loop.created` - New loop created
+- `loop.updated` - Loop settings changed
+- `loop.deleted` - Loop deleted
+- `loop.member_joined` - New member joined loop
+- `loop.member_left` - Member left loop
+</Accordion>
+
+<Accordion title="System Events">
+- `api_key.limit_exceeded` - API rate limit exceeded
+- `api_key.quota_warning` - Approaching usage limit
+</Accordion>
+</AccordionGroup>
+
+## Webhook Payloads
+
+### Request Completed
+
+Sent when a reviewer completes a request:
+
+```json
+{
+  "event": "request.completed",
+  "timestamp": "2024-03-15T14:30:00Z",
+  "data": {
+    "request": {
+      "id": "65f1234567890abcdef12348",
+      "loop_id": "65f1234567890abcdef12345",
+      "processing_type": "time-sensitive",
+      "type": "markdown",
+      "priority": "high",
+      "request_text": "Please review this user-generated content for community guidelines compliance.",
+      "response_type": "single_select",
+      "status": "completed",
+      "response_data": "Approve",
+      "response_by": "65f1234567890abcdef12350",
+      "response_at": "2024-03-15T14:30:00Z",
+      "response_time_seconds": 1800.5,
+      "timeout_at": "2024-03-15T15:30:00Z",
+      "created_at": "2024-03-15T14:00:00Z",
+      "updated_at": "2024-03-15T14:30:00Z"
+    },
+    "loop": {
+      "id": "65f1234567890abcdef12345",
+      "name": "Content Moderation Team",
+      "creator_id": "65f1234567890abcdef12346"
+    },
+    "reviewer": {
+      "user_id": "65f1234567890abcdef12350",
+      "email": "reviewer@example.com"
+    }
+  }
+}
+```
+
+### Request Claimed
+
+Sent when a reviewer claims a pending request:
+
+```json
+{
+  "event": "request.claimed",
+  "timestamp": "2024-03-15T14:10:00Z",
+  "data": {
+    "request": {
+      "id": "65f1234567890abcdef12348",
+      "loop_id": "65f1234567890abcdef12345",
+      "processing_type": "time-sensitive",
+      "type": "markdown",
+      "priority": "high",
+      "request_text": "Please review this user-generated content for community guidelines compliance.",
+      "response_type": "single_select",
+      "status": "claimed",
+      "claimed_by": "65f1234567890abcdef12350",
+      "claimed_at": "2024-03-15T14:10:00Z",
+      "timeout_at": "2024-03-15T15:30:00Z",
+      "created_at": "2024-03-15T14:00:00Z",
+      "updated_at": "2024-03-15T14:10:00Z"
+    },
+    "loop": {
+      "id": "65f1234567890abcdef12345",
+      "name": "Content Moderation Team"
+    },
+    "reviewer": {
+      "user_id": "65f1234567890abcdef12350",
+      "email": "reviewer@example.com"
+    },
+    "estimated_completion": "2024-03-15T14:40:00Z"
+  }
+}
+```
+
+### Request Cancelled
+
+Sent when a request creator cancels a request:
+
+```json
+{
+  "event": "request.cancelled",
+  "timestamp": "2024-03-15T14:25:00Z",
+  "data": {
+    "request": {
+      "id": "65f1234567890abcdef12348",
+      "loop_id": "65f1234567890abcdef12345",
+      "status": "cancelled",
+      "previous_status": "claimed",
+      "cancelled_at": "2024-03-15T14:25:00Z",
+      "created_at": "2024-03-15T14:00:00Z",
+      "updated_at": "2024-03-15T14:25:00Z"
+    },
+    "loop": {
+      "id": "65f1234567890abcdef12345",
+      "name": "Content Moderation Team"
+    },
+    "refund_info": {
+      "refunded": false,
+      "reason": "Request was already being processed by reviewer"
+    }
+  }
+}
+```
+
+### Request Timeout
+
+Sent when a request exceeds its timeout period:
+
+```json
+{
+  "event": "request.timeout",
+  "timestamp": "2024-03-15T15:30:00Z",
+  "data": {
+    "request": {
+      "id": "65f1234567890abcdef12348",
+      "loop_id": "65f1234567890abcdef12345",
+      "status": "timeout",
+      "previous_status": "claimed",
+      "timeout_at": "2024-03-15T15:30:00Z",
+      "created_at": "2024-03-15T14:00:00Z",
+      "updated_at": "2024-03-15T15:30:00Z",
+      "default_response": "Unable to review within time limit"
+    },
+    "loop": {
+      "id": "65f1234567890abcdef12345",
+      "name": "Content Moderation Team"
+    }
+  }
+}
+```
+
+### Loop Member Joined
+
+Sent when a new member joins a loop:
+
+```json
+{
+  "event": "loop.member_joined",
+  "timestamp": "2024-03-15T16:00:00Z",
+  "data": {
+    "loop": {
+      "id": "65f1234567890abcdef12345",
+      "name": "Content Moderation Team",
+      "member_count": 4,
+      "active_count": 4,
+      "pending_count": 0
+    },
+    "member": {
+      "user_id": "65f1234567890abcdef12351",
+      "email": "newreviewer@example.com",
+      "status": "active",
+      "joined_at": "2024-03-15T16:00:00Z",
+      "role": "member"
+    }
+  }
+}
+```
+
+## Webhook Security
+
+### HMAC Signature Verification
+
+All webhook payloads include an HMAC-SHA256 signature for verification:
+
+<CodeGroup>
+
+```python Python
+import hmac
+import hashlib
+import json
+
+def verify_webhook_signature(payload, signature, secret):
+    """Verify webhook payload signature"""
+    
+    # Extract signature from header (format: sha256=<signature>)
+    if signature.startswith('sha256='):
+        signature = signature[7:]
+    
+    # Calculate expected signature
+    expected_signature = hmac.new(
+        secret.encode('utf-8'),
+        payload.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    
+    # Compare signatures securely
+    return hmac.compare_digest(expected_signature, signature)
+
+def process_webhook(request):
+    """Process incoming webhook with signature verification"""
+    
+    payload = request.body.decode('utf-8')
+    signature = request.headers.get('X-HITL-Signature-256')
+    webhook_secret = 'your-webhook-secret-key'
+    
+    # Verify signature
+    if not verify_webhook_signature(payload, signature, webhook_secret):
+        return {"error": "Invalid signature"}, 401
+    
+    # Parse webhook data
+    webhook_data = json.loads(payload)
+    event_type = webhook_data['event']
+    
+    # Handle different event types
+    if event_type == 'request.completed':
+        handle_request_completed(webhook_data['data'])
+    elif event_type == 'request.claimed':
+        handle_request_claimed(webhook_data['data'])
+    elif event_type == 'request.cancelled':
+        handle_request_cancelled(webhook_data['data'])
+    
+    return {"status": "success"}, 200
+
+def handle_request_completed(data):
+    """Handle completed request webhook"""
+    request_data = data['request']
+    response_data = request_data['response_data']
+    
+    print(f"Request {request_data['id']} completed with response: {response_data}")
+    
+    # Update your application state
+    # Send notifications to relevant users
+    # Log the completion for analytics
+```
+
+```javascript Node.js
+const crypto = require('crypto');
+
+function verifyWebhookSignature(payload, signature, secret) {
+    // Extract signature from header (format: sha256=<signature>)
+    const sig = signature.startsWith('sha256=') ? signature.slice(7) : signature;
+    
+    // Calculate expected signature
+    const expectedSig = crypto
+        .createHmac('sha256', secret)
+        .update(payload, 'utf8')
+        .digest('hex');
+    
+    // Compare signatures securely
+    return crypto.timingSafeEqual(Buffer.from(expectedSig), Buffer.from(sig));
+}
+
+async function handleWebhook(req, res) {
+    const payload = JSON.stringify(req.body);
+    const signature = req.headers['x-hitl-signature-256'];
+    const webhookSecret = 'your-webhook-secret-key';
+    
+    // Verify signature
+    if (!verifyWebhookSignature(payload, signature, webhookSecret)) {
+        return res.status(401).json({ error: 'Invalid signature' });
+    }
+    
+    const webhookData = req.body;
+    const eventType = webhookData.event;
+    
+    // Handle different event types
+    switch (eventType) {
+        case 'request.completed':
+            await handleRequestCompleted(webhookData.data);
+            break;
+        case 'request.claimed':
+            await handleRequestClaimed(webhookData.data);
+            break;
+        case 'request.cancelled':
+            await handleRequestCancelled(webhookData.data);
+            break;
+        default:
+            console.log(`Unhandled event type: ${eventType}`);
+    }
+    
+    res.json({ status: 'success' });
+}
+
+async function handleRequestCompleted(data) {
+    const request = data.request;
+    const response = request.response_data;
+    
+    console.log(`Request ${request.id} completed with response:`, response);
+    
+    // Update your application state
+    // Send notifications to relevant users
+    // Log the completion for analytics
+}
+```
+
+</CodeGroup>
+
+## Webhook Implementation
+
+### Express.js Webhook Server
+
+Complete webhook server implementation:
+
+```javascript
+const express = require('express');
+const crypto = require('crypto');
+
+const app = express();
+app.use(express.json());
+
+class WebhookHandler {
+    constructor(secret) {
+        this.secret = secret;
+    }
+    
+    verifySignature(payload, signature) {
+        const sig = signature.startsWith('sha256=') ? signature.slice(7) : signature;
+        const expectedSig = crypto
+            .createHmac('sha256', this.secret)
+            .update(payload, 'utf8')
+            .digest('hex');
+        return crypto.timingSafeEqual(Buffer.from(expectedSig), Buffer.from(sig));
+    }
+    
+    async handleEvent(eventType, data) {
+        switch (eventType) {
+            case 'request.completed':
+                return this.onRequestCompleted(data);
+            case 'request.claimed':
+                return this.onRequestClaimed(data);
+            case 'request.cancelled':
+                return this.onRequestCancelled(data);
+            case 'request.timeout':
+                return this.onRequestTimeout(data);
+            case 'loop.member_joined':
+                return this.onMemberJoined(data);
+            default:
+                console.log(`Unhandled event: ${eventType}`);
+                return true;
+        }
+    }
+    
+    async onRequestCompleted(data) {
+        const { request, reviewer } = data;
+        
+        console.log(`✅ Request ${request.id} completed by ${reviewer.email}`);
+        
+        // Example integrations:
+        // 1. Update database with response
+        // 2. Send email notification to stakeholders
+        // 3. Trigger next step in workflow
+        // 4. Update analytics dashboard
+        
+        // Slack notification example
+        await this.sendSlackNotification({
+            channel: '#content-review',
+            text: `Request completed: ${request.request_text.substring(0, 100)}...`,
+            fields: [
+                { title: 'Response', value: request.response_data, short: true },
+                { title: 'Response Time', value: `${Math.round(request.response_time_seconds / 60)} minutes`, short: true },
+                { title: 'Reviewer', value: reviewer.email, short: true }
+            ]
+        });
+        
+        return true;
+    }
+    
+    async onRequestClaimed(data) {
+        const { request, reviewer, estimated_completion } = data;
+        
+        console.log(`👤 Request ${request.id} claimed by ${reviewer.email}`);
+        
+        // Set up monitoring for this request
+        // Update status in your tracking system
+        // Potentially notify stakeholders about progress
+        
+        return true;
+    }
+    
+    async onRequestCancelled(data) {
+        const { request, refund_info } = data;
+        
+        console.log(`❌ Request ${request.id} cancelled (refunded: ${refund_info.refunded})`);
+        
+        // Clean up any pending operations
+        // Update request status in your system
+        // Handle refund accounting if applicable
+        
+        return true;
+    }
+    
+    async onRequestTimeout(data) {
+        const { request } = data;
+        
+        console.log(`⏰ Request ${request.id} timed out`);
+        
+        // Handle timeout scenario
+        // Use default response or escalate
+        // Update monitoring dashboards
+        
+        return true;
+    }
+    
+    async onMemberJoined(data) {
+        const { loop, member } = data;
+        
+        console.log(`🎉 New member ${member.email} joined loop ${loop.name}`);
+        
+        // Welcome new team member
+        // Update capacity planning
+        // Send onboarding information
+        
+        return true;
+    }
+    
+    async sendSlackNotification(message) {
+        // Slack webhook implementation
+        // This is just an example - implement based on your needs
+        console.log('Slack notification:', message);
+    }
+}
+
+// Initialize webhook handler
+const webhookHandler = new WebhookHandler(process.env.WEBHOOK_SECRET);
+
+// Webhook endpoint
+app.post('/webhook/hitl', async (req, res) => {
+    try {
+        const payload = JSON.stringify(req.body);
+        const signature = req.headers['x-hitl-signature-256'];
+        
+        // Verify signature
+        if (!webhookHandler.verifySignature(payload, signature)) {
+            console.error('Invalid webhook signature');
+            return res.status(401).json({ error: 'Invalid signature' });
+        }
+        
+        const { event, data } = req.body;
+        
+        // Process the webhook
+        const success = await webhookHandler.handleEvent(event, data);
+        
+        if (success) {
+            res.json({ status: 'success' });
+        } else {
+            res.status(500).json({ error: 'Processing failed' });
+        }
+        
+    } catch (error) {
+        console.error('Webhook processing error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Health check endpoint
+app.get('/webhook/hitl/health', (req, res) => {
+    res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Webhook server running on port ${PORT}`);
+});
+```
+
+### Flask Webhook Server
+
+Python webhook server implementation:
+
+```python
+from flask import Flask, request, jsonify
+import hmac
+import hashlib
+import json
+import logging
+from datetime import datetime
+
+app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
+
+class WebhookHandler:
+    def __init__(self, secret):
+        self.secret = secret
+    
+    def verify_signature(self, payload, signature):
+        """Verify HMAC signature"""
+        sig = signature[7:] if signature.startswith('sha256=') else signature
+        expected_sig = hmac.new(
+            self.secret.encode('utf-8'),
+            payload.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        return hmac.compare_digest(expected_sig, sig)
+    
+    async def handle_event(self, event_type, data):
+        """Route events to appropriate handlers"""
+        handlers = {
+            'request.completed': self.on_request_completed,
+            'request.claimed': self.on_request_claimed,
+            'request.cancelled': self.on_request_cancelled,
+            'request.timeout': self.on_request_timeout,
+            'loop.member_joined': self.on_member_joined
+        }
+        
+        handler = handlers.get(event_type)
+        if handler:
+            return await handler(data)
+        else:
+            logging.info(f"Unhandled event type: {event_type}")
+            return True
+    
+    async def on_request_completed(self, data):
+        """Handle completed request"""
+        request_data = data['request']
+        reviewer = data['reviewer']
+        
+        logging.info(f"✅ Request {request_data['id']} completed by {reviewer['email']}")
+        
+        # Example integrations:
+        # 1. Update database
+        # 2. Send notifications
+        # 3. Trigger workflows
+        # 4. Update analytics
+        
+        return True
+    
+    async def on_request_claimed(self, data):
+        """Handle claimed request"""
+        request_data = data['request']
+        reviewer = data['reviewer']
+        
+        logging.info(f"👤 Request {request_data['id']} claimed by {reviewer['email']}")
+        
+        # Track progress, update stakeholders
+        return True
+    
+    async def on_request_cancelled(self, data):
+        """Handle cancelled request"""
+        request_data = data['request']
+        refund_info = data['refund_info']
+        
+        logging.info(f"❌ Request {request_data['id']} cancelled (refunded: {refund_info['refunded']})")
+        
+        # Clean up, update status
+        return True
+    
+    async def on_request_timeout(self, data):
+        """Handle timeout request"""
+        request_data = data['request']
+        
+        logging.info(f"⏰ Request {request_data['id']} timed out")
+        
+        # Handle timeout, use default response
+        return True
+    
+    async def on_member_joined(self, data):
+        """Handle new member"""
+        loop_data = data['loop']
+        member = data['member']
+        
+        logging.info(f"🎉 New member {member['email']} joined loop {loop_data['name']}")
+        
+        # Welcome member, update capacity
+        return True
+
+# Initialize handler
+webhook_handler = WebhookHandler(os.getenv('WEBHOOK_SECRET', 'your-secret-key'))
+
+@app.route('/webhook/hitl', methods=['POST'])
+def handle_webhook():
+    try:
+        # Get request data
+        payload = request.get_data(as_text=True)
+        signature = request.headers.get('X-HITL-Signature-256')
+        
+        # Verify signature
+        if not webhook_handler.verify_signature(payload, signature):
+            logging.error('Invalid webhook signature')
+            return jsonify({'error': 'Invalid signature'}), 401
+        
+        # Parse webhook data
+        webhook_data = json.loads(payload)
+        event_type = webhook_data['event']
+        data = webhook_data['data']
+        
+        # Process webhook
+        success = webhook_handler.handle_event(event_type, data)
+        
+        if success:
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'error': 'Processing failed'}), 500
+            
+    except Exception as e:
+        logging.error(f'Webhook processing error: {e}')
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/webhook/hitl/health', methods=['GET'])
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat()
+    })
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 3000)), debug=False)
+```
+
+## Webhook Testing
+
+### Webhook Testing Tools
+
+Test your webhook implementation:
+
+<CodeGroup>
+
+```bash Ngrok Setup
+# Install ngrok for local testing
+brew install ngrok  # macOS
+# or
+npm install -g ngrok
+
+# Start your local webhook server
+node webhook-server.js  # or python app.py
+
+# In another terminal, expose your local server
+ngrok http 3000
+
+# Use the ngrok URL for webhook configuration
+# https://abc123.ngrok.io/webhook/hitl
+```
+
+```python Testing Script
+import requests
+import json
+import hmac
+import hashlib
+from datetime import datetime
+
+def test_webhook_endpoint(webhook_url, secret):
+    """Test webhook endpoint with sample payload"""
+    
+    # Sample request completed payload
+    payload = {
+        "event": "request.completed",
+        "timestamp": datetime.now().isoformat() + "Z",
+        "data": {
+            "request": {
+                "id": "test_request_123",
+                "loop_id": "test_loop_456",
+                "status": "completed",
+                "response_data": "Test response",
+                "response_by": "test_user_789",
+                "response_at": datetime.now().isoformat() + "Z",
+                "response_time_seconds": 300.5
+            },
+            "loop": {
+                "id": "test_loop_456",
+                "name": "Test Loop"
+            },
+            "reviewer": {
+                "user_id": "test_user_789",
+                "email": "test@example.com"
+            }
+        }
+    }
+    
+    # Convert to JSON string
+    payload_str = json.dumps(payload, separators=(',', ':'))
+    
+    # Generate signature
+    signature = hmac.new(
+        secret.encode('utf-8'),
+        payload_str.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    
+    # Send test webhook
+    headers = {
+        'Content-Type': 'application/json',
+        'X-HITL-Signature-256': f'sha256={signature}'
+    }
+    
+    response = requests.post(webhook_url, data=payload_str, headers=headers)
+    
+    print(f"Status: {response.status_code}")
+    print(f"Response: {response.text}")
+    
+    return response.status_code == 200
+
+# Test your webhook
+test_webhook_endpoint('http://localhost:3000/webhook/hitl', 'your-secret-key')
+```
+
+</CodeGroup>
+
+## Webhook Best Practices
+
+### Reliability and Error Handling
+
+<AccordionGroup>
+<Accordion title="Idempotency">
+Design webhook handlers to be idempotent - multiple deliveries of the same event should have the same effect.
+
+```python
+# Track processed events to avoid duplicates
+processed_events = set()
+
+def handle_webhook(event_id, event_data):
+    if event_id in processed_events:
+        return {"status": "already_processed"}
+    
+    # Process the event
+    result = process_event(event_data)
+    
+    # Mark as processed
+    processed_events.add(event_id)
+    
+    return result
+```
+</Accordion>
+
+<Accordion title="Retry Logic">
+HITL.sh will retry failed webhook deliveries with exponential backoff:
+- Immediate retry
+- 15 seconds
+- 1 minute
+- 5 minutes
+- 30 minutes
+- 2 hours
+- 12 hours
+- 24 hours (final attempt)
+
+Return HTTP status codes appropriately:
+- `200-299`: Success (no retry)
+- `400-499`: Client error (no retry except 408, 429)
+- `500-599`: Server error (will retry)
+</Accordion>
+
+<Accordion title="Timeout Handling">
+Webhook endpoints should respond within 30 seconds. Use background processing for long operations:
+
+```javascript
+app.post('/webhook/hitl', async (req, res) => {
+    try {
+        // Verify signature and parse payload
+        const webhookData = await validateWebhook(req);
+        
+        // Respond immediately
+        res.json({ status: 'received' });
+        
+        // Process in background
+        processWebhookAsync(webhookData);
+        
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+async function processWebhookAsync(webhookData) {
+    // Long-running processing here
+    // Database updates, external API calls, etc.
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### Security Considerations
+
+<AccordionGroup>
+<Accordion title="Always Verify Signatures">
+Never process webhooks without signature verification:
+
+```python
+def secure_webhook_handler(request):
+    # Always verify first
+    if not verify_webhook_signature(request.body, request.headers['signature'], SECRET):
+        return 401
+    
+    # Then process
+    return process_webhook(request.body)
+```
+</Accordion>
+
+<Accordion title="Use HTTPS Endpoints">
+Always use HTTPS URLs for webhook endpoints to ensure payload encryption in transit.
+</Accordion>
+
+<Accordion title="Rotate Webhook Secrets">
+Periodically rotate your webhook secrets and update the configuration:
+
+```bash
+# Update webhook secret (future API)
+curl -X PATCH https://api.hitl.sh/v1/webhooks/webhook_id \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"secret": "new_secret_key"}'
+```
+</Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+<Accordion title="Webhook Not Receiving Events">
+1. Check webhook URL is publicly accessible
+2. Verify SSL certificate is valid
+3. Ensure endpoint returns HTTP 200 for successful processing
+4. Check webhook configuration includes desired event types
+</Accordion>
+
+<Accordion title="Signature Verification Failing">
+1. Ensure you're using the correct secret key
+2. Verify payload is used as-is (no modifications)
+3. Check header name is exactly `X-HITL-Signature-256`
+4. Confirm signature format is `sha256=<hash>`
+</Accordion>
+
+<Accordion title="Webhook Timeouts">
+1. Optimize webhook handler performance
+2. Move long operations to background processing
+3. Return 200 status immediately after validation
+4. Check for network connectivity issues
+</Accordion>
+</AccordionGroup>
+
+### Debug Webhook Issues
+
+```python
+import logging
+
+# Enable detailed webhook logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+def debug_webhook(request):
+    """Debug webhook processing"""
+    
+    logger.debug(f"Headers: {dict(request.headers)}")
+    logger.debug(f"Body: {request.body}")
+    
+    # Verify signature with detailed logging
+    payload = request.body
+    signature = request.headers.get('X-HITL-Signature-256')
+    
+    if not signature:
+        logger.error("Missing signature header")
+        return False
+    
+    expected = calculate_signature(payload, SECRET)
+    logger.debug(f"Expected signature: {expected}")
+    logger.debug(f"Received signature: {signature}")
+    
+    if signature != f"sha256={expected}":
+        logger.error("Signature mismatch")
+        return False
+    
+    logger.info("Signature verified successfully")
+    return True
+```
+
+## Next Steps
+
+<Card title="Test Integration" icon="flask" href="/api-reference/requests/create-request">
+  Create test requests to verify your webhook implementation receives events correctly.
+</Card>
+
+<Card title="Monitor Performance" icon="chart-line" href="/api-reference/requests/get-requests">
+  Track webhook delivery success rates and response times in your monitoring system.
+</Card>
+
+<Card title="Scale Webhook Processing" icon="server" href="/integration-guides">
+  Learn about scaling webhook processing for high-volume applications.
+</Card>

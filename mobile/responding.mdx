@@ -1,0 +1,683 @@
+---
+title: "Responding to Requests"
+description: "Complete guide to providing effective responses to review requests in the HITL.sh mobile app across all response types"
+---
+
+# Responding to Requests
+
+Providing quality responses is at the heart of the HITL.sh review process. This guide walks you through how to effectively respond to different types of review requests using the mobile app, ensuring your feedback is valuable and actionable.
+
+## Getting Started with Responses
+
+### Accessing Requests
+
+When you receive a new request, you'll be notified through the app:
+
+<Frame>
+<img src="/images/notification.PNG" alt="HITL.sh mobile app notification showing new review request" />
+</Frame>
+
+**Ways to Access Requests:**
+- **Push Notifications**: Tap the notification to open the request directly
+- **Home Screen**: Select any request from your pending queue
+- **Request History**: Access previous requests from the history tab
+- **Direct Links**: Follow shared request links from team members
+
+### Understanding Request Details
+
+Before responding, carefully review the request information:
+
+<Card title="Request Information" icon="info-circle">
+- **Request Type**: The kind of content you're reviewing
+- **Priority Level**: Urgency and importance indicators
+- **Context**: Background information and specific instructions
+- **Response Type**: How you should structure your response
+- **Deadline**: Time remaining to provide your response
+</Card>
+
+## Response Types Overview
+
+HITL.sh supports six different response types, each optimized for specific review scenarios:
+
+<CardGroup cols={3}>
+<Card title="Text" icon="message">
+Free-form detailed feedback and explanations
+</Card>
+
+<Card title="Single Select" icon="circle-dot">
+Choose one option from predefined choices
+</Card>
+
+<Card title="Multi Select" icon="check-square">
+Select multiple relevant options
+</Card>
+
+<Card title="Rating" icon="star">
+Provide numeric ratings on customizable scales
+</Card>
+
+<Card title="Number" icon="hashtag">
+Enter specific numeric values with validation
+</Card>
+
+<Card title="Boolean" icon="toggle-on">
+Make simple yes/no or true/false decisions
+</Card>
+</CardGroup>
+
+## Text Responses
+
+Perfect for detailed feedback, explanations, and qualitative assessments.
+
+### Text Response Interface
+
+<Frame>
+<img src="/images/answer_request.PNG" alt="HITL.sh mobile app text response interface with input field" />
+</Frame>
+
+**Text Response Features:**
+- **Character Counter**: Shows remaining characters in real-time
+- **Placeholder Guidance**: Helpful hints about what to include
+- **Auto-Save**: Drafts are automatically saved as you type
+- **Formatting Support**: Basic text formatting options
+- **Length Validation**: Prevents submission outside required bounds
+
+### Best Practices for Text Responses
+
+<AccordionGroup>
+<Accordion title="Be Specific and Actionable">
+- Provide concrete examples and specific suggestions
+- Reference particular sections, elements, or issues
+- Include step-by-step recommendations where applicable
+- Avoid vague feedback like "needs improvement"
+</Accordion>
+
+<Accordion title="Structure Your Feedback">
+- Use bullet points or numbered lists for clarity
+- Separate different types of feedback (grammar, content, style)
+- Lead with the most important points
+- End with a clear overall recommendation
+</Accordion>
+
+<Accordion title="Maintain Professional Tone">
+- Be constructive and helpful rather than critical
+- Use "I recommend" or "Consider" rather than "You must"
+- Acknowledge positive aspects before suggesting improvements
+- Keep feedback objective and focused on the content
+</Accordion>
+</AccordionGroup>
+
+### Example Text Responses
+
+<Tabs>
+<Tab title="Content Review">
+```
+Article structure is clear and engaging. Grammar issues: 
+- "it's" should be "its" in paragraph 2
+- Missing comma after "However" in intro
+
+Content accuracy verified against sources. Recommend:
+1. Add specific example in section 3
+2. Strengthen conclusion with call-to-action
+3. Consider adding subheadings for better readability
+
+Overall: Ready for publication with minor edits. Grade: B+
+```
+</Tab>
+
+<Tab title="Code Review">
+```
+Security Analysis:
+✅ Input validation implemented correctly
+⚠️ Missing rate limiting on API endpoints
+❌ SQL query vulnerable to injection (line 47)
+
+Performance: Good caching strategy, consider async processing for heavy operations.
+
+Recommendation: Fix security issues before deployment. Estimated effort: 4-6 hours.
+```
+</Tab>
+
+<Tab title="Quality Check">
+```
+Design Review Results:
+- Layout: Responsive and mobile-friendly ✅
+- Accessibility: Missing alt text on 3 images ⚠️
+- Brand compliance: Colors match style guide ✅
+- User experience: Clear navigation, intuitive flow ✅
+
+Minor fixes needed for accessibility compliance. Otherwise approved.
+```
+</Tab>
+</Tabs>
+
+## Single Select Responses
+
+Ideal for clear decisions with mutually exclusive options.
+
+### Single Select Interface
+
+<Frame>
+<img src="/images/response_single_select.PNG" alt="HITL.sh mobile app single select response with colored options" />
+</Frame>
+
+**Single Select Features:**
+- **Visual Options**: Color-coded choices with icons and descriptions
+- **Clear Labels**: Descriptive text explaining each option
+- **Contextual Help**: Additional information for complex decisions
+- **Required Validation**: Prevents submission without selection
+
+### When to Use Single Select
+
+<CardGroup cols={2}>
+<Card title="Approval Workflows" icon="check-circle">
+Approve, reject, or request changes for content review processes.
+</Card>
+
+<Card title="Categorization" icon="tag">
+Classify content, issues, or requests into specific categories.
+</Card>
+
+<Card title="Priority Assignment" icon="flag">
+Set priority levels, urgency indicators, or importance ratings.
+</Card>
+
+<Card title="Status Updates" icon="refresh">
+Update request status, progress indicators, or workflow stages.
+</Card>
+</CardGroup>
+
+### Single Select Best Practices
+
+<Steps>
+<Step title="Read All Options">
+Review every available option before making your selection to ensure you choose the most appropriate one.
+</Step>
+
+<Step title="Consider Context">
+Factor in the specific request context, guidelines, and any special instructions provided.
+</Step>
+
+<Step title="Use Descriptions">
+Pay attention to option descriptions and additional context to make informed decisions.
+</Step>
+
+<Step title="Stay Consistent">
+Apply the same criteria across similar requests to maintain consistency in your reviews.
+</Step>
+</Steps>
+
+## Multi Select Responses
+
+Perfect when multiple aspects need to be evaluated simultaneously.
+
+### Multi Select Interface
+
+<Frame>
+<img src="/images/response_multiple_select.PNG" alt="HITL.sh mobile app multi select response with checkboxes" />
+</Frame>
+
+**Multi Select Features:**
+- **Checkbox Interface**: Clear selection indicators for each option
+- **Selection Limits**: Minimum and maximum selection requirements
+- **Category Grouping**: Options organized by relevant categories
+- **Selection Counter**: Shows current selections vs. requirements
+
+### Multi Select Use Cases
+
+<AccordionGroup>
+<Accordion title="Issue Identification">
+Select all problems, violations, or areas needing attention in the content being reviewed.
+</Accordion>
+
+<Accordion title="Compliance Checking">
+Mark all regulatory requirements, policy guidelines, or standards that apply to the request.
+</Accordion>
+
+<Accordion title="Feature Assessment">
+Evaluate multiple aspects like usability, design, functionality, and performance simultaneously.
+</Accordion>
+
+<Accordion title="Quality Criteria">
+Check off all quality standards met or areas that need improvement in the submission.
+</Accordion>
+</AccordionGroup>
+
+### Multi Select Strategies
+
+<Card title="Systematic Review" icon="list-check">
+Go through each option methodically, checking against the content or requirements. Don't rush through the list - take time to evaluate each criterion properly.
+</Card>
+
+<Info>
+Pay attention to minimum and maximum selection requirements. Some reviews may require you to select at least one option, while others may have upper limits on selections.
+</Info>
+
+## Rating Responses
+
+Numeric ratings provide quantitative assessments on customizable scales.
+
+### Rating Interface
+
+<Frame>
+<img src="/images/response_rating.PNG" alt="HITL.sh mobile app rating response with slider interface" />
+</Frame>
+
+**Rating Features:**
+- **Interactive Slider**: Smooth rating selection with precise control
+- **Scale Labels**: Custom labels for different rating levels
+- **Visual Feedback**: Real-time preview of selected rating
+- **Decimal Support**: Half-point or decimal ratings when configured
+
+### Rating Guidelines
+
+<CardGroup cols={2}>
+<Card title="Understand the Scale" icon="ruler">
+Review the minimum and maximum values, and understand what each rating level represents before scoring.
+</Card>
+
+<Card title="Be Consistent" icon="balance-scale">
+Apply the same standards across similar items to ensure your ratings are comparable and fair.
+</Card>
+
+<Card title="Use Full Range" icon="expand">
+Don't cluster ratings in the middle - use the full scale when content deserves high or low scores.
+</Card>
+
+<Card title="Consider Context" icon="context">
+Factor in the request's specific criteria and intended use case when determining ratings.
+</Card>
+</CardGroup>
+
+### Rating Scale Examples
+
+<Tabs>
+<Tab title="Quality Assessment (1-10)">
+- **1-2**: Poor quality, major issues, not usable
+- **3-4**: Below average, significant problems
+- **5-6**: Average quality, minor issues
+- **7-8**: Good quality, meets standards well
+- **9-10**: Excellent, exceeds expectations
+</Tab>
+
+<Tab title="Confidence Level (1-5)">
+- **1**: Very uncertain, need more information
+- **2**: Somewhat uncertain, limited confidence
+- **3**: Moderately confident in assessment
+- **4**: Quite confident, solid evaluation
+- **5**: Very confident, clear determination
+</Tab>
+
+<Tab title="Risk Level (0-100)">
+- **0-20**: Very low risk, minimal concerns
+- **21-40**: Low risk, minor considerations
+- **41-60**: Medium risk, moderate attention needed
+- **61-80**: High risk, significant concerns
+- **81-100**: Very high risk, immediate action required
+</Tab>
+</Tabs>
+
+## Number Responses
+
+Precise numeric input with validation and formatting options.
+
+### Number Interface
+
+<Frame>
+<img src="/images/response_number.PNG" alt="HITL.sh mobile app number response with formatted input field" />
+</Frame>
+
+**Number Features:**
+- **Formatted Input**: Automatic prefix, suffix, and decimal formatting
+- **Range Validation**: Prevents out-of-bounds number entry
+- **Input Assistance**: Numeric keypad optimized for mobile
+- **Real-time Formatting**: Shows formatted value as you type
+
+### Number Response Applications
+
+<AccordionGroup>
+<Accordion title="Pricing and Valuation">
+Assess fair market prices, cost estimates, or value assessments for products, services, or assets.
+</Accordion>
+
+<Accordion title="Quantity Assessment">
+Count items, estimate amounts, or provide measurements for inventory, capacity, or resource planning.
+</Accordion>
+
+<Accordion title="Performance Metrics">
+Provide specific performance indicators, scores, or measurements based on your expertise.
+</Accordion>
+
+<Accordion title="Time Estimates">
+Estimate completion times, durations, or scheduling requirements for tasks and projects.
+</Accordion>
+</AccordionGroup>
+
+### Number Input Tips
+
+<Card title="Precision Matters" icon="crosshairs">
+Pay attention to decimal place requirements. Some requests need whole numbers, others require precise decimal values. Use appropriate precision for the context.
+</Card>
+
+<Warning>
+Always double-check your number entries before submitting. Incorrect numeric values can have significant downstream impacts on pricing, scheduling, or resource allocation.
+</Warning>
+
+## Boolean Responses
+
+Simple binary decisions for clear yes/no scenarios.
+
+### Boolean Interface
+
+Boolean responses present two clear options with custom labels and colors:
+
+**Boolean Features:**
+- **Clear Options**: Distinct true/false choices with descriptive labels
+- **Color Coding**: Visual indicators to reinforce the choice significance
+- **Quick Selection**: Fast decision-making for binary scenarios
+- **Confirmation**: Clear indication of selected option before submission
+
+### Boolean Decision Making
+
+<Steps>
+<Step title="Understand the Impact">
+Consider the consequences of both options and choose the one that best serves the request's objectives.
+</Step>
+
+<Step title="Apply Consistent Criteria">
+Use the same decision-making framework across similar boolean choices for consistency.
+</Step>
+
+<Step title="Default to Safety">
+When uncertain, choose the option that prioritizes safety, compliance, or conservative outcomes.
+</Step>
+
+<Step title="Document Reasoning">
+Even for simple boolean choices, be prepared to explain your decision if questioned later.
+</Step>
+</Steps>
+
+### Boolean Use Cases
+
+<CardGroup cols={2}>
+<Card title="Compliance Decisions" icon="shield-check">
+"Does this content comply with regulations?" - Clear yes/no determination.
+</Card>
+
+<Card title="Quality Gates" icon="gate">
+"Does this meet quality standards?" - Pass/fail decisions for quality control.
+</Card>
+
+<Card title="Risk Assessment" icon="exclamation-triangle">
+"Is this transaction suspicious?" - Binary risk determinations for security reviews.
+</Card>
+
+<Card title="Approval Workflows" icon="thumbs-up">
+"Should this be approved?" - Simple approval/rejection decisions.
+</Card>
+</CardGroup>
+
+## Response Workflow
+
+### Step-by-Step Response Process
+
+<Steps>
+<Step title="Review the Request">
+Read the request carefully, including context, instructions, and specific requirements for your response.
+</Step>
+
+<Step title="Understand Response Type">
+Identify which type of response is expected and familiarize yourself with its specific requirements.
+</Step>
+
+<Step title="Gather Information">
+Collect any additional information needed to provide an informed, accurate response.
+</Step>
+
+<Step title="Draft Your Response">
+Compose your response thoughtfully, following best practices for the specific response type.
+</Step>
+
+<Step title="Review Before Submitting">
+Double-check your response for accuracy, completeness, and adherence to guidelines.
+</Step>
+
+<Step title="Submit and Confirm">
+Submit your response and verify it was recorded correctly in the system.
+</Step>
+</Steps>
+
+### Response Quality Checklist
+
+<AccordionGroup>
+<Accordion title="Accuracy and Completeness">
+- ✅ Response addresses all aspects of the request
+- ✅ Information provided is factually correct
+- ✅ All required fields are completed properly
+- ✅ Response format matches requirements
+</Accordion>
+
+<Accordion title="Clarity and Usefulness">
+- ✅ Response is clear and easy to understand
+- ✅ Feedback is specific and actionable
+- ✅ Reasoning is explained when appropriate
+- ✅ Professional tone maintained throughout
+</Accordion>
+
+<Accordion title="Timeliness and Compliance">
+- ✅ Response submitted within deadline
+- ✅ Follows team guidelines and standards
+- ✅ Complies with relevant policies
+- ✅ Escalated when uncertain or appropriate
+</Accordion>
+</AccordionGroup>
+
+## Advanced Response Features
+
+### Saving Drafts
+
+The mobile app automatically saves your progress:
+
+<Card title="Auto-Save Features" icon="save">
+- **Real-time Saving**: Changes saved every few seconds
+- **Draft Recovery**: Resume interrupted responses after app restart
+- **Multiple Drafts**: Manage drafts for multiple concurrent requests
+- **Sync Across Devices**: Drafts available on all your devices
+</Card>
+
+### Getting Help
+
+When you need assistance with a response:
+
+<CardGroup cols={2}>
+<Card title="Request Clarification" icon="question-circle">
+Ask the requestor for additional context or clarification when requirements are unclear.
+</Card>
+
+<Card title="Team Consultation" icon="users">
+Consult with team members or supervisors for complex or unusual requests.
+</Card>
+
+<Card title="Escalation" icon="arrow-up">
+Escalate requests that exceed your expertise or authority level.
+</Card>
+
+<Card title="Help Documentation" icon="book">
+Reference guidelines, policies, and help materials while responding.
+</Card>
+</CardGroup>
+
+### Batch Responses
+
+For similar requests, use batch response features:
+
+<AccordionGroup>
+<Accordion title="Template Responses">
+Save frequently used responses as templates for similar future requests.
+</Accordion>
+
+<Accordion title="Bulk Actions">
+Apply the same response to multiple similar requests when appropriate.
+</Accordion>
+
+<Accordion title="Quick Filters">
+Filter requests by type, priority, or similarity for efficient batch processing.
+</Accordion>
+</AccordionGroup>
+
+## Response Analytics
+
+### Tracking Your Performance
+
+Monitor your response quality and efficiency:
+
+<CardGroup cols={2}>
+<Card title="Response Time" icon="clock">
+- Average time per response type
+- Improvement trends over time
+- Comparison with team benchmarks
+- Peak productivity periods
+</Card>
+
+<Card title="Quality Metrics" icon="star">
+- Response accuracy ratings
+- Consistency with team decisions
+- Feedback from requestors
+- Skill development progress
+</Card>
+
+<Card title="Volume Statistics" icon="bar-chart">
+- Responses completed per period
+- Request type distribution
+- Peak activity patterns
+- Workload balance
+</Card>
+
+<Card title="Impact Measurement" icon="target">
+- Decision implementation rates
+- Feedback utilization scores
+- Process improvement contributions
+- Value-added metrics
+</Card>
+</CardGroup>
+
+### Continuous Improvement
+
+<Steps>
+<Step title="Review Feedback">
+Regularly review feedback on your responses to identify improvement opportunities.
+</Step>
+
+<Step title="Learn from Examples">
+Study high-quality responses from experienced team members to enhance your skills.
+</Step>
+
+<Step title="Practice Consistency">
+Work on maintaining consistent quality across different request types and contexts.
+</Step>
+
+<Step title="Expand Expertise">
+Develop knowledge in new areas to handle a broader range of requests effectively.
+</Step>
+</Steps>
+
+## Troubleshooting
+
+### Common Response Issues
+
+<AccordionGroup>
+<Accordion title="Response Won't Submit">
+- Check internet connection stability
+- Verify all required fields are completed
+- Ensure response meets length/format requirements
+- Try refreshing the app and resubmitting
+</Accordion>
+
+<Accordion title="Draft Not Saving">
+- Confirm app has storage permissions
+- Check available device storage space
+- Update to latest app version
+- Clear app cache if problem persists
+</Accordion>
+
+<Accordion title="Response Type Confusion">
+- Re-read request instructions carefully
+- Check response type requirements
+- Look for examples or templates
+- Ask team members for clarification
+</Accordion>
+
+<Accordion title="Deadline Pressure">
+- Prioritize most critical aspects
+- Use quick response features when available
+- Request deadline extension if justified
+- Escalate if unable to complete quality response
+</Accordion>
+</AccordionGroup>
+
+### Performance Optimization
+
+<Card title="Response Efficiency Tips" icon="zap">
+- **Keyboard Shortcuts**: Learn app shortcuts for faster navigation
+- **Template Usage**: Create templates for common response patterns
+- **Batch Processing**: Group similar requests for efficient handling
+- **Focus Time**: Set aside dedicated time blocks for response work
+</Card>
+
+## Best Practices Summary
+
+### Quality Response Principles
+
+<CardGroup cols={2}>
+<Card title="Be Thorough" icon="search">
+Review all aspects of the request and provide comprehensive, well-considered responses.
+</Card>
+
+<Card title="Stay Objective" icon="balance-scale">
+Maintain professional objectivity and apply consistent standards across all responses.
+</Card>
+
+<Card title="Communicate Clearly" icon="message-circle">
+Ensure your responses are clear, specific, and actionable for the requestor.
+</Card>
+
+<Card title="Meet Deadlines" icon="clock">
+Respect time constraints while maintaining quality standards for all responses.
+</Card>
+</CardGroup>
+
+### Professional Development
+
+<AccordionGroup>
+<Accordion title="Skill Building">
+Continuously develop expertise in your review domains through training, practice, and learning from feedback.
+</Accordion>
+
+<Accordion title="Quality Focus">
+Prioritize response quality over quantity - thoughtful, accurate responses are more valuable than rushed ones.
+</Accordion>
+
+<Accordion title="Team Collaboration">
+Engage with team members, share knowledge, and contribute to collective improvement of response processes.
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Ready to start providing high-quality responses?
+
+<Card title="Explore Home Screen" icon="home" href="/mobile/home-screen">
+Navigate the app interface and manage your request queue effectively.
+</Card>
+
+<Card title="Join Your First Loop" icon="link" href="/mobile/join-loop">
+Get set up and start receiving requests to review and respond to.
+</Card>
+
+<Card title="Learn Response Types" icon="layers" href="/responses/types">
+Deep dive into the technical details of all available response types.
+</Card>
+
+<Card title="Download App" icon="smartphone" href="https://app.hitl.sh">
+Get the HITL.sh mobile app and start responding to requests on the go.
+</Card>

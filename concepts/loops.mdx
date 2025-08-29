@@ -1,354 +1,644 @@
 ---
 title: "Loops"
-description: "Learn about loops, the core workflow mechanism in HITL.sh that routes requests to human reviewers"
+description: "Learn about loops - the core organizational unit in HITL.sh that connects reviewers with requests requiring human oversight"
 ---
 
 # Loops
 
-Loops are the fundamental building blocks of HITL.sh workflows. A loop defines how requests flow from your AI system to human reviewers and back, creating a complete human-in-the-loop cycle.
+Loops are the foundational organizational structure in HITL.sh that connect human reviewers with content and decisions requiring oversight. Think of a loop as a team or group of reviewers who collaborate to handle specific types of requests from your applications.
 
 ## What is a Loop?
 
-A loop in HITL.sh is a configurable workflow that:
+A loop in HITL.sh is a structured group that:
 
-- **Receives Requests**: Accepts requests from your AI system or applications
-- **Routes to Reviewers**: Directs requests to appropriate human reviewers
-- **Collects Decisions**: Gathers human responses and decisions
-- **Returns Results**: Sends human decisions back to your system
-- **Manages Flow**: Handles escalations, timeouts, and routing logic
+- **Manages Reviewers**: Organizes human reviewers who can respond to requests
+- **Receives Requests**: Accepts requests created via the API for human review
+- **Broadcasts Notifications**: Sends push notifications to mobile devices when new requests arrive
+- **Tracks Member Activity**: Monitors who's active and available to respond
+- **Controls Access**: Manages who can create requests and who can review them
 
-<Card title="Loop Examples" icon="workflow">
-- Content moderation workflows
-- Financial approval processes
-- Quality assurance reviews
-- Compliance verification
-- Customer support escalations
-</Card>
+<Info>
+Loops are created and managed by API key holders, while reviewers join loops via the mobile app using invite codes or QR codes.
+</Info>
 
 ## Loop Components
 
-### 1. Loop Configuration
+### Basic Properties
 
-Every loop has essential configuration settings:
+Every loop has fundamental properties that define its identity and behavior:
 
 <AccordionGroup>
-<Accordion title="Basic Settings">
-- **Name**: Descriptive identifier for the loop
-- **Description**: Purpose and scope of the workflow
-- **Status**: Active, paused, or archived
-- **Priority**: Normal, high, or urgent
+<Accordion title="Name & Description">
+- **Name**: Clear, descriptive identifier for the loop
+- **Description**: Detailed explanation of the loop's purpose and scope
+- **Icon**: Optional emoji or character for visual identification
+- **Creator**: User who created and owns the loop
 </Accordion>
 
-<Accordion title="Review Settings">
-- **Required Approvals**: Number of reviewers needed
-- **Response Time**: Expected time for human decisions
-- **Auto-approve After**: Automatic approval if no response
-- **Escalation Rules**: What happens when deadlines aren't met
+<Accordion title="Membership">
+- **Active Members**: Reviewers who can receive and respond to requests
+- **Pending Members**: Users who've been invited but haven't joined yet
+- **Member Count**: Total number of people in the loop
+- **Invite Code**: Unique code for joining the loop
 </Accordion>
 
-<Accordion title="Routing Logic">
-- **Reviewer Assignment**: How reviewers are selected
-- **Skill Matching**: Assigning based on expertise
-- **Load Balancing**: Distributing work evenly
-- **Fallback Options**: Backup reviewers and escalation paths
+<Accordion title="Access Control">
+- **Creator Permissions**: Only loop creators can modify settings and add requests
+- **Member Permissions**: Members can only view and respond to requests
+- **API Access**: Only the creator's API key can create requests in the loop
 </Accordion>
 </AccordionGroup>
 
-### 2. Request Schema
+### Invite System
 
-Define the structure of requests that flow through the loop:
+Loops use a simple but effective invite system:
 
-```json
-{
-  "content": "string",
-  "content_type": "text|image|video",
-  "priority": "low|normal|high|urgent",
-  "metadata": {
-    "user_id": "string",
-    "timestamp": "datetime",
-    "source": "string"
-  },
-  "ai_analysis": {
-    "confidence": "number",
-    "flags": ["array"],
-    "risk_score": "number"
-  }
+```python
+# Create a loop and get invite details
+import requests
+
+loop_data = {
+    "name": "Content Moderation Team",
+    "description": "Reviews user-generated content for community guidelines compliance",
+    "icon": "🛡️"
 }
+
+response = requests.post(
+    "https://api.hitl.sh/v1/api/loops",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=loop_data
+)
+
+loop = response.json()["data"]["loop"]
+print(f"Loop created: {loop['name']}")
+print(f"Invite code: {loop['invite_code']}")
+print(f"QR code URL: {loop['qr_code_url']}")
 ```
 
-### 3. Response Options
-
-Configure what decisions reviewers can make:
-
-<CardGroup cols={2}>
-<Card title="Approved" icon="check">
-Content or request passes review and can proceed.
-</Card>
-
-<Card title="Rejected" icon="x">
-Content or request fails review and is blocked.
-</Card>
-
-<Card title="Needs Changes" icon="edit">
-Request modifications before approval.
-</Card>
-
-<Card title="Escalate" icon="alert">
-Send to senior reviewer or manager.
-</Card>
-</CardGroup>
+Reviewers can join using:
+- **QR Code**: Scan with the HITL mobile app camera
+- **Invite Code**: Enter the 6-digit code in the app
+- **Direct Link**: Share URL that opens the mobile app directly
 
 ## Loop Lifecycle
 
-### Creation Phase
+### 1. Creation
 
-<Steps>
-<Step title="Define Purpose">
-Determine what the loop will review and why human oversight is needed.
-</Step>
+Loops are created via the API by users who need human reviewers:
 
-<Step title="Configure Settings">
-Set up review requirements, response times, and routing logic.
-</Step>
+<CodeGroup>
 
-<Step title="Add Reviewers">
-Invite team members and assign appropriate skills and permissions.
-</Step>
+```python Python
+import requests
 
-<Step title="Test Configuration">
-Verify the loop works correctly with sample requests.
-</Step>
-</Steps>
+# Create a new loop
+loop_data = {
+    "name": "Financial Transaction Review",
+    "description": "Human oversight for suspicious financial transactions",
+    "icon": "💰"
+}
 
-### Operation Phase
-
-Once active, loops continuously process requests:
-
-<Frame>
-<img src="/images/loop-lifecycle.png" alt="Diagram showing the continuous operation of a loop processing requests" />
-</Frame>
-
-### Maintenance Phase
-
-Regular monitoring and optimization:
-
-- **Performance Review**: Analyze response times and decision quality
-- **Workload Balancing**: Adjust reviewer assignments and skills
-- **Process Improvement**: Refine routing rules and escalation procedures
-- **Team Updates**: Add or remove reviewers as needed
-
-## Loop Types
-
-### Content Moderation Loops
-
-Review user-generated content for inappropriate material:
-
-```python
-content_moderation_loop = {
-    "name": "Content Moderation",
-    "description": "Review flagged content for community guidelines",
-    "settings": {
-        "required_approvals": 1,
-        "response_time": 3600,  # 1 hour
-        "auto_approve_after": 14400,  # 4 hours
-        "escalation_rules": {
-            "high_risk": "immediate_escalation",
-            "timeout": "senior_reviewer"
-        }
+response = requests.post(
+    "https://api.hitl.sh/v1/api/loops",
+    headers={
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
     },
-    "reviewers": ["moderator_1", "moderator_2", "senior_moderator"],
-    "response_options": ["approved", "rejected", "needs_changes", "escalate"]
+    json=loop_data
+)
+
+if response.status_code == 201:
+    loop = response.json()["data"]["loop"]
+    print(f"✅ Loop created: {loop['id']}")
+    print(f"📱 Share invite code: {loop['invite_code']}")
+else:
+    print("❌ Failed to create loop:", response.json())
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+async function createLoop() {
+    const loopData = {
+        name: "Product Review Team",
+        description: "Reviews product listings and descriptions for accuracy",
+        icon: "📦"
+    };
+
+    try {
+        const response = await axios.post(
+            "https://api.hitl.sh/v1/api/loops",
+            loopData,
+            {
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        const loop = response.data.data.loop;
+        console.log(`✅ Loop created: ${loop.name}`);
+        console.log(`📱 Invite code: ${loop.invite_code}`);
+        return loop;
+    } catch (error) {
+        console.error("❌ Failed to create loop:", error.response?.data);
+    }
 }
 ```
 
-### Approval Workflow Loops
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/api/loops \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Customer Support Escalation",
+    "description": "Human agents review escalated customer support tickets",
+    "icon": "🎧"
+  }'
+```
 
-Handle business process approvals:
+</CodeGroup>
+
+### 2. Reviewer Recruitment
+
+Once created, loops need human reviewers to function:
+
+<Steps>
+<Step title="Share Invite Code">
+Distribute the 6-digit invite code to potential reviewers via email, Slack, or other communication channels.
+</Step>
+
+<Step title="QR Code Sharing">
+Use the provided QR code URL to generate scannable codes for easy mobile app joining.
+</Step>
+
+<Step title="Direct Mobile Links">
+Create deep links that open the HITL mobile app directly to the join screen.
+</Step>
+
+<Step title="Monitor Membership">
+Track who joins and ensure you have adequate reviewer coverage.
+</Step>
+</Steps>
+
+### 3. Active Operation
+
+With reviewers in place, loops continuously process requests:
 
 ```python
-approval_loop = {
-    "name": "Expense Approval",
-    "description": "Review and approve expense reports",
-    "settings": {
-        "required_approvals": 2,
-        "response_time": 86400,  # 24 hours
-        "auto_approve_after": 172800,  # 48 hours
-        "routing_rules": {
-            "amount_threshold": 1000,
-            "escalation": "manager_approval"
-        }
+# Monitor loop activity
+response = requests.get(
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}",
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+
+loop = response.json()["data"]["loop"]
+print(f"Loop: {loop['name']}")
+print(f"Active members: {loop['member_count'] - loop['pending_count']}")
+print(f"Pending invites: {loop['pending_count']}")
+
+# Get recent requests for this loop
+requests_response = requests.get(
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+
+requests_data = requests_response.json()["data"]["requests"]
+print(f"Total requests: {len(requests_data)}")
+
+# Count by status
+pending = len([r for r in requests_data if r["status"] == "pending"])
+completed = len([r for r in requests_data if r["status"] == "completed"])
+print(f"Pending: {pending}, Completed: {completed}")
+```
+
+### 4. Management & Updates
+
+Loop creators can modify settings and membership:
+
+<CodeGroup>
+
+```python Python
+# Update loop information
+update_data = {
+    "name": "Enhanced Content Moderation",
+    "description": "Advanced review team with updated guidelines and training",
+    "icon": "🔍"
+}
+
+response = requests.put(
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=update_data
+)
+
+if response.status_code == 200:
+    print("✅ Loop updated successfully")
+else:
+    print("❌ Update failed:", response.json())
+```
+
+```python Python
+# Remove inactive members
+member_id = "65f1234567890abcdef12346"
+
+response = requests.delete(
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/members/{member_id}",
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+
+if response.status_code == 200:
+    print("✅ Member removed successfully")
+else:
+    print("❌ Removal failed:", response.json())
+```
+
+</CodeGroup>
+
+## Loop Types & Use Cases
+
+### Content Moderation Loops
+
+Review user-generated content for policy compliance:
+
+```python
+moderation_loop = {
+    "name": "Community Content Review",
+    "description": "Reviews posts, comments, and user uploads for community guideline violations",
+    "icon": "🛡️"
+}
+
+# Typical requests for this loop type
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": f"Review this comment: '{user_comment}'",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {"value": "approve", "label": "✅ Approve", "color": "#22c55e"},
+            {"value": "reject", "label": "❌ Reject", "color": "#ef4444"},
+            {"value": "warn", "label": "⚠️ Warn User", "color": "#f59e0b"}
+        ],
+        "required": True
     },
-    "reviewers": ["supervisor", "manager", "finance_team"],
-    "response_options": ["approved", "rejected", "needs_receipts", "escalate"]
+    "default_response": "reject",
+    "timeout_seconds": 1800,  # 30 minutes
+    "platform": "api"
 }
 ```
 
 ### Quality Assurance Loops
 
-Review AI-generated content for accuracy:
+Review AI-generated or automated content:
 
 ```python
 qa_loop = {
-    "name": "AI Content QA",
-    "description": "Review AI-generated content for quality and accuracy",
-    "settings": {
-        "required_approvals": 1,
-        "response_time": 7200,  # 2 hours
-        "auto_approve_after": 28800,  # 8 hours
-        "quality_thresholds": {
-            "accuracy": 0.95,
-            "completeness": 0.90
-        }
+    "name": "AI Content Quality Review",
+    "description": "Human experts review AI-generated content for accuracy and quality",
+    "icon": "🎯"
+}
+
+# Quality rating request
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown", 
+    "priority": "medium",
+    "request_text": f"Rate the quality of this AI-generated article:\n\n{article_content}",
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 10,
+        "scale_step": 0.5,
+        "labels": {
+            "1": "Poor - Needs complete rewrite",
+            "5": "Average - Acceptable with minor edits", 
+            "10": "Excellent - Publish as-is"
+        },
+        "required": True
     },
-    "reviewers": ["qa_specialist", "domain_expert", "senior_reviewer"],
-    "response_options": ["approved", "rejected", "needs_revision", "escalate"]
+    "default_response": 5,
+    "timeout_seconds": 86400,  # 24 hours
+    "platform": "api"
 }
 ```
 
-## Advanced Loop Features
+### Business Process Loops
 
-### Conditional Routing
-
-Route requests based on content characteristics:
+Handle approval workflows and decision-making:
 
 ```python
-def route_request(request):
-    if request.priority == "urgent":
-        return assign_to_senior_reviewer(request)
-    elif request.content_type == "image":
-        return assign_to_image_specialist(request)
-    elif request.ai_confidence < 0.5:
-        return assign_to_expert_reviewer(request)
-    else:
-        return assign_to_available_reviewer(request)
-```
+approval_loop = {
+    "name": "Expense Approval Team",
+    "description": "Reviews and approves employee expense reports and reimbursements",
+    "icon": "💼"
+}
 
-### Escalation Chains
-
-Handle timeouts and complex decisions:
-
-```python
-escalation_chain = {
-    "level_1": {
-        "reviewers": ["junior_reviewer"],
-        "timeout": 3600,  # 1 hour
-        "next_level": "level_2"
+# Approval decision request
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": f"Approve this expense report:\n\nAmount: ${amount}\nCategory: {category}\nDescription: {description}",
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "✅ Approve Expense",
+        "false_label": "❌ Reject Expense", 
+        "true_color": "#22c55e",
+        "false_color": "#ef4444",
+        "required": True
     },
-    "level_2": {
-        "reviewers": ["senior_reviewer"],
-        "timeout": 7200,  # 2 hours
-        "next_level": "level_3"
-    },
-    "level_3": {
-        "reviewers": ["manager"],
-        "timeout": 86400,  # 24 hours
-        "final_action": "auto_approve"
-    }
+    "default_response": False,  # Conservative default
+    "timeout_seconds": 14400,  # 4 hours
+    "platform": "api"
 }
 ```
 
-### Batch Processing
+### Verification & Compliance Loops
 
-Group similar requests for efficient review:
+Verify information accuracy and regulatory compliance:
 
 ```python
-def batch_requests(requests, batch_size=10):
-    # Group requests by content type and priority
-    batches = {}
-    for request in requests:
-        key = f"{request.content_type}_{request.priority}"
-        if key not in batches:
-            batches[key] = []
-        batches[key].append(request)
-        
-        # Send batch when full
-        if len(batches[key]) >= batch_size:
-            send_batch_for_review(batches[key])
-            batches[key] = []
+compliance_loop = {
+    "name": "Data Verification Team",
+    "description": "Verifies business information and ensures regulatory compliance",
+    "icon": "📋"
+}
+
+# Multi-select verification request
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "low", 
+    "request_text": f"Verify this business listing:\n\n{business_info}",
+    "response_type": "multi_select",
+    "response_config": {
+        "options": [
+            {"value": "address_verified", "label": "📍 Address Verified"},
+            {"value": "phone_verified", "label": "📞 Phone Verified"},
+            {"value": "hours_verified", "label": "🕒 Hours Verified"},
+            {"value": "website_verified", "label": "🌐 Website Verified"},
+            {"value": "license_verified", "label": "📜 License Verified"}
+        ],
+        "min_selections": 1,
+        "max_selections": 5,
+        "required": True
+    },
+    "default_response": [],
+    "timeout_seconds": 259200,  # 3 days
+    "platform": "api"
+}
 ```
 
-## Loop Performance Metrics
+## Loop Management
 
-Track and optimize your loops:
+### Monitoring Loop Health
 
-<CardGroup cols={2}>
-<Card title="Response Time" icon="clock">
-- Average response time
-- 95th percentile response time
-- Time to first response
-- Escalation frequency
-</Card>
+Keep track of loop performance and member engagement:
 
-<Card title="Quality Metrics" icon="chart">
-- Decision consistency
-- Inter-rater reliability
-- Error rates
-- Reviewer performance
-</Card>
+```python
+def analyze_loop_performance(loop_id):
+    # Get loop details
+    loop_response = requests.get(
+        f"https://api.hitl.sh/v1/api/loops/{loop_id}",
+        headers={"Authorization": f"Bearer {api_key}"}
+    )
+    loop = loop_response.json()["data"]["loop"]
+    
+    # Get recent requests
+    requests_response = requests.get(
+        f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+        headers={"Authorization": f"Bearer {api_key}"}
+    )
+    requests_data = requests_response.json()["data"]["requests"]
+    
+    # Analyze metrics
+    total_requests = len(requests_data)
+    completed_requests = [r for r in requests_data if r["status"] == "completed"]
+    timeout_requests = [r for r in requests_data if r["status"] == "timeout"]
+    
+    completion_rate = len(completed_requests) / total_requests if total_requests > 0 else 0
+    timeout_rate = len(timeout_requests) / total_requests if total_requests > 0 else 0
+    
+    print(f"Loop: {loop['name']}")
+    print(f"Members: {loop['member_count']} ({loop['member_count'] - loop['pending_count']} active)")
+    print(f"Requests: {total_requests} total, {len(completed_requests)} completed")
+    print(f"Completion rate: {completion_rate:.1%}")
+    print(f"Timeout rate: {timeout_rate:.1%}")
+    
+    # Performance insights
+    if completion_rate < 0.8:
+        print("⚠️ Low completion rate - consider adding more reviewers")
+    if timeout_rate > 0.2:
+        print("⚠️ High timeout rate - consider adjusting timeouts or priorities")
+    if loop['member_count'] - loop['pending_count'] < 3:
+        print("⚠️ Few active members - recruit more reviewers for reliability")
 
-<Card title="Volume Metrics" icon="bar-chart">
-- Requests per day
-- Peak load times
-- Queue length
-- Processing capacity
-</Card>
+# Monitor your loops
+analyze_loop_performance(loop_id)
+```
 
-<Card title="Cost Metrics" icon="dollar-sign">
-- Cost per request
-- Reviewer efficiency
-- Automation savings
-- ROI calculations
-</Card>
-</CardGroup>
+### Member Management
+
+Track and manage loop membership:
+
+```python
+# Get detailed member information
+members_response = requests.get(
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/members",
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+
+members = members_response.json()["data"]["members"]
+
+print("Loop Members:")
+for member in members:
+    status_emoji = "✅" if member["status"] == "active" else "⏳"
+    joined_date = member.get("joined_at", "Unknown")
+    print(f"  {status_emoji} {member['name']} ({member['email']}) - Joined: {joined_date}")
+
+# Remove inactive members if needed
+inactive_members = [m for m in members if m["status"] == "pending" and is_old_invite(m)]
+for member in inactive_members:
+    print(f"Removing inactive member: {member['email']}")
+    requests.delete(
+        f"https://api.hitl.sh/v1/api/loops/{loop_id}/members/{member['user_id']}",
+        headers={"Authorization": f"Bearer {api_key}"}
+    )
+```
 
 ## Best Practices
 
 ### Loop Design
 
 <Steps>
-<Step title="Start Simple">
-Begin with basic loops and add complexity as needed.
+<Step title="Clear Purpose">
+Give loops specific, well-defined purposes rather than general "review everything" mandates.
 </Step>
 
-<Step title="Clear Guidelines">
-Provide reviewers with explicit decision criteria.
+<Step title="Right Size">
+Aim for 3-10 active members per loop - enough for coverage but small enough for accountability.
 </Step>
 
-<Step title="Balanced Workload">
-Distribute work evenly across your reviewer team.
+<Step title="Descriptive Names">
+Use names that clearly indicate what the loop reviews and how urgent it is.
 </Step>
 
-<Step title="Regular Review">
-Continuously monitor and optimize loop performance.
+<Step title="Regular Maintenance">
+Periodically review membership, remove inactive users, and update descriptions.
 </Step>
 </Steps>
 
-### Reviewer Management
+### Operational Efficiency
 
-- **Skill Matching**: Assign reviewers based on expertise
-- **Training**: Provide regular training on policies and procedures
-- **Feedback**: Give reviewers feedback on their performance
-- **Rotation**: Rotate reviewers to prevent burnout and bias
+<CardGroup cols={2}>
+<Card title="Redundancy Planning" icon="shield">
+Always have multiple active reviewers to ensure coverage during off-hours or vacations.
+</Card>
 
-### Performance Optimization
+<Card title="Priority Management" icon="sort">
+Use different loops for different priority levels rather than mixing urgent and routine requests.
+</Card>
 
-- **Threshold Tuning**: Adjust confidence thresholds based on performance
-- **Routing Optimization**: Refine routing rules for better efficiency
-- **Automation**: Automate routine decisions where possible
-- **Capacity Planning**: Scale reviewer capacity based on demand
+<Card title="Specialization" icon="target">
+Create specialized loops for different types of content (text, images, different domains).
+</Card>
+
+<Card title="Performance Monitoring" icon="chart-line">
+Regularly check completion rates and response times to identify bottlenecks.
+</Card>
+</CardGroup>
+
+### Reviewer Experience
+
+- **Clear Guidelines**: Provide reviewers with explicit instructions and examples
+- **Reasonable Workload**: Don't overwhelm loops with too many requests
+- **Feedback Loop**: Use the feedback API to acknowledge good reviewer performance
+- **Training Materials**: Share documentation about what to look for and how to respond
+
+## Scaling Patterns
+
+### Single Loop → Multiple Loops
+
+As your needs grow, consider splitting loops:
+
+```python
+# Start with one general loop
+general_loop = create_loop("Content Review", "Reviews all user content")
+
+# Split into specialized loops as volume increases
+text_loop = create_loop("Text Content Review", "Reviews posts, comments, and messages")
+image_loop = create_loop("Image Content Review", "Reviews uploaded photos and graphics") 
+urgent_loop = create_loop("Urgent Review Team", "High-priority content requiring immediate attention")
+```
+
+### Geographic Distribution
+
+Create region-specific loops for timezone coverage:
+
+```python
+# Timezone-based loops for 24/7 coverage
+us_loop = create_loop("US Review Team", "Primary coverage: 9 AM - 5 PM EST")
+eu_loop = create_loop("EU Review Team", "Primary coverage: 9 AM - 5 PM CET")  
+asia_loop = create_loop("Asia Review Team", "Primary coverage: 9 AM - 5 PM JST")
+
+# Route requests based on urgency and time
+def route_request_by_timezone():
+    current_hour_utc = datetime.utcnow().hour
+    
+    if 13 <= current_hour_utc <= 21:  # US business hours
+        return us_loop["id"]
+    elif 8 <= current_hour_utc <= 16:   # EU business hours
+        return eu_loop["id"] 
+    else:                               # Asia business hours
+        return asia_loop["id"]
+```
+
+### Hierarchical Review
+
+Set up escalation between loops:
+
+```python
+# Primary review loop
+primary_loop = create_loop("First-Level Review", "Initial content screening")
+
+# Escalation loop for complex cases
+escalation_loop = create_loop("Senior Review Team", "Handles escalated and complex cases")
+
+# In your request handling:
+if reviewer_selected == "escalate":
+    # Create new request in escalation loop
+    escalated_request = create_request(
+        loop_id=escalation_loop["id"],
+        request_text=f"Escalated from primary review:\n\n{original_request}",
+        # ... other configuration
+    )
+```
+
+## Troubleshooting
+
+### Common Issues
+
+<AccordionGroup>
+<Accordion title="No Active Members">
+**Problem**: Requests timeout because no reviewers are available.
+
+**Solutions**:
+- Check that invite codes have been shared and used
+- Verify reviewers have the mobile app installed and notifications enabled
+- Consider timezone differences when recruiting reviewers
+- Monitor member activity and remove/replace inactive users
+</Accordion>
+
+<Accordion title="Low Response Rates">
+**Problem**: Many requests timeout instead of being completed.
+
+**Solutions**:
+- Increase timeout durations to allow more response time
+- Add more reviewers to increase coverage
+- Adjust priorities - too many high-priority requests reduce effectiveness
+- Check if request instructions are clear and actionable
+</Accordion>
+
+<Accordion title="Inconsistent Responses">
+**Problem**: Reviewers give different answers to similar requests.
+
+**Solutions**:
+- Provide clearer guidelines and examples
+- Use more structured response types (single select vs. text)
+- Consider reviewer training or calibration exercises
+- Review response configurations to ensure options are clear
+</Accordion>
+
+<Accordion title="Member Management Issues">
+**Problem**: Can't remove members or invite codes aren't working.
+
+**Solutions**:
+- Only loop creators can manage membership
+- Invite codes are case-sensitive and expire after extended periods
+- Removed members can rejoin with the same invite code if needed
+- Check API responses for specific error messages
+</Accordion>
+</AccordionGroup>
 
 ## Next Steps
 
-Ready to create and configure your loops?
-
-<Card title="Create Your First Loop" icon="rocket" href="/first-loop">
-Step-by-step guide to building your first loop.
+<CardGroup cols={2}>
+<Card title="Create Your First Loop" icon="plus" href="/api-reference/loops/create-loop">
+Start building your reviewer team with the loops API
 </Card>
 
-<Card title="Explore Request Types" icon="list" href="/requests/introduction">
-Learn about different types of requests your loops can handle.
+<Card title="Request Management" icon="file-text" href="/concepts/requests">
+Learn how to create and manage requests within your loops  
 </Card>
 
-<Card title="Mobile App Setup" icon="smartphone" href="/mobile/home-screen">
-Get your reviewers set up with the mobile app.
+<Card title="Mobile App Setup" icon="mobile" href="/mobile/join-loop">
+Help your reviewers get set up with the HITL mobile app
 </Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/loops/get-loops">
+Explore all available loop management endpoints
+</Card>
+</CardGroup>

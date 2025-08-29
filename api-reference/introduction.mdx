@@ -1,443 +1,305 @@
 ---
 title: "API Reference"
-description: "Complete API documentation for HITL.sh. Integrate human supervision into your applications with our RESTful API."
+description: "Complete API documentation for HITL.sh. Integrate human oversight into your AI workflows with our RESTful API."
 ---
 
 ## HITL.sh API Reference
 
-The HITL.sh API provides a RESTful interface for integrating human supervision into your AI workflows. Use our API to create reviews, manage templates, and handle webhooks programmatically.
+The HITL.sh API provides a RESTful interface for integrating human supervision into your AI workflows. Create loops, manage requests, and route decisions to human reviewers with our comprehensive API.
 
-## Base URL
+## Base URLs
 
+**Public API (API Key Authentication):**
 ```
-https://api.hitl.sh
+https://api.hitl.sh/v1
+```
+
+**Private API (JWT Authentication):**
+```
+https://api.my.hitl.sh/v1
 ```
 
 ## Authentication
 
-All API requests require authentication using an API key in the Authorization header.
+### Public API - API Key
+
+Use API keys for machine-to-machine integration. Include your API key in the header:
 
 ```bash
 Authorization: Bearer your_api_key_here
 ```
 
-## Rate Limits
-
-- **Standard plan**: 1,000 requests per minute
-- **Professional plan**: 10,000 requests per minute
-- **Enterprise plan**: 100,000 requests per minute
-
-Rate limit headers are included in all responses:
+**Rate Limits:**
+- **100 requests per hour** per API key
+- Rate limit headers included in responses:
 
 ```
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 99
 X-RateLimit-Reset: 1642233600
+```
+
+### Private API - JWT Token
+
+Use JWT tokens for user-authenticated requests:
+
+```bash
+Authorization: Bearer your_jwt_token
 ```
 
 ## Response Format
 
 All API responses follow a consistent JSON format:
 
+**Success Response:**
 ```json
 {
-  "success": true,
-  "data": {...},
-  "meta": {
-    "request_id": "req_123",
-    "timestamp": "2024-01-15T10:30:00Z"
+  "error": false,
+  "msg": "Operation completed successfully",
+  "data": {
+    // Response data
   }
 }
 ```
 
-**Error responses:**
-
+**Error Response:**
 ```json
 {
-  "success": false,
-  "error": {
-    "code": "validation_error",
-    "message": "Invalid field value",
-    "details": {
-      "field": "email",
-      "issue": "Invalid email format"
-    }
-  },
-  "meta": {
-    "request_id": "req_123",
-    "timestamp": "2024-01-15T10:30:00Z"
+  "error": true,
+  "msg": "Error description",
+  "data": {
+    // Additional error details (optional)
   }
 }
 ```
 
-## Common HTTP Status Codes
+## HTTP Status Codes
 
 - **200 OK**: Request successful
 - **201 Created**: Resource created successfully
-- **400 Bad Request**: Invalid request data
-- **401 Unauthorized**: Invalid or missing API key
-- **403 Forbidden**: Insufficient permissions
+- **400 Bad Request**: Invalid request data or validation error
+- **401 Unauthorized**: Invalid or missing authentication
+- **403 Forbidden**: Access denied to resource
 - **404 Not Found**: Resource not found
 - **429 Too Many Requests**: Rate limit exceeded
 - **500 Internal Server Error**: Server error
 
-## API Endpoints
+## Core Resources
 
-### Reviews
+### Loops
 
-**Create a review:**
+Loops are human review workflows that route requests to team members:
 
-```http
-POST /v1/reviews
-```
+- **POST** `/loops` - Create a new loop
+- **GET** `/loops` - Get your loops
+- **GET** `/loops/{id}` - Get specific loop
+- **PUT** `/loops/{id}` - Update loop
+- **DELETE** `/loops/{id}` - Delete loop
+- **GET** `/loops/{id}/members` - Get loop members
+- **DELETE** `/loops/{id}/members/{userId}` - Remove member
 
-**Get a review:**
+### Requests
 
-```http
-GET /v1/reviews/{review_id}
-```
+Requests are human review tasks sent to loop members:
 
-**List reviews:**
+- **POST** `/loops/{loopId}/requests` - Create request in loop
+- **GET** `/requests` - Get your requests
+- **GET** `/requests/{id}` - Get specific request
+- **DELETE** `/requests/{id}` - Cancel request
+- **POST** `/requests/{id}/feedback` - Add feedback
+- **GET** `/loops/{loopId}/requests` - Get loop requests
 
-```http
-GET /v1/reviews
-```
+## Quick Start Example
 
-**Update a review:**
-
-```http
-PATCH /v1/reviews/{review_id}
-```
-
-**Cancel a review:**
-
-```http
-DELETE /v1/reviews/{review_id}
-```
-
-### Templates
-
-**Create a template:**
-
-```http
-POST /v1/templates
-```
-
-**Get a template:**
-
-```http
-GET /v1/templates/{template_id}
-```
-
-**List templates:**
-
-```http
-GET /v1/templates
-```
-
-**Update a template:**
-
-```http
-PATCH /v1/templates/{template_id}
-```
-
-**Delete a template:**
-
-```http
-DELETE /v1/templates/{template_id}
-```
-
-### Webhooks
-
-**Create a webhook:**
-
-```http
-POST /v1/webhooks
-```
-
-**List webhooks:**
-
-```http
-GET /v1/webhooks
-```
-
-**Update a webhook:**
-
-```http
-PATCH /v1/webhooks/{webhook_id}
-```
-
-**Delete a webhook:**
-
-```http
-DELETE /v1/webhooks/{webhook_id}
-```
-
-### Teams
-
-**Create a team:**
-
-```http
-POST /v1/teams
-```
-
-**Get team members:**
-
-```http
-GET /v1/teams/{team_id}/members
-```
-
-**Add team member:**
-
-```http
-POST /v1/teams/{team_id}/members
-```
-
-## Request Examples
-
-### Create a Review
+### 1. Create a Loop
 
 ```bash
-curl -X POST https://api.hitl.sh/v1/reviews \
-  -H "Authorization: Bearer your_api_key" \
+curl -X POST https://api.hitl.sh/v1/loops \
+  -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "template_id": "template_123",
-    "content": {
-      "text": "AI-generated content to review",
-      "metadata": {
-        "source": "gpt-4",
-        "confidence": 0.95
-      }
-    },
-    "assignees": ["reviewer@company.com"],
-    "priority": "medium",
-    "due_date": "2024-01-20T18:00:00Z"
+    "name": "Content Moderation",
+    "description": "Review user-generated content",
+    "icon": "shield-check"
   }'
 ```
 
-**Response:**
+### 2. Create a Request
+
+```bash
+curl -X POST https://api.hitl.sh/v1/loops/LOOP_ID/requests \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Review this content for policy violations",
+    "timeout_seconds": 3600,
+    "response_type": "single_select",
+    "response_config": {
+      "options": ["Approve", "Reject", "Needs Changes"]
+    },
+    "default_response": "Approve",
+    "platform": "api"
+  }'
+```
+
+### 3. Poll for Response
+
+```bash
+curl -X GET https://api.hitl.sh/v1/requests/REQUEST_ID \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+## Request Types and Response Configuration
+
+### Response Types
+
+<CardGroup cols={2}>
+<Card title="Single Select" icon="list">
+User chooses one option from a list.
+</Card>
+
+<Card title="Multi Select" icon="check-square">
+User chooses multiple options from a list.
+</Card>
+
+<Card title="Rating" icon="star">
+User provides a numerical rating within a range.
+</Card>
+
+<Card title="Text" icon="type">
+User provides free-form text response.
+</Card>
+
+<Card title="Number" icon="hash">
+User provides a numerical value.
+</Card>
+
+<Card title="Boolean" icon="toggle-on">
+User provides a true/false response.
+</Card>
+</CardGroup>
+
+### Processing Types
+
+<CardGroup cols={2}>
+<Card title="Time-Sensitive" icon="clock">
+Requires immediate attention with specified timeout. `timeout_seconds` required.
+</Card>
+
+<Card title="Deferred" icon="calendar">
+Can be processed within a longer timeframe (default: 30 days).
+</Card>
+</CardGroup>
+
+## Webhook Integration
+
+Set up webhooks to receive real-time notifications when requests are completed:
 
 ```json
 {
-  "success": true,
+  "event": "request.completed",
+  "request_id": "65f1234567890abcdef12348",
+  "status": "completed",
+  "response_data": "Approve",
+  "response_by": "reviewer@example.com",
+  "completed_at": "2024-03-15T10:45:00Z"
+}
+```
+
+## Error Handling
+
+### Common Error Scenarios
+
+**Rate limit exceeded:**
+```json
+{
+  "error": true,
+  "msg": "API key request limit exceeded",
   "data": {
-    "id": "rev_123",
-    "template_id": "template_123",
-    "content": {
-      "text": "AI-generated content to review",
-      "metadata": {
-        "source": "gpt-4",
-        "confidence": 0.95
-      }
-    },
-    "assignees": ["reviewer@company.com"],
-    "priority": "medium",
-    "due_date": "2024-01-20T18:00:00Z",
-    "status": "created",
-    "created_at": "2024-01-15T10:30:00Z",
-    "updated_at": "2024-01-15T10:30:00Z"
+    "usage_count": 100,
+    "usage_limit": 100,
+    "remaining": 0
   }
 }
 ```
 
-### Create a Template
-
-```bash
-curl -X POST https://api.hitl.sh/v1/templates \
-  -H "Authorization: Bearer your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Content Review",
-    "description": "Review AI-generated content for quality and compliance",
-    "fields": [
-      {
-        "name": "content",
-        "type": "content_display",
-        "label": "Content to review",
-        "editable": true,
-        "required": true
-      },
-      {
-        "name": "approved",
-        "type": "boolean",
-        "label": "Approve content",
-        "required": true
-      },
-      {
-        "name": "feedback",
-        "type": "text",
-        "label": "Feedback or comments",
-        "required": false
-      }
-    ]
-  }'
-```
-
-## Webhook Integration
-
-### Webhook Events
-
-HITL.sh sends webhooks for the following events:
-
-- **review.created**: New review created
-- **review.assigned**: Review assigned to reviewer
-- **review.started**: Reviewer started review
-- **review.completed**: Review completed
-- **review.cancelled**: Review cancelled
-- **template.updated**: Template modified
-
-### Webhook Payload
-
-**Review completed webhook:**
-
+**Validation error:**
 ```json
 {
-  "event": "review.completed",
-  "review": {
-    "id": "rev_123",
-    "template_id": "template_123",
-    "status": "completed",
-    "result": {
-      "approved": true,
-      "content": "Revised content...",
-      "feedback": "Great content, approved with minor edits"
-    },
-    "completed_at": "2024-01-15T12:30:00Z",
-    "reviewer": "reviewer@company.com"
-  },
-  "timestamp": "2024-01-15T12:30:00Z"
+  "error": true,
+  "msg": "Validation failed",
+  "data": "timeout_seconds is required for time-sensitive requests"
 }
 ```
 
-### Webhook Security
-
-**Signature verification:**
-
-```python
-import hmac
-import hashlib
-
-def verify_webhook_signature(payload, signature, secret):
-    expected_signature = hmac.new(
-        secret.encode('utf-8'),
-        payload.encode('utf-8'),
-        hashlib.sha256
-    ).hexdigest()
-    
-    return hmac.compare_digest(signature, expected_signature)
-```
-
-## SDKs and Libraries
-
-### Official SDKs
-
-- **Python SDK**: `pip install hitl`
-- **TypeScript SDK**: `npm install @hitl/typescript`
-- **JavaScript SDK**: `npm install @hitl/javascript`
-
-### Community Libraries
-
-- **Go**: `go get github.com/hitlsh/go-hitl`
-- **Ruby**: `gem install hitl`
-- **PHP**: `composer require hitlsh/php-hitl`
-
-## Error Handling
-
-### Common Error Codes
-
-- **validation_error**: Invalid request data
-- **template_not_found**: Template doesn't exist
-- **review_not_found**: Review doesn't exist
-- **insufficient_permissions**: API key lacks required permissions
-- **rate_limit_exceeded**: Too many requests
-- **webhook_delivery_failed**: Webhook delivery failed
-
-### Retry Logic
-
-**Exponential backoff:**
-
-```python
-import time
-import random
-
-def retry_with_backoff(func, max_retries=3):
-    for attempt in range(max_retries):
-        try:
-            return func()
-        except Exception as e:
-            if attempt == max_retries - 1:
-                raise e
-            
-            # Exponential backoff with jitter
-            delay = (2 ** attempt) + random.uniform(0, 1)
-            time.sleep(delay)
+**Access denied:**
+```json
+{
+  "error": true,
+  "msg": "Access denied to this loop"
+}
 ```
 
 ## Best Practices
 
 ### API Usage
-
-- **Use HTTPS**: Always use HTTPS for production
+- **Use HTTPS**: Always use secure connections
 - **Store keys securely**: Never commit API keys to version control
 - **Implement retries**: Use exponential backoff for failed requests
-- **Monitor rate limits**: Track your API usage
+- **Monitor rate limits**: Track your API usage to avoid limits
 - **Handle errors gracefully**: Implement proper error handling
 
-### Webhook Handling
+### Request Management
+- **Set appropriate timeouts**: Balance urgency with reviewer availability
+- **Use webhooks**: More efficient than polling for status updates
+- **Provide context**: Include relevant metadata to help reviewers
+- **Choose response types carefully**: Match response type to your use case
 
-- **Verify signatures**: Always verify webhook signatures
-- **Handle duplicates**: Webhooks may be sent multiple times
-- **Process asynchronously**: Don't block webhook processing
-- **Implement idempotency**: Handle duplicate webhook deliveries
-- **Monitor delivery**: Track webhook delivery success rates
+## SDKs and Integration
 
-### Performance
+### Official Libraries
+- **Python**: `pip install hitl-python` (coming soon)
+- **Node.js**: `npm install @hitl/node` (coming soon)
+- **Go**: `go get github.com/hitl-sh/go-client` (coming soon)
 
-- **Use pagination**: For large result sets
-- **Batch operations**: When possible
-- **Cache responses**: Cache static data
-- **Monitor latency**: Track API response times
-- **Optimize requests**: Minimize unnecessary API calls
+### No-Code Integrations
+- **n8n**: Available in the n8n community library
+- **Zapier**: Connect HITL.sh to 5000+ apps
+- **Make**: Visual workflow automation
 
-## Support
+## Support and Resources
 
-### Getting Help
+<CardGroup cols={2}>
+<Card title="API Status" icon="activity" href="https://status.hitl.sh">
+  Check real-time API health and uptime.
+</Card>
 
-- **Documentation**: Browse our comprehensive guides
-- **API Status**: Check [status.hitl.sh](https://status.hitl.sh)
-- **Community**: Join our [Discord community](https://discord.gg/hitlsh)
-- **Support**: Email [support@hitl.sh](mailto:support@hitl.sh)
+<Card title="Community" icon="users" href="https://discord.gg/jYVrpmnMP9">
+  Join our Discord community for support.
+</Card>
 
-### API Versioning
+<Card title="GitHub" icon="github" href="https://github.com/hitl-sh">
+  Explore our open source projects.
+</Card>
 
-- **Current version**: v1
-- **Deprecation policy**: 12 months notice for breaking changes
-- **Migration guides**: Available for major version updates
-- **Backward compatibility**: Maintained within major versions
+<Card title="Support" icon="life-ring" href="mailto:support@hitl.sh">
+  Get help from our support team.
+</Card>
+</CardGroup>
 
 ## Next Steps
 
-<Card
-  title="Authentication"
-  icon="key"
-  href="/api-reference/authentication"
->
-  Learn about API authentication and security.
+<Card title="Authentication Guide" icon="key" href="/api-reference/authentication">
+  Learn about API keys, JWT tokens, and security best practices.
 </Card>
 
-<Card
-  title="Reviews API"
-  icon="file-text"
-  href="/api-reference/reviews"
->
-  Complete documentation for the reviews API endpoints.
+<Card title="Create Your First Loop" icon="plus" href="/api-reference/loops/create-loop">
+  Start by creating a loop to organize your human reviewers.
 </Card>
 
-<Card
-  title="Webhooks"
-  icon="bell"
-  href="/api-reference/webhooks"
->
-  Set up webhooks to receive real-time updates.
+<Card title="Set Up Webhooks" icon="webhook" href="/api-reference/webhooks/overview">
+  Receive real-time notifications when requests are completed.
 </Card>

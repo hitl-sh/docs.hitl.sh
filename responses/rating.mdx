@@ -1,0 +1,816 @@
+---
+title: "Rating Responses"
+description: "Complete guide to implementing rating responses for quality assessment, performance evaluation, and scaled feedback collection"
+---
+
+# Rating Responses
+
+Rating responses allow reviewers to provide numeric assessments on customizable scales, making them ideal for quality evaluations, performance reviews, and any scenario where you need quantifiable feedback that can be easily aggregated and analyzed.
+
+## When to Use Rating Responses
+
+Rating responses are perfect for:
+
+<CardGroup cols={2}>
+<Card title="Quality Assessment" icon="star">
+Evaluating content quality, product ratings, service assessments, or any subjective quality measurement
+</Card>
+
+<Card title="Performance Evaluation" icon="chart-line">
+Rating employee performance, AI model outputs, system effectiveness, or process efficiency
+</Card>
+
+<Card title="User Experience Rating" icon="heart">
+Collecting feedback on user experience, satisfaction levels, or preference measurements
+</Card>
+
+<Card title="Risk Assessment" icon="shield-exclamation">
+Scoring risk levels, threat assessments, or priority ratings where numeric scales provide clarity
+</Card>
+</CardGroup>
+
+## Configuration Options
+
+Rating responses support flexible scale configuration with custom labels and increments:
+
+### Required Parameters
+
+<ParamField body="scale_min" type="number" required>
+Minimum value on the rating scale (can be negative)
+</ParamField>
+
+<ParamField body="scale_max" type="number" required>
+Maximum value on the rating scale (must be greater than scale_min)
+</ParamField>
+
+### Optional Parameters
+
+<ParamField body="scale_step" type="number" optional default="1">
+Increment between valid values (e.g., 0.5 allows half-point ratings)
+</ParamField>
+
+<ParamField body="labels" type="object" optional>
+Custom labels for specific scale values (key-value pairs where keys are numbers)
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a rating is mandatory for completion
+</ParamField>
+
+## Implementation Examples
+
+### Content Quality Rating
+
+Five-star quality assessment with descriptive labels:
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown", 
+    "priority": "medium",
+    "request_text": "Please rate the overall quality of this blog article:\n\n# '10 Essential Tips for Remote Work Productivity'\n\nWorking from home has become the new normal for millions of professionals worldwide. Whether you're a seasoned remote worker or just starting your work-from-home journey, these proven strategies will help you maintain peak productivity while enjoying the flexibility of remote work.\n\n## 1. Create a Dedicated Workspace\n\nDesignate a specific area in your home exclusively for work. This physical separation helps create mental boundaries between work and personal life...\n\n[Article continues with detailed tips and examples]",
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 5,
+        "scale_step": 0.5,
+        "labels": {
+            "1": "Poor - Major issues, needs complete rewrite",
+            "2": "Below Average - Significant improvements needed", 
+            "3": "Average - Acceptable with minor edits",
+            "4": "Good - High quality, minimal changes needed",
+            "5": "Excellent - Ready to publish as-is"
+        },
+        "required": True
+    },
+    "default_response": 3.0,  # Average rating if timeout
+    "timeout_seconds": 86400,  # 24 hours
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "deferred",
+    type: "markdown",
+    priority: "medium", 
+    request_text: "Please rate the overall quality of this blog article:\n\n# '10 Essential Tips for Remote Work Productivity'\n\nWorking from home has become the new normal for millions of professionals worldwide. Whether you're a seasoned remote worker or just starting your work-from-home journey, these proven strategies will help you maintain peak productivity while enjoying the flexibility of remote work.\n\n## 1. Create a Dedicated Workspace\n\nDesignate a specific area in your home exclusively for work. This physical separation helps create mental boundaries between work and personal life...\n\n[Article continues with detailed tips and examples]",
+    response_type: "rating",
+    response_config: {
+        scale_min: 1,
+        scale_max: 5,
+        scale_step: 0.5,
+        labels: {
+            "1": "Poor - Major issues, needs complete rewrite",
+            "2": "Below Average - Significant improvements needed",
+            "3": "Average - Acceptable with minor edits", 
+            "4": "Good - High quality, minimal changes needed",
+            "5": "Excellent - Ready to publish as-is"
+        },
+        required: true
+    },
+    default_response: 3.0,
+    timeout_seconds: 86400,
+    platform: "api"
+};
+```
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please rate the overall quality of this blog article...",
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 5,
+        "scale_step": 0.5,
+        "labels": {
+            "1": "Poor - Major issues, needs complete rewrite",
+            "2": "Below Average - Significant improvements needed",
+            "3": "Average - Acceptable with minor edits",
+            "4": "Good - High quality, minimal changes needed", 
+            "5": "Excellent - Ready to publish as-is"
+        },
+        "required": true
+    },
+    "default_response": 3.0,
+    "timeout_seconds": 86400,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+### Risk Assessment Scale
+
+Ten-point risk assessment with threshold labels:
+
+<CodeGroup>
+
+```python Python
+# Security threat risk assessment
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Assess the risk level of this security alert:\n\n**Alert Type:** Suspicious Login Activity\n**Details:** Multiple failed login attempts from IP 192.168.1.100 (Russia) targeting admin accounts\n**Time:** 15 attempts in the last 5 minutes\n**User Accounts:** admin@company.com, root@company.com, security@company.com\n**Additional Context:** These IPs have been flagged in threat intelligence feeds\n\nPlease rate the risk level from 1 (minimal) to 10 (critical threat).",
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 10,
+        "scale_step": 1,
+        "labels": {
+            "1": "Minimal Risk",
+            "3": "Low Risk", 
+            "5": "Moderate Risk",
+            "7": "High Risk",
+            "10": "Critical Threat - Immediate Action Required"
+        },
+        "required": True
+    },
+    "default_response": 8,  # Conservative high-risk default
+    "timeout_seconds": 900,  # 15 minutes
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+// Performance evaluation rating
+const requestData = {
+    processing_type: "deferred",
+    type: "markdown", 
+    priority: "low",
+    request_text: "Rate this employee's performance based on the quarterly review data:\n\n**Employee:** Sarah Johnson, Marketing Manager\n**Period:** Q4 2024\n**Key Achievements:**\n- Led successful product launch campaign (25% above target)\n- Improved team efficiency by implementing new workflows\n- Completed advanced marketing certification\n- Mentored 2 junior team members\n\n**Areas for Development:**\n- Could improve cross-departmental communication\n- Occasional delays in project deliverables\n\n**Team Feedback:** Consistently positive, described as collaborative and innovative\n\nPlease provide a performance rating from 1-10.",
+    response_type: "rating",
+    response_config: {
+        scale_min: 1,
+        scale_max: 10,
+        scale_step: 0.5,
+        labels: {
+            "1": "Significantly Below Expectations",
+            "3": "Below Expectations",
+            "5": "Meets Expectations", 
+            "7": "Above Expectations",
+            "9": "Significantly Above Expectations",
+            "10": "Outstanding Performance"
+        },
+        required: true
+    },
+    default_response: 5.0,
+    timeout_seconds: 259200, // 3 days
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+### User Experience Satisfaction
+
+Net Promoter Score (NPS) style rating:
+
+<CodeGroup>
+
+```python Python  
+# Customer satisfaction survey
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "low",
+    "request_text": "Based on this customer feedback, how likely would this customer be to recommend our service to others?\n\n**Customer Feedback:**\n'The onboarding process was smooth and the support team was incredibly helpful when I had questions. The product does exactly what I need it to do, and the pricing is fair. I've been using it for 6 months now and haven't had any major issues. The recent feature updates have made my workflow even more efficient. I'm quite satisfied overall.'\n\n**Usage Data:**\n- Customer for 6 months\n- Regular active user (4-5 times per week)\n- No support tickets for technical issues\n- Upgraded to premium plan after 3 months\n\nPlease rate on the NPS scale: 0-10 where 10 means extremely likely to recommend.",
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 0,
+        "scale_max": 10,
+        "scale_step": 1,
+        "labels": {
+            "0": "Not at all likely",
+            "5": "Neutral",
+            "10": "Extremely likely"
+        },
+        "required": True
+    },
+    "default_response": 5,  # Neutral default
+    "timeout_seconds": 604800,  # 7 days
+    "platform": "api"
+}
+```
+
+</CodeGroup>
+
+## Response Format
+
+When a reviewer provides a rating, you'll receive both the numeric value and associated label:
+
+```json
+{
+  "response_data": {
+    "rating": 4.5,
+    "rating_label": "Good - High quality, minimal changes needed"
+  }
+}
+```
+
+## Use Case Examples
+
+### 1. Content Quality Evaluation
+
+<Tabs>
+<Tab title="Configuration">
+```python
+quality_evaluation_config = {
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 10,
+        "scale_step": 0.5,
+        "labels": {
+            "1": "Unacceptable - Complete rewrite needed",
+            "3": "Poor - Major revisions required",
+            "5": "Average - Minor improvements needed", 
+            "7": "Good - Ready with minimal edits",
+            "9": "Excellent - Publish immediately",
+            "10": "Outstanding - Exceeds all expectations"
+        },
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "rating": 7.5,
+    "rating_label": "Good - Ready with minimal edits"
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_quality_rating(response_data):
+    rating = response_data["rating"]
+    label = response_data["rating_label"]
+    
+    # Define quality thresholds
+    if rating >= 8.5:
+        # High quality - publish immediately
+        approve_for_publication()
+        set_priority("immediate_publish")
+        log_quality_decision("approved_high_quality", rating)
+        
+    elif rating >= 6.5:
+        # Good quality - minor edits needed
+        request_copy_edit()
+        set_status("minor_revision_needed")
+        schedule_quick_review()
+        log_quality_decision("approved_with_edits", rating)
+        
+    elif rating >= 4.0:
+        # Average - needs improvement
+        request_content_revision()
+        set_status("major_revision_needed") 
+        schedule_resubmission_review()
+        log_quality_decision("revision_required", rating)
+        
+    else:
+        # Below acceptable - reject
+        reject_content()
+        set_status("rejected")
+        request_complete_rewrite()
+        log_quality_decision("rejected", rating)
+    
+    # Store rating for analytics
+    store_quality_metrics(rating, label)
+    
+    # Update content creator stats
+    update_creator_performance_metrics(rating)
+```
+</Tab>
+</Tabs>
+
+### 2. AI Model Performance Rating
+
+<Tabs>
+<Tab title="Configuration">
+```python
+ai_performance_config = {
+    "response_type": "rating", 
+    "response_config": {
+        "scale_min": 0,
+        "scale_max": 100,
+        "scale_step": 5,
+        "labels": {
+            "0": "Completely Incorrect",
+            "25": "Poor Accuracy",
+            "50": "Average Performance",
+            "75": "Good Accuracy", 
+            "90": "Excellent Performance",
+            "100": "Perfect Accuracy"
+        },
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "rating": 85,
+    "rating_label": "Good Accuracy"
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def evaluate_ai_model_performance(response_data, model_id, test_case_id):
+    accuracy_score = response_data["rating"]
+    performance_label = response_data["rating_label"]
+    
+    # Store performance metrics
+    performance_record = {
+        "model_id": model_id,
+        "test_case_id": test_case_id,
+        "accuracy_score": accuracy_score,
+        "performance_tier": get_performance_tier(accuracy_score),
+        "evaluation_timestamp": datetime.utcnow(),
+        "evaluator_feedback": performance_label
+    }
+    
+    store_model_performance(performance_record)
+    
+    # Determine model status based on performance
+    if accuracy_score >= 95:
+        promote_to_production(model_id)
+        notify_team("Model exceeds production threshold")
+        
+    elif accuracy_score >= 80:
+        mark_for_production_consideration(model_id)
+        schedule_additional_testing()
+        
+    elif accuracy_score >= 60:
+        continue_training(model_id)
+        flag_for_improvement()
+        
+    else:
+        mark_for_major_revision(model_id)
+        escalate_to_ml_team()
+    
+    # Update model metrics dashboard
+    update_performance_dashboard(model_id, accuracy_score)
+    
+    # Trigger retraining if performance drops
+    if accuracy_score < get_historical_average(model_id) - 10:
+        trigger_model_retraining(model_id)
+
+def get_performance_tier(score):
+    if score >= 90: return "Excellent"
+    elif score >= 75: return "Good"
+    elif score >= 60: return "Acceptable"
+    else: return "Needs Improvement"
+```
+</Tab>
+</Tabs>
+
+### 3. Customer Satisfaction Survey
+
+<Tabs>
+<Tab title="Configuration">
+```python
+satisfaction_survey_config = {
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 7,
+        "scale_step": 1,
+        "labels": {
+            "1": "Extremely Dissatisfied",
+            "2": "Dissatisfied", 
+            "3": "Somewhat Dissatisfied",
+            "4": "Neutral",
+            "5": "Somewhat Satisfied",
+            "6": "Satisfied",
+            "7": "Extremely Satisfied"
+        },
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "rating": 6,
+    "rating_label": "Satisfied"
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_satisfaction_rating(response_data, customer_id, interaction_id):
+    satisfaction_score = response_data["rating"]
+    satisfaction_label = response_data["rating_label"]
+    
+    # Categorize satisfaction level
+    if satisfaction_score >= 6:
+        satisfaction_tier = "promoter"
+        follow_up_action = "request_testimonial"
+    elif satisfaction_score >= 4:
+        satisfaction_tier = "passive" 
+        follow_up_action = "improvement_survey"
+    else:
+        satisfaction_tier = "detractor"
+        follow_up_action = "retention_outreach"
+    
+    # Store satisfaction data
+    satisfaction_record = {
+        "customer_id": customer_id,
+        "interaction_id": interaction_id,
+        "satisfaction_score": satisfaction_score,
+        "satisfaction_tier": satisfaction_tier,
+        "response_timestamp": datetime.utcnow(),
+        "follow_up_scheduled": follow_up_action
+    }
+    
+    store_satisfaction_data(satisfaction_record)
+    
+    # Trigger appropriate follow-up
+    if satisfaction_tier == "promoter":
+        # High satisfaction - request review or referral
+        schedule_review_request(customer_id)
+        add_to_referral_program(customer_id)
+        
+    elif satisfaction_tier == "detractor":
+        # Low satisfaction - immediate intervention
+        escalate_to_customer_success(customer_id, satisfaction_score)
+        schedule_retention_call(customer_id)
+        flag_for_service_recovery()
+    
+    # Update customer health score
+    update_customer_health_metrics(customer_id, satisfaction_score)
+    
+    # Alert team if satisfaction trends negative
+    recent_scores = get_recent_satisfaction_scores(customer_id, days=30)
+    if len(recent_scores) >= 3 and all(score < 4 for score in recent_scores[-3:]):
+        alert_account_manager(customer_id, "declining_satisfaction_trend")
+    
+    # Update overall satisfaction analytics
+    update_satisfaction_dashboard(satisfaction_score, satisfaction_tier)
+```
+</Tab>
+</Tabs>
+
+## Validation and Error Handling
+
+### Automatic Validation
+
+The mobile app automatically validates rating responses:
+
+- **Range validation**: Ensures rating falls within scale_min and scale_max bounds
+- **Step validation**: Verifies rating aligns with scale_step increments  
+- **Required validation**: Prevents submission when required=true and no rating provided
+- **Numeric validation**: Ensures only valid numeric values are accepted
+
+### Server-Side Validation
+
+Your application should validate received ratings:
+
+```python
+def validate_rating_response(response_data, response_config):
+    """Validate rating response against configuration"""
+    
+    if not isinstance(response_data, dict):
+        return False, "Response must be an object"
+    
+    if "rating" not in response_data:
+        return False, "Missing rating field"
+    
+    rating = response_data["rating"]
+    
+    # Validate numeric type
+    if not isinstance(rating, (int, float)):
+        return False, "Rating must be a number"
+    
+    # Check bounds
+    scale_min = response_config["scale_min"]
+    scale_max = response_config["scale_max"] 
+    
+    if rating < scale_min or rating > scale_max:
+        return False, f"Rating must be between {scale_min} and {scale_max}"
+    
+    # Check step alignment
+    scale_step = response_config.get("scale_step", 1)
+    if scale_step > 0:
+        # Calculate if rating aligns with step
+        steps_from_min = (rating - scale_min) / scale_step
+        if not steps_from_min.is_integer():
+            return False, f"Rating must align with step increment of {scale_step}"
+    
+    # Check required
+    if response_config.get("required", False) and rating is None:
+        return False, "Rating is required"
+    
+    return True, "Valid"
+
+# Usage example
+is_valid, error_message = validate_rating_response(
+    response_data={
+        "rating": 4.5,
+        "rating_label": "Good - High quality"
+    },
+    response_config={
+        "scale_min": 1,
+        "scale_max": 5,
+        "scale_step": 0.5,
+        "required": True
+    }
+)
+```
+
+## Best Practices
+
+### Scale Design
+
+<AccordionGroup>
+<Accordion title="Choose Appropriate Scale Range">
+- **1-5 scale**: Best for simple quality assessments, easy to understand
+- **1-10 scale**: Good for detailed evaluations, allows more granularity
+- **0-100 scale**: Ideal for percentage-based ratings, performance metrics
+- **Custom ranges**: Use negative values for scales like -5 to +5 for sentiment
+</Accordion>
+
+<Accordion title="Set Meaningful Steps">
+- **Whole numbers (1.0)**: Simplest option, good for most use cases
+- **Half points (0.5)**: Adds precision without overwhelming complexity
+- **Decimal precision**: Use sparingly, mainly for calculated scores
+- **Larger steps (5)**: Good for percentage-based scales (0, 5, 10, 15...)
+</Accordion>
+
+<Accordion title="Label Key Points">
+- Always label the endpoints (minimum and maximum values)
+- Include middle anchor point for context
+- Add labels at natural breakpoints (quarters, thirds)
+- Use descriptive labels that explain the meaning, not just "poor/good"
+</Accordion>
+
+<Accordion title="Consider Context">
+- Match scale complexity to reviewer expertise
+- Use familiar scales when possible (5-star, 1-10, percentage)
+- Consider cultural differences in rating interpretation
+- Test scales with actual users to ensure clarity
+</Accordion>
+</AccordionGroup>
+
+### Processing Best Practices
+
+<AccordionGroup>
+<Accordion title="Threshold-Based Actions">
+```python
+# Define clear action thresholds
+thresholds = {
+    "immediate_action": 9.0,    # Exceptional - promote immediately
+    "approve": 7.0,             # Good - approve with minimal review
+    "review_needed": 5.0,       # Average - needs additional review
+    "major_revision": 3.0,      # Poor - significant work needed
+    "reject": 1.0               # Unacceptable - reject
+}
+
+def determine_action(rating):
+    for action, threshold in thresholds.items():
+        if rating >= threshold:
+            return action
+    return "reject"  # Default for ratings below all thresholds
+```
+</Accordion>
+
+<Accordion title="Aggregate Multiple Ratings">
+```python  
+# Combine multiple ratings intelligently
+def aggregate_ratings(ratings, method="weighted_average"):
+    if method == "simple_average":
+        return sum(ratings) / len(ratings)
+    
+    elif method == "weighted_average":
+        # Weight more recent ratings higher
+        weights = [1.0 + (i * 0.1) for i in range(len(ratings))]
+        weighted_sum = sum(r * w for r, w in zip(ratings, weights))
+        return weighted_sum / sum(weights)
+    
+    elif method == "median":
+        sorted_ratings = sorted(ratings)
+        n = len(sorted_ratings)
+        return sorted_ratings[n//2] if n % 2 else (sorted_ratings[n//2-1] + sorted_ratings[n//2]) / 2
+    
+    elif method == "consensus":
+        # Remove outliers and average remaining
+        if len(ratings) >= 5:
+            sorted_ratings = sorted(ratings)
+            # Remove top and bottom 20%
+            trimmed = sorted_ratings[1:-1] if len(ratings) >= 5 else ratings
+            return sum(trimmed) / len(trimmed)
+        else:
+            return sum(ratings) / len(ratings)
+```
+</Accordion>
+
+<Accordion title="Trend Analysis">
+```python
+# Track rating trends over time
+def analyze_rating_trends(entity_id, time_period_days=30):
+    ratings = get_ratings_for_period(entity_id, time_period_days)
+    
+    if len(ratings) < 3:
+        return {"trend": "insufficient_data"}
+    
+    # Calculate trend direction
+    recent_avg = sum(ratings[-3:]) / 3
+    earlier_avg = sum(ratings[:-3]) / len(ratings[:-3]) if len(ratings) > 3 else recent_avg
+    
+    trend_direction = "improving" if recent_avg > earlier_avg + 0.3 else \
+                     "declining" if recent_avg < earlier_avg - 0.3 else \
+                     "stable"
+    
+    return {
+        "trend": trend_direction,
+        "current_average": recent_avg,
+        "overall_average": sum(ratings) / len(ratings),
+        "rating_count": len(ratings),
+        "volatility": calculate_rating_volatility(ratings)
+    }
+
+def calculate_rating_volatility(ratings):
+    if len(ratings) < 2:
+        return 0
+    
+    avg = sum(ratings) / len(ratings)
+    variance = sum((r - avg) ** 2 for r in ratings) / len(ratings)
+    return variance ** 0.5  # Standard deviation
+```
+</Accordion>
+</AccordionGroup>
+
+## Analytics and Reporting
+
+### Rating Distribution Analysis
+
+```python
+def analyze_rating_distribution(ratings):
+    """Analyze patterns in rating data"""
+    from collections import Counter
+    import statistics
+    
+    if not ratings:
+        return {"error": "No ratings to analyze"}
+    
+    # Basic statistics
+    stats = {
+        "count": len(ratings),
+        "mean": statistics.mean(ratings),
+        "median": statistics.median(ratings),
+        "mode": statistics.mode(ratings) if len(set(ratings)) < len(ratings) else None,
+        "std_dev": statistics.stdev(ratings) if len(ratings) > 1 else 0,
+        "min": min(ratings),
+        "max": max(ratings)
+    }
+    
+    # Distribution analysis
+    rating_counts = Counter(ratings)
+    total_ratings = len(ratings)
+    
+    distribution = {}
+    for rating, count in rating_counts.items():
+        percentage = (count / total_ratings) * 100
+        distribution[str(rating)] = {
+            "count": count,
+            "percentage": round(percentage, 1)
+        }
+    
+    # Identify patterns
+    patterns = {
+        "central_tendency": "low" if stats["mean"] < 3 else "high" if stats["mean"] > 7 else "middle",
+        "variability": "low" if stats["std_dev"] < 1 else "high" if stats["std_dev"] > 2 else "moderate",
+        "most_common_rating": max(rating_counts.items(), key=lambda x: x[1])[0]
+    }
+    
+    return {
+        "statistics": stats,
+        "distribution": distribution,
+        "patterns": patterns
+    }
+```
+
+### Performance Benchmarking
+
+```python
+def benchmark_against_category(rating, category_id):
+    """Compare individual rating against category benchmarks"""
+    
+    # Get category statistics
+    category_stats = get_category_rating_stats(category_id)
+    
+    if not category_stats:
+        return {"error": "No benchmark data available"}
+    
+    # Calculate percentile
+    percentile = calculate_percentile(rating, category_stats["all_ratings"])
+    
+    # Determine performance tier
+    if percentile >= 90:
+        performance_tier = "Top 10%"
+    elif percentile >= 75:
+        performance_tier = "Above Average" 
+    elif percentile >= 25:
+        performance_tier = "Average"
+    else:
+        performance_tier = "Below Average"
+    
+    return {
+        "rating": rating,
+        "category_average": category_stats["mean"],
+        "percentile": percentile,
+        "performance_tier": performance_tier,
+        "above_average": rating > category_stats["mean"]
+    }
+
+def calculate_percentile(value, data_set):
+    """Calculate what percentile a value represents in a dataset"""
+    below_value = sum(1 for x in data_set if x < value)
+    return (below_value / len(data_set)) * 100
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Number Responses" icon="hashtag" href="/responses/number">
+Learn about numeric input with validation and formatting
+</Card>
+
+<Card title="Boolean Responses" icon="toggle-on" href="/responses/boolean">
+Implement simple true/false decision workflows
+</Card>
+
+<Card title="Response Analytics" icon="chart-bar" href="/guides/analytics">
+Advanced techniques for analyzing and aggregating rating data
+</Card>
+
+<Card title="Mobile Experience" icon="mobile" href="/mobile/responding">
+See how reviewers interact with rating scales on mobile devices
+</Card>
+</CardGroup>
