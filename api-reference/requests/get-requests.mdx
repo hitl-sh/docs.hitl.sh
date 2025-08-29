@@ -1,0 +1,708 @@
+---
+title: "Get User Requests"
+api: "GET https://api.hitl.sh/v1/requests"
+description: "Retrieve all requests created by your API key with status, response data, and performance metrics"
+---
+
+Get a comprehensive list of all requests you've created using your API key. This endpoint provides detailed information about each request including current status, response data, and performance metrics.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="status" type="string">
+  Filter requests by status
+  <br />
+  **Options**: `pending`, `claimed`, `completed`, `timeout`, `cancelled`
+</ParamField>
+
+<ParamField query="priority" type="string">
+  Filter requests by priority level
+  <br />
+  **Options**: `low`, `medium`, `high`, `critical`
+</ParamField>
+
+<ParamField query="loop_id" type="string">
+  Filter requests from a specific loop
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Maximum number of requests to return (1-100, default: 50)
+</ParamField>
+
+<ParamField query="offset" type="integer">
+  Number of requests to skip for pagination (default: 0)
+</ParamField>
+
+<ParamField query="sort" type="string">
+  Sort order for results
+  <br />
+  **Options**: `created_at_desc` (default), `created_at_asc`, `priority_desc`, `status_asc`
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="requests" type="array">
+      Array of request objects
+      <Expandable title="request">
+        <ResponseField name="id" type="string">
+          Unique identifier for the request
+        </ResponseField>
+        <ResponseField name="loop_id" type="string">
+          ID of the loop this request belongs to
+        </ResponseField>
+        <ResponseField name="processing_type" type="string">
+          Processing urgency (time-sensitive, deferred)
+        </ResponseField>
+        <ResponseField name="type" type="string">
+          Content type (markdown, image)
+        </ResponseField>
+        <ResponseField name="priority" type="string">
+          Priority level (low, medium, high, critical)
+        </ResponseField>
+        <ResponseField name="request_text" type="string">
+          The request content
+        </ResponseField>
+        <ResponseField name="response_type" type="string">
+          Expected response type
+        </ResponseField>
+        <ResponseField name="status" type="string">
+          Current request status
+        </ResponseField>
+        <ResponseField name="response_data" type="object">
+          Response from reviewer (if completed)
+        </ResponseField>
+        <ResponseField name="response_by" type="string">
+          ID of user who responded (if completed)
+        </ResponseField>
+        <ResponseField name="response_at" type="string">
+          ISO timestamp of response (if completed)
+        </ResponseField>
+        <ResponseField name="response_time_seconds" type="number">
+          Time taken to respond in seconds (if completed)
+        </ResponseField>
+        <ResponseField name="timeout_at" type="string">
+          ISO timestamp when request times out
+        </ResponseField>
+        <ResponseField name="created_at" type="string">
+          ISO timestamp when request was created
+        </ResponseField>
+        <ResponseField name="updated_at" type="string">
+          ISO timestamp when request was last updated
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="count" type="integer">
+      Number of requests returned in this response
+    </ResponseField>
+    <ResponseField name="total" type="integer">
+      Total number of requests matching the filter criteria
+    </ResponseField>
+    <ResponseField name="has_more" type="boolean">
+      Whether there are more requests to fetch
+    </ResponseField>
+    <ResponseField name="pagination" type="object">
+      Pagination information
+      <Expandable title="pagination">
+        <ResponseField name="limit" type="integer">
+          Current page size
+        </ResponseField>
+        <ResponseField name="offset" type="integer">
+          Current offset
+        </ResponseField>
+        <ResponseField name="next_offset" type="integer">
+          Offset for next page (if has_more is true)
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+# Get all requests
+curl -X GET https://api.hitl.sh/v1/requests \
+  -H "Authorization: Bearer your_api_key_here"
+
+# Get pending requests only
+curl -X GET "https://api.hitl.sh/v1/requests?status=pending" \
+  -H "Authorization: Bearer your_api_key_here"
+
+# Get high priority requests with pagination
+curl -X GET "https://api.hitl.sh/v1/requests?priority=high&limit=20&offset=0" \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+```python Python
+import requests
+
+def get_requests(status=None, priority=None, loop_id=None, limit=50, offset=0):
+    """Get requests with optional filtering"""
+    url = "https://api.hitl.sh/v1/requests"
+    headers = {"Authorization": "Bearer your_api_key_here"}
+    
+    params = {"limit": limit, "offset": offset}
+    if status:
+        params["status"] = status
+    if priority:
+        params["priority"] = priority
+    if loop_id:
+        params["loop_id"] = loop_id
+    
+    response = requests.get(url, headers=headers, params=params)
+    return response.json()
+
+# Get all requests
+all_requests = get_requests()
+
+# Get pending requests
+pending_requests = get_requests(status="pending")
+
+# Get high priority requests
+high_priority = get_requests(priority="high")
+
+print(f"Total requests: {all_requests['data']['total']}")
+print(f"Pending requests: {len([r for r in all_requests['data']['requests'] if r['status'] == 'pending'])}")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+class RequestsAPI {
+    constructor(apiKey) {
+        this.apiKey = apiKey;
+        this.baseURL = 'https://api.hitl.sh/v1';
+    }
+    
+    async getRequests(filters = {}) {
+        const params = new URLSearchParams();
+        
+        // Add filters
+        if (filters.status) params.append('status', filters.status);
+        if (filters.priority) params.append('priority', filters.priority);
+        if (filters.loop_id) params.append('loop_id', filters.loop_id);
+        if (filters.limit) params.append('limit', filters.limit);
+        if (filters.offset) params.append('offset', filters.offset);
+        if (filters.sort) params.append('sort', filters.sort);
+        
+        const response = await axios.get(`${this.baseURL}/requests?${params}`, {
+            headers: { 'Authorization': `Bearer ${this.apiKey}` }
+        });
+        
+        return response.data;
+    }
+    
+    async getAllRequests() {
+        let allRequests = [];
+        let offset = 0;
+        const limit = 100;
+        
+        do {
+            const response = await this.getRequests({ limit, offset });
+            allRequests.push(...response.data.requests);
+            offset += limit;
+            
+            if (!response.data.has_more) break;
+        } while (true);
+        
+        return allRequests;
+    }
+}
+
+// Usage
+const api = new RequestsAPI('your_api_key_here');
+
+// Get pending requests
+const pendingRequests = await api.getRequests({ status: 'pending' });
+console.log(`${pendingRequests.data.count} pending requests found`);
+
+// Get all requests with pagination
+const allRequests = await api.getAllRequests();
+console.log(`Total requests retrieved: ${allRequests.length}`);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "error": false,
+  "msg": "Requests retrieved successfully",
+  "data": {
+    "requests": [
+      {
+        "id": "65f1234567890abcdef12348",
+        "loop_id": "65f1234567890abcdef12345",
+        "processing_type": "time-sensitive",
+        "type": "markdown",
+        "priority": "high",
+        "request_text": "Please review this user-generated content for community guidelines compliance.",
+        "response_type": "single_select",
+        "status": "completed",
+        "response_data": "Approve",
+        "response_by": "65f1234567890abcdef12350",
+        "response_at": "2024-03-15T10:45:00Z",
+        "response_time_seconds": 900.5,
+        "timeout_at": "2024-03-15T11:30:00Z",
+        "created_at": "2024-03-15T10:30:00Z",
+        "updated_at": "2024-03-15T10:45:00Z"
+      },
+      {
+        "id": "65f1234567890abcdef12349",
+        "loop_id": "65f1234567890abcdef12345",
+        "processing_type": "deferred",
+        "type": "markdown",
+        "priority": "medium",
+        "request_text": "Rate the quality of this AI-generated response for accuracy and helpfulness.",
+        "response_type": "rating",
+        "status": "pending",
+        "response_data": null,
+        "response_by": null,
+        "response_at": null,
+        "response_time_seconds": null,
+        "timeout_at": "2024-04-14T10:30:00Z",
+        "created_at": "2024-03-15T10:35:00Z",
+        "updated_at": "2024-03-15T10:35:00Z"
+      }
+    ],
+    "count": 2,
+    "total": 15,
+    "has_more": true,
+    "pagination": {
+      "limit": 50,
+      "offset": 0,
+      "next_offset": 50
+    }
+  }
+}
+```
+
+</ResponseExample>
+
+## Request Status Overview
+
+<CardGroup cols={2}>
+<Card title="Pending" icon="clock">
+**Status**: `pending`
+- Waiting for reviewer to claim
+- No response yet
+- Can be cancelled
+</Card>
+
+<Card title="Claimed" icon="user-check">
+**Status**: `claimed`  
+- Reviewer is working on it
+- Response expected soon
+- Cannot be cancelled
+</Card>
+
+<Card title="Completed" icon="check-circle">
+**Status**: `completed`
+- Reviewer submitted response
+- `response_data` contains the answer
+- Can receive feedback
+</Card>
+
+<Card title="Timeout" icon="clock-x">
+**Status**: `timeout`
+- Request exceeded timeout period
+- `default_response` used as final answer
+- No further action possible
+</Card>
+
+<Card title="Cancelled" icon="x-circle">
+**Status**: `cancelled`
+- Request was cancelled before completion
+- No response data available
+- Final status
+</Card>
+</CardGroup>
+
+## Filtering and Sorting
+
+### Advanced Filtering Examples
+
+<CodeGroup>
+
+```python Python
+def get_requests_dashboard():
+    """Get comprehensive request dashboard data"""
+    api_key = "your_api_key_here"
+    headers = {"Authorization": f"Bearer {api_key}"}
+    base_url = "https://api.hitl.sh/v1/requests"
+    
+    dashboard_data = {}
+    
+    # Get requests by status
+    statuses = ["pending", "claimed", "completed", "timeout", "cancelled"]
+    for status in statuses:
+        response = requests.get(f"{base_url}?status={status}", headers=headers)
+        data = response.json()["data"]
+        dashboard_data[f"{status}_requests"] = {
+            "count": data["total"],
+            "requests": data["requests"][:5]  # First 5 for preview
+        }
+    
+    # Get high priority pending requests
+    urgent_response = requests.get(
+        f"{base_url}?status=pending&priority=high&sort=created_at_asc", 
+        headers=headers
+    )
+    dashboard_data["urgent_pending"] = urgent_response.json()["data"]["requests"]
+    
+    # Get recent completions
+    recent_response = requests.get(
+        f"{base_url}?status=completed&sort=created_at_desc&limit=10", 
+        headers=headers
+    )
+    dashboard_data["recent_completions"] = recent_response.json()["data"]["requests"]
+    
+    return dashboard_data
+```
+
+```javascript Node.js
+async function getRequestAnalytics() {
+    const apiKey = 'your_api_key_here';
+    const headers = { 'Authorization': `Bearer ${apiKey}` };
+    const baseURL = 'https://api.hitl.sh/v1/requests';
+    
+    try {
+        // Parallel requests for different metrics
+        const [allRequests, pendingRequests, completedRequests] = await Promise.all([
+            axios.get(baseURL, { headers }),
+            axios.get(`${baseURL}?status=pending`, { headers }),
+            axios.get(`${baseURL}?status=completed&limit=100`, { headers })
+        ]);
+        
+        const analytics = {
+            total_requests: allRequests.data.data.total,
+            pending_count: pendingRequests.data.data.total,
+            completed_count: completedRequests.data.data.total,
+            completion_rate: 0,
+            avg_response_time: 0,
+            priority_breakdown: { low: 0, medium: 0, high: 0, critical: 0 }
+        };
+        
+        // Calculate completion rate
+        if (analytics.total_requests > 0) {
+            analytics.completion_rate = 
+                (analytics.completed_count / analytics.total_requests) * 100;
+        }
+        
+        // Calculate average response time
+        const completed = completedRequests.data.data.requests;
+        if (completed.length > 0) {
+            const totalTime = completed.reduce((sum, req) => 
+                sum + (req.response_time_seconds || 0), 0);
+            analytics.avg_response_time = totalTime / completed.length;
+        }
+        
+        // Priority breakdown
+        allRequests.data.data.requests.forEach(req => {
+            analytics.priority_breakdown[req.priority]++;
+        });
+        
+        return analytics;
+        
+    } catch (error) {
+        console.error('Error fetching request analytics:', error);
+        return null;
+    }
+}
+```
+
+</CodeGroup>
+
+## Pagination Best Practices
+
+### Efficient Pagination
+
+Handle large datasets efficiently:
+
+```python
+def paginate_all_requests(api_key, batch_size=100):
+    """Generator that yields all requests in batches"""
+    headers = {"Authorization": f"Bearer {api_key}"}
+    url = "https://api.hitl.sh/v1/requests"
+    offset = 0
+    
+    while True:
+        params = {"limit": batch_size, "offset": offset}
+        response = requests.get(url, headers=headers, params=params)
+        data = response.json()["data"]
+        
+        # Yield current batch
+        for request in data["requests"]:
+            yield request
+        
+        # Check if we have more data
+        if not data["has_more"]:
+            break
+            
+        offset += batch_size
+
+# Usage
+request_count = 0
+for request in paginate_all_requests("your_api_key"):
+    request_count += 1
+    if request["status"] == "pending":
+        print(f"Pending request: {request['id']}")
+
+print(f"Total requests processed: {request_count}")
+```
+
+### Cursor-based Pagination (Alternative)
+
+For very large datasets, implement cursor-based pagination:
+
+```javascript
+class RequestsPaginator {
+    constructor(apiKey, filters = {}) {
+        this.apiKey = apiKey;
+        this.filters = filters;
+        this.lastCreatedAt = null;
+    }
+    
+    async getNextPage(limit = 50) {
+        const params = new URLSearchParams();
+        params.append('limit', limit);
+        params.append('sort', 'created_at_desc');
+        
+        // Add filters
+        Object.keys(this.filters).forEach(key => {
+            if (this.filters[key]) {
+                params.append(key, this.filters[key]);
+            }
+        });
+        
+        // Cursor pagination using created_at
+        if (this.lastCreatedAt) {
+            params.append('created_before', this.lastCreatedAt);
+        }
+        
+        const response = await axios.get(
+            `https://api.hitl.sh/v1/requests?${params}`,
+            { headers: { 'Authorization': `Bearer ${this.apiKey}` } }
+        );
+        
+        const requests = response.data.data.requests;
+        
+        if (requests.length > 0) {
+            this.lastCreatedAt = requests[requests.length - 1].created_at;
+        }
+        
+        return {
+            requests,
+            hasMore: requests.length === limit
+        };
+    }
+}
+```
+
+## Request Performance Analysis
+
+### Response Time Analysis
+
+Analyze reviewer performance:
+
+```python
+def analyze_response_times(requests_data):
+    """Analyze response time patterns"""
+    completed_requests = [r for r in requests_data if r["status"] == "completed" and r["response_time_seconds"]]
+    
+    if not completed_requests:
+        return {"error": "No completed requests with response times"}
+    
+    response_times = [r["response_time_seconds"] for r in completed_requests]
+    
+    analysis = {
+        "total_completed": len(completed_requests),
+        "avg_response_time_seconds": sum(response_times) / len(response_times),
+        "min_response_time": min(response_times),
+        "max_response_time": max(response_times),
+        "median_response_time": sorted(response_times)[len(response_times) // 2],
+        "response_time_ranges": {
+            "under_5_min": sum(1 for t in response_times if t < 300),
+            "5_to_30_min": sum(1 for t in response_times if 300 <= t < 1800),
+            "30_min_to_2_hours": sum(1 for t in response_times if 1800 <= t < 7200),
+            "over_2_hours": sum(1 for t in response_times if t >= 7200)
+        }
+    }
+    
+    # Convert seconds to human readable
+    analysis["avg_response_time_formatted"] = format_duration(analysis["avg_response_time_seconds"])
+    
+    return analysis
+
+def format_duration(seconds):
+    """Format seconds into human readable duration"""
+    if seconds < 60:
+        return f"{int(seconds)} seconds"
+    elif seconds < 3600:
+        return f"{int(seconds // 60)} minutes"
+    else:
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        return f"{hours}h {minutes}m"
+```
+
+### Priority Distribution
+
+Track request priority patterns:
+
+```javascript
+function analyzePriorityDistribution(requests) {
+    const priorityStats = {
+        low: { count: 0, completed: 0, avg_response_time: 0 },
+        medium: { count: 0, completed: 0, avg_response_time: 0 },
+        high: { count: 0, completed: 0, avg_response_time: 0 },
+        critical: { count: 0, completed: 0, avg_response_time: 0 }
+    };
+    
+    requests.forEach(request => {
+        const priority = request.priority;
+        priorityStats[priority].count++;
+        
+        if (request.status === 'completed' && request.response_time_seconds) {
+            priorityStats[priority].completed++;
+            priorityStats[priority].avg_response_time += request.response_time_seconds;
+        }
+    });
+    
+    // Calculate averages
+    Object.keys(priorityStats).forEach(priority => {
+        const stats = priorityStats[priority];
+        if (stats.completed > 0) {
+            stats.avg_response_time = Math.round(stats.avg_response_time / stats.completed);
+        }
+        stats.completion_rate = stats.completed / stats.count;
+    });
+    
+    return priorityStats;
+}
+```
+
+## Export and Reporting
+
+### CSV Export
+
+Export request data for analysis:
+
+```python
+import csv
+from datetime import datetime
+
+def export_requests_to_csv(filename="requests_export.csv"):
+    """Export all requests to CSV file"""
+    
+    # Get all requests
+    all_requests = []
+    offset = 0
+    limit = 100
+    
+    while True:
+        response = requests.get(
+            "https://api.hitl.sh/v1/requests",
+            headers={"Authorization": "Bearer your_api_key_here"},
+            params={"limit": limit, "offset": offset}
+        )
+        
+        data = response.json()["data"]
+        all_requests.extend(data["requests"])
+        
+        if not data["has_more"]:
+            break
+        offset += limit
+    
+    # Write to CSV
+    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        fieldnames = [
+            'id', 'loop_id', 'processing_type', 'type', 'priority',
+            'request_text', 'response_type', 'status', 'response_data',
+            'response_time_seconds', 'created_at', 'response_at'
+        ]
+        
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        
+        for request in all_requests:
+            # Clean data for CSV
+            row = {field: request.get(field, '') for field in fieldnames}
+            
+            # Truncate long text fields
+            if len(str(row['request_text'])) > 1000:
+                row['request_text'] = str(row['request_text'])[:997] + "..."
+            
+            writer.writerow(row)
+    
+    print(f"Exported {len(all_requests)} requests to {filename}")
+    return filename
+```
+
+## Error Handling
+
+<AccordionGroup>
+<Accordion title="Invalid Filter Values">
+```json
+{
+  "error": true,
+  "msg": "Invalid status filter value",
+  "data": "status must be one of: pending, claimed, completed, timeout, cancelled"
+}
+```
+</Accordion>
+
+<Accordion title="Invalid Pagination Parameters">
+```json
+{
+  "error": true,
+  "msg": "Invalid pagination parameters",
+  "data": "limit must be between 1 and 100"
+}
+```
+</Accordion>
+
+<Accordion title="API Key Rate Limit">
+```json
+{
+  "error": true,
+  "msg": "API key request limit exceeded",
+  "data": {
+    "usage_count": 100,
+    "usage_limit": 100,
+    "remaining": 0
+  }
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<Card title="Get Specific Request" icon="search" href="/api-reference/requests/get-request">
+  Retrieve detailed information about a specific request including response data.
+</Card>
+
+<Card title="Create New Request" icon="plus" href="/api-reference/requests/create-request">
+  Create a new human review request within a loop.
+</Card>
+
+<Card title="Request Analytics" icon="chart-line" href="/api-reference/requests/analytics">
+  Get deeper insights into request patterns and performance metrics.
+</Card>

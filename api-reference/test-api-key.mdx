@@ -1,0 +1,387 @@
+---
+title: "Test API Key"
+api: "GET https://api.hitl.sh/v1/test"
+description: "Verify that your API key is valid and working correctly. Returns account information and API key status."
+---
+
+Verify your API key is working correctly and get information about your account, rate limits, and permissions. This is the first endpoint you should call when integrating with HITL.sh.
+
+<Info>
+This endpoint is perfect for debugging authentication issues and monitoring your API usage.
+</Info>
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication. Format: `Bearer your_api_key_here`
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred (always false for successful requests)
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message confirming API key validity
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="api_key_id" type="string">
+      Unique identifier of the API key being used
+    </ResponseField>
+    
+    <ResponseField name="user_id" type="string">
+      User ID associated with the API key
+    </ResponseField>
+    
+    <ResponseField name="email" type="string">
+      Email address associated with the account
+    </ResponseField>
+    
+    <ResponseField name="account_status" type="string">
+      Current account status. Values: `active`, `suspended`
+    </ResponseField>
+    
+    <ResponseField name="rate_limit" type="object">
+      <Expandable title="rate_limit">
+        <ResponseField name="limit" type="integer">
+          Maximum requests per hour for this API key
+        </ResponseField>
+        
+        <ResponseField name="remaining" type="integer">
+          Remaining requests in the current hour
+        </ResponseField>
+        
+        <ResponseField name="reset_at" type="string">
+          ISO timestamp when the rate limit resets
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="permissions" type="array">
+      List of permissions granted to this API key
+      <br />
+      Example: `["loops:read", "loops:write", "requests:read", "requests:write"]`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.hitl.sh/v1/test \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+```python Python
+import requests
+
+api_key = "your_api_key_here"
+headers = {
+    "Authorization": f"Bearer {api_key}"
+}
+
+response = requests.get("https://api.hitl.sh/v1/test", headers=headers)
+data = response.json()
+
+if data["error"] == False:
+    print("✅ API key is valid!")
+    print(f"Account: {data['data']['email']}")
+    print(f"Status: {data['data']['account_status']}")
+    print(f"Rate limit: {data['data']['rate_limit']['remaining']}/{data['data']['rate_limit']['limit']}")
+else:
+    print("❌ API key validation failed")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const apiKey = 'your_api_key_here';
+const headers = {
+    'Authorization': `Bearer ${apiKey}`
+};
+
+async function testApiKey() {
+    try {
+        const response = await axios.get('https://api.hitl.sh/v1/test', { headers });
+        const data = response.data;
+        
+        if (!data.error) {
+            console.log('✅ API key is valid!');
+            console.log(`Account: ${data.data.email}`);
+            console.log(`Status: ${data.data.account_status}`);
+            console.log(`Rate limit: ${data.data.rate_limit.remaining}/${data.data.rate_limit.limit}`);
+        }
+    } catch (error) {
+        console.error('❌ API key validation failed:', error.response?.data);
+    }
+}
+
+testApiKey();
+```
+
+```go Go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "net/http"
+)
+
+type TestResponse struct {
+    Error bool `json:"error"`
+    Msg   string `json:"msg"`
+    Data  struct {
+        APIKeyID      string `json:"api_key_id"`
+        UserID        string `json:"user_id"`
+        Email         string `json:"email"`
+        AccountStatus string `json:"account_status"`
+        RateLimit     struct {
+            Limit     int    `json:"limit"`
+            Remaining int    `json:"remaining"`
+            ResetAt   string `json:"reset_at"`
+        } `json:"rate_limit"`
+        Permissions []string `json:"permissions"`
+    } `json:"data"`
+}
+
+func testAPIKey(apiKey string) error {
+    req, err := http.NewRequest("GET", "https://api.hitl.sh/v1/test", nil)
+    if err != nil {
+        return err
+    }
+    
+    req.Header.Set("Authorization", "Bearer "+apiKey)
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+    
+    var result TestResponse
+    if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+        return err
+    }
+    
+    if !result.Error {
+        fmt.Println("✅ API key is valid!")
+        fmt.Printf("Account: %s\n", result.Data.Email)
+        fmt.Printf("Status: %s\n", result.Data.AccountStatus)
+        fmt.Printf("Rate limit: %d/%d\n", result.Data.RateLimit.Remaining, result.Data.RateLimit.Limit)
+    }
+    
+    return nil
+}
+
+func main() {
+    err := testAPIKey("your_api_key_here")
+    if err != nil {
+        fmt.Printf("❌ API key validation failed: %v\n", err)
+    }
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "error": false,
+  "msg": "API key is valid",
+  "data": {
+    "api_key_id": "65f1234567890abcdef12349",
+    "user_id": "65f1234567890abcdef12346",
+    "email": "user@example.com",
+    "account_status": "active",
+    "rate_limit": {
+      "limit": 100,
+      "remaining": 95,
+      "reset_at": "2024-03-15T15:00:00Z"
+    },
+    "permissions": [
+      "loops:read",
+      "loops:write", 
+      "requests:read",
+      "requests:write"
+    ]
+  }
+}
+```
+
+```json 401 Invalid API Key
+{
+  "error": true,
+  "msg": "Invalid authorization token"
+}
+```
+
+```json 429 Rate Limited
+{
+  "error": true,
+  "msg": "API rate limit exceeded",
+  "data": {
+    "usage_count": 100,
+    "usage_limit": 100,
+    "remaining": 0
+  }
+}
+```
+
+</ResponseExample>
+
+## Use Cases
+
+### Integration Testing
+
+Use this endpoint in your CI/CD pipeline to verify API key setup:
+
+```python
+def test_api_key_setup():
+    """Test that API key is properly configured"""
+    response = requests.get(
+        "https://api.hitl.sh/v1/test", 
+        headers={"Authorization": f"Bearer {os.environ['HITL_API_KEY']}"}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["error"] == False
+    assert data["data"]["account_status"] == "active"
+    
+    print("✅ API key configuration verified")
+```
+
+### Rate Limit Monitoring
+
+Check your rate limit status before making batch requests:
+
+```javascript
+async function checkRateLimits() {
+    const response = await axios.get('https://api.hitl.sh/v1/test', { headers });
+    const rateLimit = response.data.data.rate_limit;
+    
+    if (rateLimit.remaining < 10) {
+        console.warn(`Low rate limit: ${rateLimit.remaining}/${rateLimit.limit} remaining`);
+        console.log(`Resets at: ${rateLimit.reset_at}`);
+    }
+    
+    return rateLimit;
+}
+```
+
+### Health Check Endpoint
+
+Use in your application's health checks:
+
+```python
+def health_check():
+    """Application health check including HITL.sh API"""
+    try:
+        response = requests.get(
+            "https://api.hitl.sh/v1/test",
+            headers={"Authorization": f"Bearer {HITL_API_KEY}"},
+            timeout=5
+        )
+        
+        if response.status_code == 200 and not response.json()["error"]:
+            return {"hitl_api": "healthy"}
+        else:
+            return {"hitl_api": "unhealthy", "error": response.json()}
+            
+    except Exception as e:
+        return {"hitl_api": "unhealthy", "error": str(e)}
+```
+
+### Debugging Authentication Issues
+
+When experiencing authentication problems, this endpoint provides detailed information:
+
+```python
+def debug_auth_issues():
+    """Debug authentication problems"""
+    try:
+        response = requests.get("https://api.hitl.sh/v1/test", headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()["data"]
+            print("🔍 Authentication Debug Info:")
+            print(f"   API Key ID: {data['api_key_id']}")
+            print(f"   Account Status: {data['account_status']}")
+            print(f"   Permissions: {', '.join(data['permissions'])}")
+            print(f"   Rate Limit: {data['rate_limit']['remaining']}/{data['rate_limit']['limit']}")
+            
+        elif response.status_code == 401:
+            print("❌ Invalid API key - check your authorization header")
+            
+        elif response.status_code == 429:
+            print("⏰ Rate limit exceeded - wait before retrying")
+            
+    except requests.exceptions.RequestException as e:
+        print(f"🌐 Network error: {e}")
+```
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Regular Health Checks">
+- Call this endpoint periodically in production to monitor API key health
+- Set up alerts if the endpoint returns unexpected responses
+- Include it in your application's readiness probes
+</Accordion>
+
+<Accordion title="Rate Limit Awareness">
+- Check rate limits before making large batch operations
+- Implement backoff strategies when limits are low
+- Monitor the `reset_at` timestamp for planning
+</Accordion>
+
+<Accordion title="Environment Validation">
+- Test API keys in each environment (dev, staging, prod)
+- Verify permissions match expected capabilities
+- Ensure account status is active before deployment
+</Accordion>
+
+<Accordion title="Error Handling">
+- Handle all possible response codes (200, 401, 429)
+- Log authentication failures for debugging
+- Implement retry logic with exponential backoff
+</Accordion>
+</AccordionGroup>
+
+## Common Issues
+
+<Warning>
+If this endpoint fails, check these common issues:
+
+1. **Missing Authorization header** - Ensure you're including `Authorization: Bearer your_api_key`
+2. **Incorrect header format** - Don't include extra spaces or use wrong prefixes
+3. **Revoked API key** - Check your dashboard if the key was revoked
+4. **Network issues** - Verify you can reach `api.hitl.sh`
+5. **Rate limits** - Wait if you've exceeded your hourly limit
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Create Your First Loop" icon="plus" href="/api-reference/loops/create-loop">
+  After verifying your API key, create a loop to start processing requests.
+</Card>
+
+<Card title="Authentication Guide" icon="key" href="/api-reference/authentication">
+  Learn more about API key management and security best practices.
+</Card>
+
+<Card title="Rate Limiting" icon="clock" href="/guides/best-practices">
+  Understand rate limits and optimize your API usage patterns.
+</Card>
+
+<Card title="Error Handling" icon="exclamation-triangle" href="/api-reference/errors">
+  Learn how to handle and debug API errors effectively.
+</Card>
+</CardGroup>

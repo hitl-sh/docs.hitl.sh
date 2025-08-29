@@ -1,394 +1,534 @@
 ---
 title: "Responses"
-description: "Learn about human responses in HITL.sh, how they're structured, and how to integrate them into your workflows"
+description: "Understand how human reviewers provide structured responses and how to configure and process them in your applications"
 ---
 
 # Responses
 
-Responses are the human decisions and feedback that complete the human-in-the-loop workflow. When reviewers examine requests, they provide structured responses that your system can process to continue the workflow.
+Responses are the structured decisions and feedback that human reviewers provide when completing HITL.sh requests. The response system supports six different types, each designed for specific use cases and providing different levels of structure and validation.
 
-## What are Responses?
+## What is a Response?
 
-A response in HITL.sh contains:
+A response in HITL.sh represents the human reviewer's decision and contains:
 
-- **Human Decision**: The reviewer's choice (approved, rejected, etc.)
-- **Reasoning**: Explanation for the decision
-- **Additional Feedback**: Comments, suggestions, or modifications
-- **Metadata**: Response timestamp, reviewer information, and processing details
-- **Attachments**: Any files or additional information provided
+- **Response Data**: The actual decision or feedback in a structured format
+- **Response Type**: Which of the six supported response types was used
+- **Reviewer Information**: Who provided the response and when
+- **Validation Status**: Whether the response meets the configured requirements
+- **Processing Metadata**: Response time, platform used, and other tracking data
 
-<Card title="Response Examples" icon="message-circle">
-- Content approval with minor edit suggestions
-- Transaction rejection with fraud reasoning
-- Quality review with specific improvement notes
-- Escalation request with senior reviewer assignment
+<Info>
+Responses are collected via the HITL mobile app and made available to your applications via API polling or webhooks. Each response type has its own data structure and validation rules.
+</Info>
+
+## Response Types Overview
+
+HITL.sh supports six distinct response types, each optimized for different decision-making scenarios:
+
+<CardGroup cols={2}>
+<Card title="Text Response" icon="message">
+**Free-form feedback** with character limits
+- Detailed explanations and qualitative feedback
+- Configurable length requirements
+- Perfect for open-ended reviews
 </Card>
 
-## Response Structure
+<Card title="Single Select" icon="circle-dot">
+**One choice** from predefined options
+- Clear decision workflows  
+- Visual options with colors and descriptions
+- Ideal for approve/reject scenarios
+</Card>
 
-### Basic Response Format
+<Card title="Multi Select" icon="check-square">
+**Multiple choices** from option lists
+- Issue identification and categorization
+- Configurable selection limits
+- Great for checklists and audits
+</Card>
 
-Every response follows a consistent structure:
+<Card title="Rating Response" icon="star">
+**Numeric ratings** on custom scales
+- Quality assessments and scoring
+- Custom labels and step increments
+- Perfect for performance evaluation
+</Card>
 
-```json
-{
-  "request_id": "req_abc123",
-  "reviewer_id": "reviewer_xyz789",
-  "decision": "approved|rejected|needs_changes|escalate",
-  "timestamp": "2024-01-15T11:45:00Z",
-  "reasoning": "string",
-  "confidence": 0.95,
-  "processing_time": 120
+<Card title="Number Response" icon="hashtag">
+**Numeric input** with validation
+- Pricing, quantities, measurements
+- Formatting with prefixes and suffixes
+- Range validation and decimal control
+</Card>
+
+<Card title="Boolean Response" icon="toggle-on">
+**True/false decisions** with custom labels
+- Simple binary choices
+- Customizable yes/no labeling
+- Fast decision-making workflows
+</Card>
+</CardGroup>
+
+## Response Configuration
+
+When creating requests, you specify how reviewers should respond by setting the `response_type` and `response_config`:
+
+### Text Responses
+
+For detailed feedback and explanations:
+
+```python
+"response_type": "text",
+"response_config": {
+    "placeholder": "Explain your reasoning...",
+    "min_length": 20,
+    "max_length": 500,
+    "required": True
 }
 ```
 
-### Extended Response Format
-
-Enhanced responses include additional context:
-
+**Response Format:**
 ```json
 {
-  "request_id": "req_abc123",
-  "reviewer_id": "reviewer_xyz789",
-  "decision": "needs_changes",
-  "timestamp": "2024-01-15T11:45:00Z",
-  "reasoning": "Content contains factual inaccuracies that need correction",
-  "confidence": 0.9,
-  "processing_time": 180,
-  "feedback": {
-    "required_changes": [
-      "Update statistics to reflect current year data",
-      "Correct company name spelling",
-      "Add source citations for claims"
+  "response_data": "The content violates guideline 3.2 regarding promotional language. The phrase 'everyone should try it' is too promotional. Suggest rephrasing to 'this worked well for me' instead."
+}
+```
+
+### Single Select Responses
+
+For structured decisions with predefined options:
+
+```python
+"response_type": "single_select",
+"response_config": {
+    "options": [
+        {
+            "value": "approve",
+            "label": "✅ Approve Content",
+            "description": "Content meets all guidelines",
+            "color": "#22c55e"
+        },
+        {
+            "value": "reject",
+            "label": "❌ Reject Content", 
+            "description": "Content violates policies",
+            "color": "#ef4444"
+        }
     ],
-    "suggestions": [
-      "Consider adding visual elements to improve engagement",
-      "Include call-to-action for better conversion"
-    ]
-  },
-  "metadata": {
-    "reviewer_expertise": ["content_quality", "fact_checking"],
-    "review_duration": 180,
-    "device_type": "mobile",
-    "location": "US-East"
+    "required": True
+}
+```
+
+**Response Format:**
+```json
+{
+  "response_data": {
+    "selected_value": "reject",
+    "selected_label": "❌ Reject Content"
   }
 }
 ```
 
-## Response Types
+### Multi Select Responses
 
-### Approval Responses
-
-When content or requests are approved:
+For identifying multiple issues or aspects:
 
 ```python
-approval_response = {
-    "decision": "approved",
-    "reasoning": "Content meets all community guidelines and quality standards",
-    "confidence": 0.95,
-    "feedback": {
-        "positive_aspects": [
-            "Clear and informative content",
-            "Appropriate tone and language",
-            "Accurate information"
-        ]
-    }
+"response_type": "multi_select",
+"response_config": {
+    "options": [
+        {"value": "spam", "label": "🚫 Spam Content"},
+        {"value": "inappropriate", "label": "⚠️ Inappropriate Language"},
+        {"value": "misleading", "label": "❌ Misleading Claims"}
+    ],
+    "min_selections": 1,
+    "max_selections": 3,
+    "required": True
 }
 ```
 
-### Rejection Responses
-
-When content or requests are rejected:
-
-```python
-rejection_response = {
-    "decision": "rejected",
-    "reasoning": "Content violates community guidelines regarding hate speech",
-    "confidence": 0.98,
-    "feedback": {
-        "violations": [
-            "Contains discriminatory language",
-            "Promotes harmful stereotypes",
-            "Violates platform policies"
-        ],
-        "recommendations": [
-            "Remove discriminatory content",
-            "Rewrite with inclusive language",
-            "Review community guidelines"
-        ]
-    }
+**Response Format:**
+```json
+{
+  "response_data": {
+    "selected_values": ["spam", "misleading"],
+    "selected_labels": ["🚫 Spam Content", "❌ Misleading Claims"]
+  }
 }
 ```
 
-### Modification Requests
+### Rating Responses
 
-When changes are needed before approval:
+For quality assessments and scoring:
 
 ```python
-modification_response = {
-    "decision": "needs_changes",
-    "reasoning": "Content has potential but requires revisions for clarity",
-    "confidence": 0.85,
-    "feedback": {
-        "required_changes": [
-            "Clarify technical terminology",
-            "Add examples for better understanding",
-            "Fix grammatical errors"
-        ],
-        "optional_improvements": [
-            "Consider adding visual aids",
-            "Include related resources"
-        ],
-        "deadline": "2024-01-20T23:59:59Z"
-    }
+"response_type": "rating",
+"response_config": {
+    "scale_min": 1,
+    "scale_max": 10,
+    "scale_step": 0.5,
+    "labels": {
+        "1": "Poor Quality",
+        "5": "Average",
+        "10": "Excellent"
+    },
+    "required": True
 }
 ```
 
-### Escalation Responses
+**Response Format:**
+```json
+{
+  "response_data": {
+    "rating": 7.5,
+    "rating_label": "Good Quality"
+  }
+}
+```
 
-When requests need senior review:
+### Number Responses
+
+For quantitative input with validation:
 
 ```python
-escalation_response = {
-    "decision": "escalate",
-    "reasoning": "Complex legal compliance issue requiring expert review",
-    "confidence": 0.7,
-    "feedback": {
-        "escalation_reason": "Legal compliance complexity",
-        "required_expertise": ["legal_review", "compliance_specialist"],
-        "urgency": "high",
-        "additional_context": "Previous similar cases had legal implications"
-    }
+"response_type": "number",
+"response_config": {
+    "min_value": 0,
+    "max_value": 1000,
+    "decimal_places": 2,
+    "prefix": "$",
+    "suffix": " USD",
+    "required": True
+}
+```
+
+**Response Format:**
+```json
+{
+  "response_data": {
+    "number": 299.99,
+    "formatted_value": "$299.99 USD"
+  }
+}
+```
+
+### Boolean Responses
+
+For simple yes/no decisions:
+
+```python
+"response_type": "boolean",
+"response_config": {
+    "true_label": "🚨 Suspicious Transaction",
+    "false_label": "✅ Normal Transaction",
+    "true_color": "#dc2626",
+    "false_color": "#16a34a",
+    "required": True
+}
+```
+
+**Response Format:**
+```json
+{
+  "response_data": {
+    "boolean": false,
+    "boolean_label": "✅ Normal Transaction"
+  }
 }
 ```
 
 ## Response Processing
 
-### Handling Different Decisions
+### Accessing Response Data
 
-Process responses based on the decision type:
-
-```python
-def process_response(response):
-    if response.decision == "approved":
-        handle_approval(response)
-    elif response.decision == "rejected":
-        handle_rejection(response)
-    elif response.decision == "needs_changes":
-        handle_modification_request(response)
-    elif response.decision == "escalate":
-        handle_escalation(response)
-    else:
-        handle_unknown_decision(response)
-
-def handle_approval(response):
-    # Process approved content
-    content_id = get_content_id_from_request(response.request_id)
-    publish_content(content_id)
-    
-    # Update analytics
-    log_approval(response)
-    
-    # Notify stakeholders
-    notify_content_approved(content_id)
-
-def handle_rejection(response):
-    # Process rejected content
-    content_id = get_content_id_from_request(response.request_id)
-    flag_content(content_id, response.reasoning)
-    
-    # Update user reputation
-    user_id = get_user_id_from_request(response.request_id)
-    update_user_reputation(user_id, -1)
-    
-    # Log rejection for training
-    log_rejection(response)
-
-def handle_modification_request(response):
-    # Request changes from content creator
-    content_id = get_content_id_from_request(response.request_id)
-    user_id = get_user_id_from_request(response.request_id)
-    
-    send_modification_request(
-        user_id=user_id,
-        content_id=content_id,
-        changes=response.feedback.required_changes,
-        deadline=response.feedback.deadline
-    )
-```
-
-### Response Validation
-
-Ensure responses meet quality standards:
+Once a reviewer completes a request, you can access the response data via API:
 
 ```python
-def validate_response(response):
-    errors = []
+import requests
+
+# Get completed request with response
+response = requests.get(
+    f"https://api.hitl.sh/v1/api/requests/{request_id}",
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+
+request_data = response.json()["data"]["request"]
+
+if request_data["status"] == "completed":
+    # Extract response information
+    response_data = request_data["response_data"]
+    response_type = request_data["response_type"]
+    reviewer = request_data["response_by_user"]
+    response_time = request_data["response_time_seconds"]
     
-    # Check required fields
-    if not response.decision:
-        errors.append("Decision is required")
+    print(f"Response Type: {response_type}")
+    print(f"Response Data: {response_data}")
+    print(f"Completed by: {reviewer['name']} in {response_time:.1f}s")
     
-    if not response.reasoning:
-        errors.append("Reasoning is required")
-    
-    # Validate decision values
-    valid_decisions = ["approved", "rejected", "needs_changes", "escalate"]
-    if response.decision not in valid_decisions:
-        errors.append(f"Invalid decision: {response.decision}")
-    
-    # Check confidence range
-    if response.confidence < 0 or response.confidence > 1:
-        errors.append("Confidence must be between 0 and 1")
-    
-    # Validate processing time
-    if response.processing_time < 0:
-        errors.append("Processing time cannot be negative")
-    
-    return errors
+    # Process based on response type
+    process_response(response_type, response_data)
 ```
 
-## Response Quality
+### Response Processing Patterns
 
-### Measuring Response Quality
+Handle different response types appropriately in your application:
 
-Track the quality of human responses:
+```python
+def process_response(response_type, response_data):
+    """Process responses based on their type"""
+    
+    if response_type == "text":
+        # Process free-form feedback
+        feedback = response_data
+        save_feedback_for_review(feedback)
+        
+    elif response_type == "single_select":
+        # Handle structured decision
+        decision = response_data["selected_value"]
+        if decision == "approve":
+            approve_content()
+        elif decision == "reject":
+            reject_content()
+        elif decision == "escalate":
+            escalate_to_senior_team()
+            
+    elif response_type == "multi_select":
+        # Handle multiple issues identified
+        issues = response_data["selected_values"]
+        for issue in issues:
+            handle_content_issue(issue)
+            
+    elif response_type == "rating":
+        # Handle quality score
+        score = response_data["rating"]
+        if score >= 8:
+            mark_as_high_quality()
+        elif score <= 3:
+            flag_for_improvement()
+        else:
+            mark_as_acceptable()
+            
+    elif response_type == "number":
+        # Handle numeric input
+        value = response_data["number"]
+        update_pricing_model(value)
+        
+    elif response_type == "boolean":
+        # Handle binary decision
+        decision = response_data["boolean"]
+        if decision:
+            trigger_security_review()
+        else:
+            approve_transaction()
+```
 
-<CardGroup cols={2}>
-<Card title="Consistency" icon="repeat">
-Measure agreement between different reviewers on similar requests.
-</Card>
+## Response Validation
 
-<Card title="Accuracy" icon="target">
-Track how often human decisions align with expected outcomes.
-</Card>
+HITL.sh automatically validates responses against the configured rules:
 
-<Card title="Completeness" icon="check-square">
-Ensure responses include all required information and reasoning.
-</Card>
+### Validation Rules by Type
 
-<Card title="Timeliness" icon="clock">
-Monitor response times and identify bottlenecks.
-</Card>
-</CardGroup>
+<AccordionGroup>
+<Accordion title="Text Validation">
+- Response must be a non-empty string (if required)
+- Character count must be within min_length and max_length bounds
+- Cannot contain only whitespace if required
+</Accordion>
 
-### Quality Improvement
+<Accordion title="Select Validation">
+- Selected values must exist in the configured options array
+- Single select allows exactly one selection
+- Multi select respects min_selections and max_selections limits
+- No duplicate selections allowed in multi select
+</Accordion>
 
-Continuously improve response quality:
+<Accordion title="Rating Validation">
+- Value must be within scale_min and scale_max bounds
+- Must align with scale_step increments (e.g., only .0 and .5 for step=0.5)
+- Cannot be null if required
+</Accordion>
 
-<Steps>
-<Step title="Review Guidelines">
-Provide clear criteria and examples for different decision types.
-</Step>
+<Accordion title="Number Validation">
+- Value must be within min_value and max_value bounds
+- Decimal places cannot exceed configured limit
+- Negative numbers only allowed if allow_negative is true
+</Accordion>
 
-<Step title="Training Programs">
-Regular training sessions on policies and best practices.
-</Step>
+<Accordion title="Boolean Validation">
+- Must be exactly true or false (not null or undefined)
+- Required boolean responses cannot be skipped
+</Accordion>
+</AccordionGroup>
 
-<Step title="Feedback Loops">
-Give reviewers feedback on their response quality.
-</Step>
+### Handling Validation Errors
 
-<Step title="Performance Monitoring">
-Track metrics and identify areas for improvement.
-</Step>
-</Steps>
+The mobile app prevents invalid responses, but you should handle edge cases:
+
+```python
+def validate_response_before_processing(request, response_data):
+    """Additional validation before processing responses"""
+    
+    response_type = request["response_type"]
+    response_config = request["response_config"]
+    
+    try:
+        if response_type == "rating":
+            rating = response_data["rating"]
+            min_val = response_config["scale_min"]
+            max_val = response_config["scale_max"]
+            
+            if not (min_val <= rating <= max_val):
+                log_validation_error(f"Rating {rating} outside range [{min_val}, {max_val}]")
+                return False
+                
+        elif response_type == "single_select":
+            selected = response_data["selected_value"]
+            valid_options = [opt["value"] for opt in response_config["options"]]
+            
+            if selected not in valid_options:
+                log_validation_error(f"Invalid selection: {selected}")
+                return False
+                
+        return True
+        
+    except KeyError as e:
+        log_validation_error(f"Missing required field: {e}")
+        return False
+```
 
 ## Response Analytics
 
-### Key Metrics
+### Tracking Response Patterns
 
-Track important response statistics:
+Monitor response patterns to improve your workflows:
 
 ```python
-def calculate_response_metrics(responses):
-    total_responses = len(responses)
+def analyze_response_patterns(loop_id, days=30):
+    """Analyze response patterns for a loop"""
     
-    metrics = {
-        "total_count": total_responses,
-        "decision_distribution": {},
-        "average_confidence": 0,
-        "average_processing_time": 0,
-        "escalation_rate": 0,
-        "quality_scores": []
-    }
+    # Get recent requests for this loop
+    response = requests.get(
+        f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+        headers={"Authorization": f"Bearer {api_key}"}
+    )
     
-    # Calculate decision distribution
-    for response in responses:
-        decision = response.decision
-        metrics["decision_distribution"][decision] = \
-            metrics["decision_distribution"].get(decision, 0) + 1
+    requests_data = response.json()["data"]["requests"]
+    completed_requests = [r for r in requests_data if r["status"] == "completed"]
+    
+    # Analyze by response type
+    response_type_counts = {}
+    avg_response_times = {}
+    
+    for request in completed_requests:
+        resp_type = request["response_type"]
+        response_type_counts[resp_type] = response_type_counts.get(resp_type, 0) + 1
+        
+        if request.get("response_time_seconds"):
+            if resp_type not in avg_response_times:
+                avg_response_times[resp_type] = []
+            avg_response_times[resp_type].append(request["response_time_seconds"])
     
     # Calculate averages
-    total_confidence = sum(r.confidence for r in responses)
-    total_time = sum(r.processing_time for r in responses)
-    
-    metrics["average_confidence"] = total_confidence / total_responses
-    metrics["average_processing_time"] = total_time / total_responses
-    
-    # Calculate escalation rate
-    escalations = sum(1 for r in responses if r.decision == "escalate")
-    metrics["escalation_rate"] = escalations / total_responses
-    
-    return metrics
+    for resp_type, times in avg_response_times.items():
+        avg_time = sum(times) / len(times)
+        print(f"{resp_type}: {response_type_counts[resp_type]} responses, avg {avg_time:.1f}s")
 ```
 
-### Performance Dashboards
+### Response Quality Metrics
 
-Monitor response performance in real-time:
+Track response quality and consistency:
 
-<Frame>
-<img src="/images/response-analytics-dashboard.png" alt="Dashboard showing response metrics and performance indicators" />
-</Frame>
+```python
+def analyze_response_quality(requests_data):
+    """Analyze quality metrics for responses"""
+    
+    # Group by response type
+    by_type = {}
+    for request in requests_data:
+        if request["status"] != "completed":
+            continue
+            
+        resp_type = request["response_type"]
+        if resp_type not in by_type:
+            by_type[resp_type] = []
+        by_type[resp_type].append(request)
+    
+    # Analyze each type
+    for resp_type, requests in by_type.items():
+        print(f"\n{resp_type.upper()} Responses:")
+        print(f"  Total: {len(requests)}")
+        
+        # Response time analysis
+        times = [r["response_time_seconds"] for r in requests if r.get("response_time_seconds")]
+        if times:
+            print(f"  Avg response time: {sum(times)/len(times):.1f}s")
+            print(f"  Response time range: {min(times):.1f}s - {max(times):.1f}s")
+        
+        # Type-specific analysis
+        if resp_type == "single_select":
+            analyze_single_select_distribution(requests)
+        elif resp_type == "rating":
+            analyze_rating_distribution(requests)
+```
 
 ## Best Practices
 
-### Response Guidelines
+### Choosing Response Types
+
+<Steps>
+<Step title="Match Complexity to Need">
+Use simple response types (boolean, single select) for straightforward decisions. Reserve complex types (multi select, text) for situations requiring nuanced evaluation.
+</Step>
+
+<Step title="Consider Reviewer Experience">
+Remember that reviewers interact with responses on mobile devices. Keep options concise and touch-friendly.
+</Step>
+
+<Step title="Balance Structure and Flexibility">
+Structured responses (select, rating, number) are easier to process, but text responses provide richer feedback when needed.
+</Step>
+
+<Step title="Plan for Scale">
+Consider how you'll process and analyze responses when choosing types. Structured responses are easier to aggregate and analyze.
+</Step>
+</Steps>
+
+### Response Design Tips
 
 <CardGroup cols={2}>
-<Card title="Clear Reasoning" icon="message-square">
-Provide specific, actionable reasons for decisions.
+<Card title="Clear Options" icon="eye">
+For select responses, use descriptive labels and include helpful descriptions. Consider adding colors for visual clarity.
 </Card>
 
-<Card title="Consistent Format" icon="file-text">
-Use standardized response templates for similar request types.
+<Card title="Reasonable Limits" icon="shield-check">
+Set appropriate character limits for text, selection limits for multi select, and ranges for numeric inputs.
 </Card>
 
-<Card title="Constructive Feedback" icon="help-circle">
-Offer helpful suggestions for improvement when possible.
+<Card title="Meaningful Defaults" icon="settings">
+Always provide sensible default responses that represent safe outcomes when requests timeout.
 </Card>
 
-<Card title="Timely Responses" icon="clock">
-Respond within expected timeframes to maintain workflow efficiency.
+<Card title="Consistent Language" icon="message">
+Use consistent terminology across response options to avoid confusion and improve decision quality.
 </Card>
 </CardGroup>
 
-### Reviewer Training
-
-- **Decision Criteria**: Clear guidelines for each response type
-- **Example Responses**: Sample responses for common scenarios
-- **Quality Standards**: Expectations for response completeness and clarity
-- **Continuous Learning**: Regular updates on policies and procedures
-
-### System Integration
-
-- **Webhook Processing**: Handle responses in real-time
-- **Error Handling**: Gracefully manage invalid or incomplete responses
-- **Audit Logging**: Track all response activities for compliance
-- **Performance Monitoring**: Alert on response quality issues
-
 ## Next Steps
 
-Ready to process human responses in your workflows?
-
-<Card title="Explore Response Types" icon="list" href="/responses/types">
-Learn about different types of responses and how to handle them.
+<CardGroup cols={2}>
+<Card title="Response Types Guide" icon="list" href="/responses/types">
+Detailed documentation of all six response types with examples
 </Card>
 
-<Card title="Set Up Webhooks" icon="link" href="/webhooks/global">
-Configure real-time notifications for completed responses.
+<Card title="Request Creation" icon="plus" href="/api-reference/requests/create-request">
+Learn how to configure responses when creating requests
 </Card>
 
-<Card title="API Reference" icon="book" href="/api-reference/introduction">
-Detailed API documentation for response management.
+<Card title="Mobile App Guide" icon="mobile" href="/mobile/responding">
+See how reviewers interact with different response types
 </Card>
+
+<Card title="Best Practices" icon="star" href="/guides/best-practices">
+Advanced strategies for optimizing response quality and processing
+</Card>
+</CardGroup>

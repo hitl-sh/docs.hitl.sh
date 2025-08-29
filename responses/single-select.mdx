@@ -1,0 +1,727 @@
+---
+title: "Single Select Responses"
+description: "Complete guide to implementing single select responses for structured decision-making with predefined options, colors, and descriptions"
+---
+
+# Single Select Responses
+
+Single select responses allow reviewers to choose exactly one option from a predefined list, making them perfect for clear decision workflows, approval processes, and structured categorization where mutual exclusivity is important.
+
+## When to Use Single Select
+
+Single select responses are ideal for:
+
+<CardGroup cols={2}>
+<Card title="Approval Workflows" icon="check-circle">
+Simple approve/reject decisions, or approval with conditions like "Approve", "Reject", "Needs Changes"
+</Card>
+
+<Card title="Content Classification" icon="tag">
+Categorizing content into mutually exclusive categories like content type, priority level, or department
+</Card>
+
+<Card title="Quality Assessment" icon="star">
+Rating content quality with discrete levels like "Excellent", "Good", "Fair", "Poor"
+</Card>
+
+<Card title="Status Assignment" icon="flag">
+Setting request status, priority levels, or routing decisions where only one choice makes sense
+</Card>
+</CardGroup>
+
+## Configuration Options
+
+Single select responses require an options array and support visual customization:
+
+### Required Parameters
+
+<ParamField body="options" type="array" required>
+Array of SelectOption objects (1-20 options maximum)
+<Expandable title="SelectOption Structure">
+  <ParamField body="value" type="string" required>
+    Internal value used in your application logic (max 100 characters)
+  </ParamField>
+  <ParamField body="label" type="string" required>
+    Display text shown to reviewers (max 200 characters) 
+  </ParamField>
+  <ParamField body="description" type="string" optional>
+    Additional context or explanation for the option
+  </ParamField>
+  <ParamField body="color" type="string" optional>
+    Hex color code for visual styling (e.g., "#22c55e")
+  </ParamField>
+</Expandable>
+</ParamField>
+
+### Optional Parameters
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a selection is mandatory for completion
+</ParamField>
+
+## Implementation Examples
+
+### Basic Approval Workflow
+
+Simple approve/reject decision with visual indicators:
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high", 
+    "request_text": "Please review this user comment for community guideline compliance:\n\n'This product is amazing! I've been using it for 3 months and it completely changed my workflow. Highly recommend to anyone looking to improve productivity!'",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "approve",
+                "label": "✅ Approve Content",
+                "description": "Content follows all community guidelines", 
+                "color": "#22c55e"
+            },
+            {
+                "value": "reject",
+                "label": "❌ Reject Content",
+                "description": "Content violates community policies",
+                "color": "#ef4444"
+            },
+            {
+                "value": "escalate", 
+                "label": "🚨 Escalate for Review",
+                "description": "Unclear case requiring senior reviewer",
+                "color": "#8b5cf6"
+            }
+        ],
+        "required": True
+    },
+    "default_response": "reject",
+    "timeout_seconds": 1800,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "high",
+    request_text: "Please review this user comment for community guideline compliance:\n\n'This product is amazing! I've been using it for 3 months and it completely changed my workflow. Highly recommend to anyone looking to improve productivity!'",
+    response_type: "single_select",
+    response_config: {
+        options: [
+            {
+                value: "approve",
+                label: "✅ Approve Content", 
+                description: "Content follows all community guidelines",
+                color: "#22c55e"
+            },
+            {
+                value: "reject",
+                label: "❌ Reject Content",
+                description: "Content violates community policies", 
+                color: "#ef4444"
+            },
+            {
+                value: "escalate",
+                label: "🚨 Escalate for Review",
+                description: "Unclear case requiring senior reviewer",
+                color: "#8b5cf6"
+            }
+        ],
+        required: true
+    },
+    default_response: "reject",
+    timeout_seconds: 1800,
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+### Content Classification
+
+Categorizing content into specific types:
+
+<CodeGroup>
+
+```python Python
+# Content categorization for routing
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown", 
+    "priority": "medium",
+    "request_text": "Please categorize this customer inquiry:\n\n'Hi, I'm having trouble with my recent order #12345. The item was supposed to arrive yesterday but I haven't received it yet. Can you help track it down?'",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "shipping_inquiry",
+                "label": "📦 Shipping & Delivery",
+                "description": "Questions about order status, shipping, or delivery",
+                "color": "#3b82f6"
+            },
+            {
+                "value": "product_support",
+                "label": "🛠️ Product Support",
+                "description": "Technical issues or questions about using products",
+                "color": "#f59e0b"
+            },
+            {
+                "value": "billing_payment", 
+                "label": "💳 Billing & Payment",
+                "description": "Payment issues, refunds, or billing questions",
+                "color": "#10b981"
+            },
+            {
+                "value": "returns_exchanges",
+                "label": "🔄 Returns & Exchanges", 
+                "description": "Returning items or requesting exchanges",
+                "color": "#8b5cf6"
+            },
+            {
+                "value": "general_inquiry",
+                "label": "📞 General Inquiry",
+                "description": "Other questions not fitting specific categories",
+                "color": "#6b7280"
+            }
+        ],
+        "required": True
+    },
+    "default_response": "general_inquiry",
+    "timeout_seconds": 7200,
+    "platform": "api"
+}
+```
+
+</CodeGroup>
+
+### Quality Assessment
+
+Rating content quality with discrete levels:
+
+<CodeGroup>
+
+```python Python
+# Content quality evaluation
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please evaluate the quality of this AI-generated article:\n\n[Article content would be included here...]\n\nFocus on accuracy, readability, and usefulness for our target audience.",
+    "response_type": "single_select", 
+    "response_config": {
+        "options": [
+            {
+                "value": "excellent",
+                "label": "⭐ Excellent Quality",
+                "description": "Publish immediately - exceptional content",
+                "color": "#059669"
+            },
+            {
+                "value": "good",
+                "label": "✨ Good Quality", 
+                "description": "Publish with minor edits - solid content",
+                "color": "#22c55e"
+            },
+            {
+                "value": "fair",
+                "label": "📝 Fair Quality",
+                "description": "Needs revision before publishing",
+                "color": "#f59e0b" 
+            },
+            {
+                "value": "poor",
+                "label": "❌ Poor Quality",
+                "description": "Major issues - recommend rewrite",
+                "color": "#ef4444"
+            },
+            {
+                "value": "unusable",
+                "label": "🚫 Unusable",
+                "description": "Content not suitable for publication",
+                "color": "#dc2626"
+            }
+        ],
+        "required": True
+    },
+    "default_response": "fair",
+    "timeout_seconds": 3600,
+    "platform": "api"
+}
+```
+
+</CodeGroup>
+
+## Response Format
+
+When a reviewer selects an option, you'll receive both the internal value and the display label:
+
+```json
+{
+  "response_data": {
+    "selected_value": "approve",
+    "selected_label": "✅ Approve Content"
+  }
+}
+```
+
+## Use Case Examples
+
+### 1. Content Moderation
+
+<Tabs>
+<Tab title="Configuration">
+```python
+moderation_config = {
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "approve",
+                "label": "✅ Approve",
+                "description": "Content meets community guidelines",
+                "color": "#22c55e"
+            },
+            {
+                "value": "approve_with_warning",
+                "label": "⚠️ Approve with Warning", 
+                "description": "Borderline content - warn user",
+                "color": "#f59e0b"
+            },
+            {
+                "value": "reject_minor",
+                "label": "❌ Reject - Minor Violation",
+                "description": "Minor policy violation - remove content",
+                "color": "#f97316"
+            },
+            {
+                "value": "reject_major",
+                "label": "🚨 Reject - Major Violation",
+                "description": "Serious violation - remove and warn user",
+                "color": "#ef4444"
+            },
+            {
+                "value": "reject_ban",
+                "label": "🛑 Reject - Ban User", 
+                "description": "Severe violation - ban user account",
+                "color": "#dc2626"
+            }
+        ],
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Processing Logic">
+```python
+def handle_moderation_decision(response_data):
+    decision = response_data["selected_value"]
+    label = response_data["selected_label"]
+    
+    if decision == "approve":
+        publish_content()
+        log_decision("approved", label)
+        
+    elif decision == "approve_with_warning":
+        publish_content()
+        send_warning_to_user("Please review community guidelines")
+        log_decision("approved_with_warning", label)
+        
+    elif decision == "reject_minor":
+        remove_content()
+        notify_user("Content removed for minor policy violation")
+        log_moderation_action("content_removed", "minor")
+        
+    elif decision == "reject_major":
+        remove_content()
+        send_formal_warning_to_user()
+        log_moderation_action("content_removed", "major")
+        
+    elif decision == "reject_ban":
+        remove_content()
+        ban_user_account(duration="7_days")
+        send_ban_notification()
+        log_moderation_action("user_banned", "severe")
+```
+</Tab>
+</Tabs>
+
+### 2. Support Ticket Routing
+
+<Tabs>
+<Tab title="Configuration">
+```python
+ticket_routing_config = {
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "technical_support",
+                "label": "🔧 Technical Support",
+                "description": "Route to engineering team",
+                "color": "#3b82f6"
+            },
+            {
+                "value": "billing_support", 
+                "label": "💰 Billing Support",
+                "description": "Route to finance team",
+                "color": "#10b981"
+            },
+            {
+                "value": "customer_success",
+                "label": "🤝 Customer Success",
+                "description": "Route to account management",
+                "color": "#8b5cf6"
+            },
+            {
+                "value": "sales_inquiry",
+                "label": "💼 Sales Inquiry", 
+                "description": "Route to sales team",
+                "color": "#f59e0b"
+            },
+            {
+                "value": "escalation",
+                "label": "🚨 Executive Escalation",
+                "description": "Route to leadership team",
+                "color": "#ef4444"
+            }
+        ],
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Processing Logic">
+```python
+def route_support_ticket(ticket_id, response_data):
+    department = response_data["selected_value"]
+    routing_label = response_data["selected_label"]
+    
+    # Route to appropriate team
+    routing_map = {
+        "technical_support": "engineering@company.com",
+        "billing_support": "billing@company.com", 
+        "customer_success": "success@company.com",
+        "sales_inquiry": "sales@company.com",
+        "escalation": "executives@company.com"
+    }
+    
+    # Set priority based on routing
+    priority_map = {
+        "technical_support": "medium",
+        "billing_support": "high",
+        "customer_success": "medium", 
+        "sales_inquiry": "low",
+        "escalation": "critical"
+    }
+    
+    # Perform routing
+    assign_ticket(
+        ticket_id=ticket_id,
+        department=department,
+        assignee_email=routing_map[department],
+        priority=priority_map[department]
+    )
+    
+    # Update ticket status
+    update_ticket_status(ticket_id, "routed", routing_label)
+    
+    # Send notifications
+    notify_department(department, ticket_id)
+```
+</Tab>
+</Tabs>
+
+### 3. Document Approval Workflow
+
+<Tabs>
+<Tab title="Configuration">
+```python
+document_approval_config = {
+    "response_type": "single_select", 
+    "response_config": {
+        "options": [
+            {
+                "value": "approved",
+                "label": "✅ Approved for Publication",
+                "description": "Document meets all requirements",
+                "color": "#22c55e"
+            },
+            {
+                "value": "approved_with_changes",
+                "label": "📝 Approved with Minor Changes",
+                "description": "Approve after addressing small issues",
+                "color": "#84cc16"
+            },
+            {
+                "value": "needs_revision", 
+                "label": "🔄 Needs Revision",
+                "description": "Significant changes required before approval",
+                "color": "#f59e0b"
+            },
+            {
+                "value": "needs_legal_review",
+                "label": "⚖️ Needs Legal Review",
+                "description": "Requires legal department approval",
+                "color": "#8b5cf6"
+            },
+            {
+                "value": "rejected",
+                "label": "❌ Rejected",
+                "description": "Document does not meet standards",
+                "color": "#ef4444"
+            }
+        ],
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Processing Logic">
+```python
+def handle_document_approval(document_id, response_data):
+    status = response_data["selected_value"]
+    decision_label = response_data["selected_label"]
+    
+    if status == "approved":
+        publish_document(document_id)
+        update_document_status(document_id, "published")
+        notify_author("Document approved and published")
+        
+    elif status == "approved_with_changes":
+        update_document_status(document_id, "conditional_approval")
+        create_revision_tasks(document_id)
+        notify_author("Document approved pending minor changes")
+        
+    elif status == "needs_revision":
+        update_document_status(document_id, "revision_required") 
+        request_revision_from_author(document_id)
+        set_revision_deadline(document_id, days=7)
+        
+    elif status == "needs_legal_review":
+        update_document_status(document_id, "legal_review")
+        route_to_legal_team(document_id)
+        notify_author("Document sent to legal for review")
+        
+    elif status == "rejected":
+        update_document_status(document_id, "rejected")
+        archive_document(document_id) 
+        notify_author("Document rejected - see feedback for details")
+    
+    # Log the decision
+    log_approval_decision(document_id, status, decision_label)
+```
+</Tab>
+</Tabs>
+
+## Validation and Error Handling
+
+### Automatic Validation
+
+The mobile app automatically validates single select responses:
+
+- **Option validation**: Ensures selected value exists in the options array
+- **Required validation**: Prevents submission when required=true and no selection made
+- **Single selection**: Enforces exactly one choice (radio button behavior)
+
+### Processing Validation
+
+Your application should validate received responses:
+
+```python
+def validate_single_select_response(response_data, response_config):
+    """Validate single select response against configuration"""
+    
+    # Check response structure
+    if not isinstance(response_data, dict):
+        return False, "Response must be an object"
+    
+    if "selected_value" not in response_data:
+        return False, "Missing selected_value field"
+    
+    # Validate selected value exists in options
+    valid_values = [opt["value"] for opt in response_config["options"]]
+    selected = response_data["selected_value"]
+    
+    if selected not in valid_values:
+        return False, f"Invalid selection: {selected}"
+    
+    # Check required
+    if response_config.get("required", False) and not selected:
+        return False, "Selection is required"
+    
+    return True, "Valid"
+
+# Usage
+is_valid, error_message = validate_single_select_response(
+    response_data={
+        "selected_value": "approve",
+        "selected_label": "✅ Approve Content"
+    },
+    response_config={
+        "options": [...],
+        "required": True
+    }
+)
+```
+
+## Best Practices
+
+### Option Design
+
+<AccordionGroup>
+<Accordion title="Clear and Distinct Labels">
+- Use descriptive labels that clearly communicate the choice
+- Avoid ambiguous or similar-sounding options
+- Include emoji or icons for visual differentiation
+- Keep labels concise but informative (under 50 characters ideal)
+</Accordion>
+
+<Accordion title="Logical Ordering">
+- Put most common/expected choices first
+- Order by severity (mild to severe) or progression (low to high)
+- Group related options together
+- Consider alphabetical ordering for long lists
+</Accordion>
+
+<Accordion title="Helpful Descriptions">
+- Provide context for options that might be unclear
+- Explain consequences or next steps for each choice
+- Include examples when helpful
+- Keep descriptions brief but informative
+</Accordion>
+
+<Accordion title="Strategic Color Usage">
+- Use green (#22c55e) for positive/approval actions
+- Use red (#ef4444) for negative/rejection actions  
+- Use yellow/orange (#f59e0b) for warnings or caution
+- Use blue (#3b82f6) for neutral/informational options
+- Use purple (#8b5cf6) for escalation or special handling
+</Accordion>
+</AccordionGroup>
+
+### Processing Best Practices
+
+<AccordionGroup>
+<Accordion title="Switch Statement Logic">
+```python
+# Clean, maintainable processing logic
+def process_single_select_decision(response_data, context):
+    decision = response_data["selected_value"]
+    
+    handlers = {
+        "approve": handle_approval,
+        "reject": handle_rejection,
+        "escalate": handle_escalation,
+        "needs_revision": handle_revision_request
+    }
+    
+    handler = handlers.get(decision)
+    if handler:
+        return handler(context)
+    else:
+        log_error(f"Unknown decision: {decision}")
+        return handle_default_case(context)
+```
+</Accordion>
+
+<Accordion title="Audit Trail">
+```python
+# Track decisions for compliance and analysis
+def log_decision(request_id, response_data, reviewer_info):
+    decision_log = {
+        "request_id": request_id,
+        "decision": response_data["selected_value"],
+        "decision_label": response_data["selected_label"], 
+        "reviewer_id": reviewer_info["user_id"],
+        "reviewer_name": reviewer_info["name"],
+        "timestamp": datetime.utcnow().isoformat(),
+        "response_time_seconds": reviewer_info.get("response_time")
+    }
+    
+    store_decision_log(decision_log)
+    update_analytics(decision_log)
+```
+</Accordion>
+
+<Accordion title="Decision Analytics">
+```python
+# Analyze decision patterns
+def analyze_decision_patterns(loop_id, time_period="30d"):
+    decisions = get_decisions_for_period(loop_id, time_period)
+    
+    # Decision distribution
+    decision_counts = Counter(d["decision"] for d in decisions)
+    
+    # Reviewer consistency
+    reviewer_patterns = analyze_reviewer_consistency(decisions)
+    
+    # Response time analysis
+    avg_response_time = calculate_average_response_time(decisions)
+    
+    return {
+        "decision_distribution": dict(decision_counts),
+        "reviewer_consistency": reviewer_patterns,
+        "average_response_time": avg_response_time,
+        "total_decisions": len(decisions)
+    }
+```
+</Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### Progressive Approval Workflow
+
+```python
+# Multi-stage approval with escalation
+approval_stages = {
+    "initial_review": {
+        "options": ["approve", "needs_changes", "escalate_to_senior"]
+    },
+    "senior_review": {
+        "options": ["final_approval", "send_back_for_revision", "escalate_to_executive"] 
+    },
+    "executive_review": {
+        "options": ["executive_approval", "reject_with_explanation"]
+    }
+}
+```
+
+### Severity-Based Processing
+
+```python
+# Handle different severity levels appropriately
+severity_handling = {
+    "low": {"priority": "normal", "sla_hours": 24},
+    "medium": {"priority": "high", "sla_hours": 8}, 
+    "high": {"priority": "urgent", "sla_hours": 2},
+    "critical": {"priority": "immediate", "sla_hours": 1}
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Multi Select Responses" icon="check-square" href="/responses/multi-select">
+Learn about selecting multiple options from predefined lists
+</Card>
+
+<Card title="Text Responses" icon="message" href="/responses/text">
+Combine structured decisions with detailed feedback
+</Card>
+
+<Card title="Response Processing" icon="cog" href="/concepts/responses">
+Advanced patterns for handling different response types
+</Card>
+
+<Card title="Mobile Experience" icon="mobile" href="/mobile/responding">
+See how single select responses work in the mobile app
+</Card>
+</CardGroup>

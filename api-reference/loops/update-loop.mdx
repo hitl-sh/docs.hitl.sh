@@ -1,0 +1,513 @@
+---
+title: "Update Loop"
+api: "PUT https://api.hitl.sh/v1/loops/{id}"
+description: "Update an existing loop's name, description, or icon. Only the loop creator can make updates."
+---
+
+Update the details of an existing loop. You can modify the name, description, and icon of any loop you've created. This operation preserves all members and existing requests.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the loop to update
+</ParamField>
+
+## Body Parameters
+
+<ParamField body="name" type="string">
+  New name for the loop (1-100 characters)
+</ParamField>
+
+<ParamField body="description" type="string">
+  New description of the loop's purpose (max 500 characters)
+</ParamField>
+
+<ParamField body="icon" type="string">
+  New icon identifier for the loop
+</ParamField>
+
+<Info>
+All body parameters are optional. Only provide the fields you want to update.
+</Info>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="loop" type="object">
+      The updated loop object with all current information
+      <Expandable title="loop">
+        <ResponseField name="id" type="string">
+          Unique identifier for the loop
+        </ResponseField>
+        <ResponseField name="name" type="string">
+          Updated name of the loop
+        </ResponseField>
+        <ResponseField name="description" type="string">
+          Updated description of the loop
+        </ResponseField>
+        <ResponseField name="icon" type="string">
+          Updated icon identifier
+        </ResponseField>
+        <ResponseField name="creator_id" type="string">
+          ID of the loop creator (unchanged)
+        </ResponseField>
+        <ResponseField name="members" type="array">
+          Array of loop members (unchanged)
+        </ResponseField>
+        <ResponseField name="member_count" type="integer">
+          Total number of members
+        </ResponseField>
+        <ResponseField name="pending_count" type="integer">
+          Number of pending invitations
+        </ResponseField>
+        <ResponseField name="created_at" type="string">
+          ISO timestamp of creation (unchanged)
+        </ResponseField>
+        <ResponseField name="updated_at" type="string">
+          ISO timestamp of this update
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X PUT https://api.hitl.sh/v1/loops/65f1234567890abcdef12345 \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Enhanced Content Moderation",
+    "description": "Advanced review system for user-generated content with improved guidelines",
+    "icon": "shield-exclamation"
+  }'
+```
+
+```python Python
+import requests
+
+loop_id = "65f1234567890abcdef12345"
+url = f"https://api.hitl.sh/v1/loops/{loop_id}"
+headers = {
+    "Authorization": "Bearer your_api_key_here",
+    "Content-Type": "application/json"
+}
+data = {
+    "name": "Enhanced Content Moderation",
+    "description": "Advanced review system with improved guidelines",
+    "icon": "shield-exclamation"
+}
+
+response = requests.put(url, headers=headers, json=data)
+print(response.json())
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const loopId = '65f1234567890abcdef12345';
+const response = await axios.put(
+  `https://api.hitl.sh/v1/loops/${loopId}`,
+  {
+    name: 'Enhanced Content Moderation',
+    description: 'Advanced review system with improved guidelines',
+    icon: 'shield-exclamation'
+  },
+  {
+    headers: {
+      'Authorization': 'Bearer your_api_key_here',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+
+console.log(response.data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "error": false,
+  "msg": "Loop updated successfully",
+  "data": {
+    "loop": {
+      "id": "65f1234567890abcdef12345",
+      "name": "Enhanced Content Moderation",
+      "description": "Advanced review system for user-generated content with improved guidelines",
+      "icon": "shield-exclamation",
+      "creator_id": "65f1234567890abcdef12346",
+      "members": [
+        {
+          "user_id": "65f1234567890abcdef12346",
+          "email": "creator@example.com",
+          "status": "active",
+          "joined_at": "2024-03-15T10:30:00Z"
+        },
+        {
+          "user_id": "65f1234567890abcdef12347",
+          "email": "reviewer1@example.com",
+          "status": "active", 
+          "joined_at": "2024-03-15T11:45:00Z"
+        }
+      ],
+      "member_count": 2,
+      "pending_count": 0,
+      "created_at": "2024-03-15T10:30:00Z",
+      "updated_at": "2024-03-15T14:20:00Z"
+    }
+  }
+}
+```
+
+</ResponseExample>
+
+## Update Scenarios
+
+### Name Only Update
+
+Update just the loop name:
+
+```json
+{
+  "name": "Content Review V2"
+}
+```
+
+### Description Only Update
+
+Update just the description:
+
+```json
+{
+  "description": "Updated workflow for reviewing user submissions with new compliance requirements"
+}
+```
+
+### Icon Only Update
+
+Update just the icon:
+
+```json
+{
+  "icon": "shield-alt"
+}
+```
+
+### Partial Update
+
+Update multiple fields (but not all):
+
+```json
+{
+  "name": "Premium Content Review",
+  "icon": "star"
+}
+```
+
+## Available Icons
+
+<CardGroup cols={3}>
+<Card title="Security" icon="shield-check">
+shield-check, shield-alt, shield-exclamation, lock, key
+</Card>
+
+<Card title="Content" icon="document-text">
+document-text, document-check, file-text, clipboard, edit
+</Card>
+
+<Card title="Review" icon="eye">
+eye, search, thumbs-up, thumbs-down, star
+</Card>
+
+<Card title="Quality" icon="badge-check">
+badge-check, certificate, award, beaker, cog
+</Card>
+
+<Card title="Communication" icon="chat">
+chat, comment, bell, megaphone, mail
+</Card>
+
+<Card title="General" icon="folder">
+folder, tag, flag, bookmark, heart
+</Card>
+</CardGroup>
+
+## Validation Rules
+
+### Name Validation
+- **Required**: No (optional for updates)
+- **Min length**: 1 character
+- **Max length**: 100 characters
+- **Allowed**: Letters, numbers, spaces, and basic punctuation
+
+### Description Validation
+- **Required**: No (optional for updates)
+- **Max length**: 500 characters
+- **Allowed**: All characters including newlines
+
+### Icon Validation
+- **Required**: No (optional for updates)
+- **Format**: String identifier
+- **Validation**: Must be a valid icon identifier from available icons
+
+## Use Cases
+
+### Rebranding Loops
+
+Update loop name and icon for rebranding:
+
+```python
+def rebrand_loop(loop_id, new_name, new_icon):
+    url = f"https://api.hitl.sh/v1/loops/{loop_id}"
+    data = {
+        "name": new_name,
+        "icon": new_icon
+    }
+    
+    response = requests.put(url, headers=headers, json=data)
+    
+    if response.status_code == 200:
+        loop_data = response.json()["data"]["loop"]
+        print(f"Successfully rebranded loop to '{loop_data['name']}'")
+        return loop_data
+    else:
+        print(f"Failed to rebrand loop: {response.json()['msg']}")
+        return None
+```
+
+### Improving Descriptions
+
+Add more detailed descriptions to existing loops:
+
+```javascript
+async function improveLoopDescription(loopId, newDescription) {
+    try {
+        const response = await axios.put(
+            `https://api.hitl.sh/v1/loops/${loopId}`,
+            { description: newDescription },
+            { headers: { 'Authorization': `Bearer ${apiKey, 'Content-Type': 'application/json'}` } }
+        );
+        
+        console.log('Description updated successfully');
+        return response.data.data.loop;
+    } catch (error) {
+        console.error('Failed to update description:', error.response?.data?.msg);
+        throw error;
+    }
+}
+
+// Usage
+await improveLoopDescription(
+    'loopId',
+    'Comprehensive content moderation with AI pre-filtering and human oversight for policy violations'
+);
+```
+
+### Bulk Loop Updates
+
+Update multiple loops with a consistent naming scheme:
+
+```python
+def standardize_loop_names(loop_prefix="Review"):
+    # Get all loops
+    loops_response = requests.get("https://api.hitl.sh/v1/loops", headers=headers)
+    loops = loops_response.json()["data"]["loops"]
+    
+    updated_loops = []
+    for loop in loops:
+        # Skip loops that already follow the naming convention
+        if loop["name"].startswith(loop_prefix):
+            continue
+            
+        new_name = f"{loop_prefix} - {loop['name']}"
+        
+        update_response = requests.put(
+            f"https://api.hitl.sh/v1/loops/{loop['id']}", 
+            headers=headers, 
+            json={"name": new_name}
+        )
+        
+        if update_response.status_code == 200:
+            updated_loops.append(update_response.json()["data"]["loop"])
+    
+    return updated_loops
+```
+
+## Access Control
+
+### Who Can Update Loops
+
+<AccordionGroup>
+<Accordion title="Loop Creators">
+Only the user who created the loop can update it. This is enforced by checking the `creator_id` against the authenticated user.
+</Accordion>
+
+<Accordion title="API Key Restrictions">
+API keys can only update loops created by the same user account that owns the API key.
+</Accordion>
+
+<Accordion title="Loop Members">
+Regular loop members cannot update loop details. They can only participate in reviews.
+</Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+### Common Error Scenarios
+
+<AccordionGroup>
+<Accordion title="Loop Not Found">
+```json
+{
+  "error": true,
+  "msg": "Loop not found"
+}
+```
+
+**Causes:**
+- Invalid loop ID
+- Loop was deleted
+- User doesn't own the loop
+</Accordion>
+
+<Accordion title="Access Denied">
+```json
+{
+  "error": true,
+  "msg": "Access denied to this loop"
+}
+```
+
+**Cause:** Only loop creators can update loops.
+</Accordion>
+
+<Accordion title="Validation Error">
+```json
+{
+  "error": true,
+  "msg": "Validation failed",
+  "data": "name must be between 1 and 100 characters"
+}
+```
+
+**Causes:**
+- Name too long (>100 characters)
+- Name empty (if provided)
+- Description too long (>500 characters)
+- Invalid icon identifier
+</Accordion>
+
+<Accordion title="Empty Update">
+```json
+{
+  "error": true,
+  "msg": "At least one field must be provided for update"
+}
+```
+
+**Cause:** Request body is empty or contains no valid update fields.
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+### Versioning Updates
+
+Track major changes with version numbers in names:
+
+```python
+def version_loop_update(loop_id, updates, version=None):
+    if version:
+        if 'name' in updates:
+            updates['name'] = f"{updates['name']} v{version}"
+        updates['description'] = f"{updates.get('description', '')} (Updated to v{version})"
+    
+    return requests.put(f"https://api.hitl.sh/v1/loops/{loop_id}", headers=headers, json=updates)
+```
+
+### Gradual Updates
+
+Update loops incrementally rather than all at once:
+
+```javascript
+async function updateLoopGradually(loopId, updates) {
+    const updateOrder = ['description', 'icon', 'name']; // Update description first, name last
+    
+    for (const field of updateOrder) {
+        if (updates[field]) {
+            await axios.put(
+                `https://api.hitl.sh/v1/loops/${loopId}`,
+                { [field]: updates[field] },
+                { headers: { 'Authorization': `Bearer ${apiKey}` } }
+            );
+            
+            // Small delay between updates
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+    }
+}
+```
+
+### Backup Before Updates
+
+Keep a record of previous state:
+
+```python
+def safe_loop_update(loop_id, updates):
+    # Get current state
+    current_response = requests.get(f"https://api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+    backup = current_response.json()["data"]["loop"]
+    
+    # Perform update
+    update_response = requests.put(
+        f"https://api.hitl.sh/v1/loops/{loop_id}", 
+        headers=headers, 
+        json=updates
+    )
+    
+    if update_response.status_code == 200:
+        return {
+            "success": True,
+            "updated": update_response.json()["data"]["loop"],
+            "backup": backup
+        }
+    else:
+        return {
+            "success": False,
+            "error": update_response.json()["msg"],
+            "backup": backup
+        }
+```
+
+## Next Steps
+
+<Card title="Delete Loop" icon="trash" href="/api-reference/loops/delete-loop">
+  Learn how to delete loops when they're no longer needed.
+</Card>
+
+<Card title="Manage Members" icon="users" href="/api-reference/loops/loop-members">
+  Add or remove members from your updated loop.
+</Card>
+
+<Card title="View Loop Requests" icon="list" href="/api-reference/requests/get-requests">
+  See all requests that have been created within this loop.
+</Card>

@@ -1,0 +1,222 @@
+---
+title: "Create Loop"
+api: "POST https://api.hitl.sh/v1/loops"
+description: "Create a new human review loop with automatic creator membership, invite code, QR code, and join URL generation"
+---
+
+Create a new loop to route human review requests. When you create a loop, you automatically become a member and receive an invite code with QR code for sharing with other reviewers.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Body
+
+<ParamField body="name" type="string" required>
+  Name of the loop (1-100 characters)
+</ParamField>
+
+<ParamField body="description" type="string">
+  Description of the loop's purpose (max 500 characters)
+</ParamField>
+
+<ParamField body="icon" type="string" required>
+  Icon identifier for the loop (e.g., "shield-check", "eye", "thumbs-up")
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="loop" type="object">
+      The created loop object with member counts
+      <Expandable title="loop">
+        <ResponseField name="id" type="string">
+          Unique identifier for the loop
+        </ResponseField>
+        <ResponseField name="name" type="string">
+          Name of the loop
+        </ResponseField>
+        <ResponseField name="description" type="string">
+          Description of the loop
+        </ResponseField>
+        <ResponseField name="icon" type="string">
+          Icon identifier
+        </ResponseField>
+        <ResponseField name="creator_id" type="string">
+          ID of the loop creator
+        </ResponseField>
+        <ResponseField name="members" type="array">
+          Array of loop members
+        </ResponseField>
+        <ResponseField name="member_count" type="integer">
+          Total number of members
+        </ResponseField>
+        <ResponseField name="pending_count" type="integer">
+          Number of pending invitations
+        </ResponseField>
+        <ResponseField name="created_at" type="string">
+          ISO timestamp of creation
+        </ResponseField>
+        <ResponseField name="updated_at" type="string">
+          ISO timestamp of last update
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="invite_code" type="string">
+      Generated invite code for joining the loop
+    </ResponseField>
+    <ResponseField name="qr_code_base64" type="string">
+      Base64 encoded QR code image
+    </ResponseField>
+    <ResponseField name="qr_code_url" type="string">
+      URL to access the QR code image
+    </ResponseField>
+    <ResponseField name="join_url" type="string">
+      Direct URL for joining the loop
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/loops \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Content Moderation Review",
+    "description": "Review user-generated content for community guidelines compliance",
+    "icon": "shield-check"
+  }'
+```
+
+```python Python
+import requests
+
+url = "https://api.hitl.sh/v1/loops"
+headers = {
+    "Authorization": "Bearer your_api_key_here",
+    "Content-Type": "application/json"
+}
+data = {
+    "name": "Content Moderation Review",
+    "description": "Review user-generated content for community guidelines compliance",
+    "icon": "shield-check"
+}
+
+response = requests.post(url, headers=headers, json=data)
+print(response.json())
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.post('https://api.hitl.sh/v1/loops', {
+  name: 'Content Moderation Review',
+  description: 'Review user-generated content for community guidelines compliance',
+  icon: 'shield-check'
+}, {
+  headers: {
+    'Authorization': 'Bearer your_api_key_here',
+    'Content-Type': 'application/json'
+  }
+});
+
+console.log(response.data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "error": false,
+  "msg": "Loop created successfully with QR code",
+  "data": {
+    "loop": {
+      "id": "65f1234567890abcdef12345",
+      "name": "Content Moderation Review",
+      "description": "Review user-generated content for community guidelines compliance",
+      "icon": "shield-check",
+      "creator_id": "65f1234567890abcdef12346",
+      "members": [
+        {
+          "user_id": "65f1234567890abcdef12346",
+          "email": "creator@example.com",
+          "status": "active",
+          "joined_at": "2024-03-15T10:30:00Z"
+        }
+      ],
+      "member_count": 1,
+      "pending_count": 0,
+      "created_at": "2024-03-15T10:30:00Z",
+      "updated_at": "2024-03-15T10:30:00Z"
+    },
+    "invite_code": "ABC123DEF",
+    "qr_code_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+    "qr_code_url": "https://api.hitl.sh/qr/ABC123DEF.png",
+    "join_url": "https://app.hitl.sh/join/ABC123DEF"
+  }
+}
+```
+
+</ResponseExample>
+
+## Use Cases
+
+### Content Moderation
+Create a loop for reviewing flagged user content:
+
+```json
+{
+  "name": "Content Moderation",
+  "description": "Review flagged posts and comments for policy violations",
+  "icon": "shield-exclamation"
+}
+```
+
+### Document Approval
+Create a loop for business document approvals:
+
+```json
+{
+  "name": "Contract Review",
+  "description": "Legal review of customer contracts and agreements",
+  "icon": "document-check"
+}
+```
+
+### Quality Assurance
+Create a loop for AI output validation:
+
+```json
+{
+  "name": "AI Content QA",
+  "description": "Quality assurance for AI-generated content and responses",
+  "icon": "beaker"
+}
+```
+
+## Next Steps
+
+After creating a loop:
+
+1. **Share the invite code** or QR code with your team members
+2. **Create your first request** using the [Create Request](/api-reference/requests/create-request) endpoint
+3. **Set up webhooks** to receive notifications when requests are completed
+
+<Card title="Create Your First Request" icon="plus" href="/api-reference/requests/create-request">
+  Learn how to create requests within your newly created loop.
+</Card>

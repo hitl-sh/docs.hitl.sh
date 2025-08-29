@@ -1,0 +1,937 @@
+---
+title: "Multi Select Responses"
+description: "Comprehensive guide to implementing multi select responses for issue identification, categorization, and multiple decision workflows"
+---
+
+# Multi Select Responses
+
+Multi select responses allow reviewers to choose multiple options from a predefined list, making them ideal for identifying multiple issues, categorizing content across several dimensions, or conducting comprehensive audits where multiple aspects need evaluation.
+
+## When to Use Multi Select
+
+Multi select responses are perfect for:
+
+<CardGroup cols={2}>
+<Card title="Issue Identification" icon="exclamation-triangle">
+Identifying multiple problems or violations where content might have several issues simultaneously
+</Card>
+
+<Card title="Content Categorization" icon="tags">
+Tagging content with multiple categories, departments, or attributes that aren't mutually exclusive
+</Card>
+
+<Card title="Audit Checklists" icon="clipboard-check">
+Quality assurance workflows where multiple criteria need to be verified or flagged
+</Card>
+
+<Card title="Feature Analysis" icon="search">
+Evaluating multiple aspects or features of content, products, or submissions
+</Card>
+</CardGroup>
+
+## Configuration Options
+
+Multi select responses require an options array and support selection limits and validation:
+
+### Required Parameters
+
+<ParamField body="options" type="array" required>
+Array of SelectOption objects (1-20 options maximum)
+<Expandable title="SelectOption Structure">
+  <ParamField body="value" type="string" required>
+    Internal value used in your application logic (max 100 characters)
+  </ParamField>
+  <ParamField body="label" type="string" required>
+    Display text shown to reviewers (max 200 characters)
+  </ParamField>
+  <ParamField body="description" type="string" optional>
+    Additional context or explanation for the option
+  </ParamField>
+  <ParamField body="color" type="string" optional>
+    Hex color code for visual styling (e.g., "#ef4444")
+  </ParamField>
+</Expandable>
+</ParamField>
+
+### Optional Parameters
+
+<ParamField body="min_selections" type="integer" optional default="0">
+Minimum number of options that must be selected
+</ParamField>
+
+<ParamField body="max_selections" type="integer" optional default="unlimited">
+Maximum number of options that can be selected
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether at least one selection is mandatory for completion
+</ParamField>
+
+## Implementation Examples
+
+### Content Violation Detection
+
+Identify multiple policy violations in a single review:
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Review this user post for policy violations:\n\n'🔥 AMAZING DEAL! Buy my crypto course for $999 (normally $5000)! DM me now before spots run out! This will make you RICH! Use my special link: bit.ly/crypto-riches. Limited time only - act fast or miss out forever! 💰💰💰'",
+    "response_type": "multi_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "spam",
+                "label": "🚫 Spam Content",
+                "description": "Unsolicited promotional or repetitive content",
+                "color": "#dc2626"
+            },
+            {
+                "value": "misleading_claims",
+                "label": "⚠️ Misleading Claims",
+                "description": "False or exaggerated promises",
+                "color": "#f59e0b"
+            },
+            {
+                "value": "financial_scam",
+                "label": "💸 Potential Financial Scam",
+                "description": "Get-rich-quick schemes or fraudulent investment advice",
+                "color": "#7c2d12"
+            },
+            {
+                "value": "suspicious_links",
+                "label": "🔗 Suspicious Links",
+                "description": "Shortened URLs or potentially malicious links",
+                "color": "#b91c1c"
+            },
+            {
+                "value": "pressure_tactics",
+                "label": "⏰ High-Pressure Tactics",
+                "description": "Artificial urgency or scarcity claims",
+                "color": "#ea580c"
+            },
+            {
+                "value": "no_violations",
+                "label": "✅ No Policy Violations",
+                "description": "Content appears to comply with all policies",
+                "color": "#16a34a"
+            }
+        ],
+        "min_selections": 1,
+        "max_selections": 5,
+        "required": True
+    },
+    "default_response": ["spam", "misleading_claims"],  # Conservative default
+    "timeout_seconds": 1800,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "high",
+    request_text: "Review this user post for policy violations:\n\n'🔥 AMAZING DEAL! Buy my crypto course for $999 (normally $5000)! DM me now before spots run out! This will make you RICH! Use my special link: bit.ly/crypto-riches. Limited time only - act fast or miss out forever! 💰💰💰'",
+    response_type: "multi_select",
+    response_config: {
+        options: [
+            {
+                value: "spam",
+                label: "🚫 Spam Content",
+                description: "Unsolicited promotional or repetitive content",
+                color: "#dc2626"
+            },
+            {
+                value: "misleading_claims",
+                label: "⚠️ Misleading Claims", 
+                description: "False or exaggerated promises",
+                color: "#f59e0b"
+            },
+            {
+                value: "financial_scam",
+                label: "💸 Potential Financial Scam",
+                description: "Get-rich-quick schemes or fraudulent investment advice",
+                color: "#7c2d12"
+            },
+            {
+                value: "suspicious_links",
+                label: "🔗 Suspicious Links",
+                description: "Shortened URLs or potentially malicious links", 
+                color: "#b91c1c"
+            },
+            {
+                value: "pressure_tactics",
+                label: "⏰ High-Pressure Tactics",
+                description: "Artificial urgency or scarcity claims",
+                color: "#ea580c"
+            },
+            {
+                value: "no_violations",
+                label: "✅ No Policy Violations",
+                description: "Content appears to comply with all policies",
+                color: "#16a34a"
+            }
+        ],
+        min_selections: 1,
+        max_selections: 5,
+        required: true
+    },
+    default_response: ["spam", "misleading_claims"],
+    timeout_seconds: 1800,
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+### Product Quality Assessment
+
+Evaluate multiple aspects of product quality:
+
+<CodeGroup>
+
+```python Python
+# Multi-dimensional product evaluation
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Evaluate this product listing for quality and completeness:\n\nTitle: 'Wireless Bluetooth Headphones - Premium Sound Quality'\nDescription: 'Experience crystal clear audio with our latest wireless headphones. Features noise cancellation, 20-hour battery life, and comfortable design.'\nPrice: $89.99\nImages: 3 product photos provided\nSpecifications: Listed in product details",
+    "response_type": "multi_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "title_quality",
+                "label": "📝 Title Quality Good",
+                "description": "Title is descriptive and follows naming conventions",
+                "color": "#059669"
+            },
+            {
+                "value": "description_complete",
+                "label": "📄 Description Complete",
+                "description": "Product description covers key features and benefits",
+                "color": "#0891b2"
+            },
+            {
+                "value": "images_high_quality",
+                "label": "📸 High-Quality Images",
+                "description": "Product images are clear and professionally shot",
+                "color": "#7c3aed"
+            },
+            {
+                "value": "pricing_competitive",
+                "label": "💰 Competitive Pricing",
+                "description": "Price aligns with similar products in category",
+                "color": "#dc2626"
+            },
+            {
+                "value": "specifications_detailed",
+                "label": "⚙️ Detailed Specifications",
+                "description": "Technical specs are comprehensive and accurate",
+                "color": "#ea580c"
+            },
+            {
+                "value": "category_correct",
+                "label": "🏷️ Correct Category",
+                "description": "Product is placed in the appropriate category",
+                "color": "#16a34a"
+            },
+            {
+                "value": "seo_optimized",
+                "label": "🔍 SEO Optimized",
+                "description": "Title and description use relevant keywords",
+                "color": "#2563eb"
+            }
+        ],
+        "min_selections": 1,
+        "max_selections": 7,
+        "required": True
+    },
+    "default_response": [],
+    "timeout_seconds": 86400,  # 24 hours
+    "platform": "api"
+}
+```
+
+</CodeGroup>
+
+### Customer Service Ticket Categorization
+
+Categorize support tickets across multiple dimensions:
+
+<CodeGroup>
+
+```python Python
+# Multi-category ticket classification
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Categorize this customer support ticket:\n\n'Subject: Billing issue and account access problem\n\nMessage: Hi, I was charged twice for my subscription last month, and now I can't log into my account. I've tried resetting my password but the email isn't coming through. This is really frustrating and I need this resolved ASAP since I have a presentation tomorrow that requires access to my files. Can someone please help? I've been a customer for 3 years and this has never happened before.'",
+    "response_type": "multi_select", 
+    "response_config": {
+        "options": [
+            {
+                "value": "billing_issue",
+                "label": "💳 Billing & Payment",
+                "description": "Related to charges, subscriptions, or payments",
+                "color": "#dc2626"
+            },
+            {
+                "value": "account_access",
+                "label": "🔐 Account Access",
+                "description": "Login problems, password issues, or account lockouts",
+                "color": "#f59e0b"
+            },
+            {
+                "value": "technical_issue",
+                "label": "⚙️ Technical Problem",
+                "description": "System bugs, feature malfunctions, or technical errors",
+                "color": "#3b82f6"
+            },
+            {
+                "value": "urgent_priority",
+                "label": "🚨 Urgent Priority",
+                "description": "Customer indicates time-sensitive business need",
+                "color": "#dc2626"
+            },
+            {
+                "value": "email_delivery",
+                "label": "📧 Email Delivery Issue",
+                "description": "Problems receiving system emails or notifications",
+                "color": "#8b5cf6"
+            },
+            {
+                "value": "loyal_customer",
+                "label": "⭐ Loyal Customer",
+                "description": "Long-term customer requiring special attention",
+                "color": "#059669"
+            },
+            {
+                "value": "escalation_needed",
+                "label": "📞 Needs Escalation",
+                "description": "Complex issue requiring senior support attention",
+                "color": "#ea580c"
+            }
+        ],
+        "min_selections": 2,
+        "max_selections": 6,
+        "required": True
+    },
+    "default_response": ["billing_issue", "account_access"],
+    "timeout_seconds": 3600,
+    "platform": "api"
+}
+```
+
+</CodeGroup>
+
+## Response Format
+
+When a reviewer selects multiple options, you'll receive both values and labels:
+
+```json
+{
+  "response_data": {
+    "selected_values": ["spam", "misleading_claims", "pressure_tactics"],
+    "selected_labels": ["🚫 Spam Content", "⚠️ Misleading Claims", "⏰ High-Pressure Tactics"]
+  }
+}
+```
+
+## Use Case Examples
+
+### 1. Content Moderation Review
+
+<Tabs>
+<Tab title="Configuration">
+```python
+moderation_config = {
+    "response_type": "multi_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "harassment",
+                "label": "👤 Harassment/Bullying",
+                "description": "Targeted harassment or bullying behavior",
+                "color": "#dc2626"
+            },
+            {
+                "value": "hate_speech",
+                "label": "😡 Hate Speech",
+                "description": "Content promoting hatred against groups",
+                "color": "#991b1b"
+            },
+            {
+                "value": "misinformation",
+                "label": "❌ Misinformation",
+                "description": "False or misleading information",
+                "color": "#f59e0b"
+            },
+            {
+                "value": "adult_content",
+                "label": "🔞 Adult Content",
+                "description": "Sexual or mature content",
+                "color": "#7c2d12"
+            },
+            {
+                "value": "violence",
+                "label": "⚔️ Violence/Graphic Content",
+                "description": "Violent imagery or graphic content",
+                "color": "#7f1d1d"
+            },
+            {
+                "value": "spam_promotion",
+                "label": "📢 Spam/Promotion",
+                "description": "Unsolicited advertising or spam",
+                "color": "#ea580c"
+            },
+            {
+                "value": "copyright",
+                "label": "©️ Copyright Violation",
+                "description": "Unauthorized use of copyrighted material",
+                "color": "#8b5cf6"
+            },
+            {
+                "value": "content_approved",
+                "label": "✅ No Violations Found",
+                "description": "Content appears to comply with all policies",
+                "color": "#16a34a"
+            }
+        ],
+        "min_selections": 1,
+        "max_selections": 7,
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Processing Logic">
+```python
+def handle_moderation_decision(response_data):
+    violations = response_data["selected_values"]
+    labels = response_data["selected_labels"]
+    
+    # Check if content was approved
+    if "content_approved" in violations:
+        approve_content()
+        log_decision("approved", labels)
+        return
+    
+    # Process each violation type
+    violation_actions = {
+        "harassment": lambda: [remove_content(), warn_user(), log_violation("harassment")],
+        "hate_speech": lambda: [remove_content(), suspend_user(days=7), log_violation("hate_speech")],
+        "misinformation": lambda: [remove_content(), add_fact_check_label(), log_violation("misinformation")], 
+        "adult_content": lambda: [remove_content(), age_restrict_user(), log_violation("adult_content")],
+        "violence": lambda: [remove_content(), escalate_to_safety_team(), log_violation("violence")],
+        "spam_promotion": lambda: [remove_content(), limit_posting(), log_violation("spam")],
+        "copyright": lambda: [remove_content(), notify_copyright_team(), log_violation("copyright")]
+    }
+    
+    # Execute actions for each violation
+    for violation in violations:
+        if violation in violation_actions:
+            actions = violation_actions[violation]()
+            execute_actions(actions)
+    
+    # Determine overall severity
+    severe_violations = ["hate_speech", "violence", "harassment"]
+    if any(v in violations for v in severe_violations):
+        escalate_to_senior_moderator()
+    
+    # Log complete decision
+    log_moderation_decision(violations, labels)
+```
+</Tab>
+</Tabs>
+
+### 2. Quality Assurance Checklist
+
+<Tabs>
+<Tab title="Configuration">
+```python
+qa_checklist_config = {
+    "response_type": "multi_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "grammar_correct",
+                "label": "📝 Grammar & Spelling Correct",
+                "description": "No grammatical or spelling errors found",
+                "color": "#059669"
+            },
+            {
+                "value": "facts_accurate",
+                "label": "✅ Facts Verified",
+                "description": "All factual claims have been verified",
+                "color": "#0891b2"
+            },
+            {
+                "value": "sources_cited",
+                "label": "📚 Sources Properly Cited",
+                "description": "All sources are properly attributed",
+                "color": "#7c3aed"
+            },
+            {
+                "value": "formatting_consistent",
+                "label": "🎨 Formatting Consistent",
+                "description": "Follows style guide and formatting standards",
+                "color": "#2563eb"
+            },
+            {
+                "value": "images_optimized",
+                "label": "🖼️ Images Optimized",
+                "description": "Images are properly sized and compressed",
+                "color": "#16a34a"
+            },
+            {
+                "value": "seo_compliant",
+                "label": "🔍 SEO Best Practices",
+                "description": "Follows SEO guidelines and best practices",
+                "color": "#ea580c"
+            },
+            {
+                "value": "links_functional",
+                "label": "🔗 All Links Working",
+                "description": "All hyperlinks have been tested and work",
+                "color": "#8b5cf6"
+            },
+            {
+                "value": "mobile_responsive",
+                "label": "📱 Mobile Responsive",
+                "description": "Content displays correctly on mobile devices",
+                "color": "#f59e0b"
+            }
+        ],
+        "min_selections": 0,
+        "max_selections": 8,
+        "required": False
+    }
+}
+```
+</Tab>
+
+<Tab title="Processing Logic">
+```python
+def handle_qa_checklist(response_data):
+    passed_checks = response_data["selected_values"]
+    labels = response_data["selected_labels"]
+    
+    # Define all possible checks
+    all_checks = [
+        "grammar_correct", "facts_accurate", "sources_cited", 
+        "formatting_consistent", "images_optimized", "seo_compliant",
+        "links_functional", "mobile_responsive"
+    ]
+    
+    # Calculate completion score
+    completion_score = len(passed_checks) / len(all_checks)
+    failed_checks = [check for check in all_checks if check not in passed_checks]
+    
+    # Determine next steps based on completion
+    if completion_score >= 0.9:
+        # 90%+ pass rate - approve for publication
+        approve_for_publication()
+        log_qa_result("approved", completion_score, passed_checks)
+        
+    elif completion_score >= 0.7:
+        # 70-89% pass rate - minor revisions needed
+        request_minor_revisions(failed_checks)
+        set_status("revision_required")
+        log_qa_result("minor_revisions", completion_score, failed_checks)
+        
+    elif completion_score >= 0.5:
+        # 50-69% pass rate - major revisions needed  
+        request_major_revisions(failed_checks)
+        set_status("major_revision_required")
+        log_qa_result("major_revisions", completion_score, failed_checks)
+        
+    else:
+        # <50% pass rate - reject and restart
+        reject_submission()
+        set_status("rejected")
+        log_qa_result("rejected", completion_score, failed_checks)
+    
+    # Create specific action items
+    create_action_items_for_failed_checks(failed_checks)
+    
+    # Notify stakeholders
+    notify_qa_completion(completion_score, passed_checks, failed_checks)
+```
+</Tab>
+</Tabs>
+
+### 3. Feature Request Analysis
+
+<Tabs>
+<Tab title="Configuration">
+```python
+feature_analysis_config = {
+    "response_type": "multi_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "high_user_demand",
+                "label": "📈 High User Demand",
+                "description": "Feature is frequently requested by users",
+                "color": "#dc2626"
+            },
+            {
+                "value": "strategic_value",
+                "label": "🎯 Strategic Business Value", 
+                "description": "Aligns with key business objectives",
+                "color": "#059669"
+            },
+            {
+                "value": "technical_feasible",
+                "label": "⚙️ Technically Feasible",
+                "description": "Can be implemented with current technology",
+                "color": "#3b82f6"
+            },
+            {
+                "value": "resource_available",
+                "label": "👥 Resources Available",
+                "description": "Team has capacity to implement",
+                "color": "#f59e0b"
+            },
+            {
+                "value": "competitive_advantage",
+                "label": "🚀 Competitive Advantage",
+                "description": "Would differentiate us from competitors",
+                "color": "#8b5cf6"
+            },
+            {
+                "value": "low_maintenance",
+                "label": "🔧 Low Maintenance",
+                "description": "Won't require significant ongoing maintenance",
+                "color": "#16a34a"
+            },
+            {
+                "value": "security_compliant",
+                "label": "🔒 Security Compliant",
+                "description": "Meets security and compliance requirements",
+                "color": "#ea580c"
+            },
+            {
+                "value": "scalability_ready",
+                "label": "📊 Scalability Ready",
+                "description": "Can handle expected growth and usage",
+                "color": "#0891b2"
+            }
+        ],
+        "min_selections": 1,
+        "max_selections": 8,
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Processing Logic">
+```python
+def analyze_feature_request(response_data):
+    positive_factors = response_data["selected_values"]
+    labels = response_data["selected_labels"]
+    
+    # Weight different factors
+    factor_weights = {
+        "high_user_demand": 3,
+        "strategic_value": 3,
+        "technical_feasible": 2,
+        "resource_available": 2,
+        "competitive_advantage": 2,
+        "low_maintenance": 1,
+        "security_compliant": 2,
+        "scalability_ready": 1
+    }
+    
+    # Calculate weighted score
+    total_score = sum(factor_weights[factor] for factor in positive_factors)
+    max_possible_score = sum(factor_weights.values())
+    priority_score = total_score / max_possible_score
+    
+    # Determine priority level
+    if priority_score >= 0.8:
+        priority = "P0 - Critical"
+        next_action = "schedule_for_next_sprint"
+    elif priority_score >= 0.6:
+        priority = "P1 - High"
+        next_action = "add_to_product_backlog_top"
+    elif priority_score >= 0.4:
+        priority = "P2 - Medium" 
+        next_action = "add_to_product_backlog"
+    else:
+        priority = "P3 - Low"
+        next_action = "consider_for_future_roadmap"
+    
+    # Check for critical requirements
+    must_haves = ["technical_feasible", "security_compliant"]
+    missing_requirements = [req for req in must_haves if req not in positive_factors]
+    
+    if missing_requirements:
+        priority = "BLOCKED"
+        next_action = "address_blockers_first"
+    
+    # Log analysis results
+    log_feature_analysis({
+        "priority_score": priority_score,
+        "priority_level": priority,
+        "positive_factors": positive_factors,
+        "missing_requirements": missing_requirements,
+        "recommended_action": next_action
+    })
+    
+    # Execute next action
+    execute_feature_decision(next_action, positive_factors)
+    
+    return {
+        "priority": priority,
+        "score": priority_score,
+        "factors": labels,
+        "action": next_action
+    }
+```
+</Tab>
+</Tabs>
+
+## Validation and Error Handling
+
+### Automatic Validation
+
+The mobile app automatically validates multi select responses:
+
+- **Option validation**: Ensures all selected values exist in the options array
+- **Selection limits**: Enforces min_selections and max_selections constraints
+- **Required validation**: Prevents submission when required=true and no selections made
+- **Duplicate prevention**: Prevents selecting the same option multiple times
+
+### Processing Validation
+
+Your application should validate received responses:
+
+```python
+def validate_multi_select_response(response_data, response_config):
+    """Validate multi select response against configuration"""
+    
+    # Check response structure
+    if not isinstance(response_data, dict):
+        return False, "Response must be an object"
+    
+    if "selected_values" not in response_data:
+        return False, "Missing selected_values field"
+    
+    selected_values = response_data["selected_values"]
+    
+    # Validate it's an array
+    if not isinstance(selected_values, list):
+        return False, "selected_values must be an array"
+    
+    # Validate all values exist in options
+    valid_values = [opt["value"] for opt in response_config["options"]]
+    invalid_values = [val for val in selected_values if val not in valid_values]
+    
+    if invalid_values:
+        return False, f"Invalid selections: {invalid_values}"
+    
+    # Check selection limits
+    min_selections = response_config.get("min_selections", 0)
+    max_selections = response_config.get("max_selections", len(valid_values))
+    
+    if len(selected_values) < min_selections:
+        return False, f"Must select at least {min_selections} options"
+    
+    if len(selected_values) > max_selections:
+        return False, f"Cannot select more than {max_selections} options"
+    
+    # Check required
+    if response_config.get("required", False) and len(selected_values) == 0:
+        return False, "At least one selection is required"
+    
+    # Check for duplicates
+    if len(selected_values) != len(set(selected_values)):
+        return False, "Duplicate selections not allowed"
+    
+    return True, "Valid"
+
+# Usage
+is_valid, error_message = validate_multi_select_response(
+    response_data={
+        "selected_values": ["spam", "misleading_claims"],
+        "selected_labels": ["🚫 Spam Content", "⚠️ Misleading Claims"]
+    },
+    response_config={
+        "options": [...],
+        "min_selections": 1,
+        "max_selections": 5,
+        "required": True
+    }
+)
+```
+
+## Best Practices
+
+### Option Design
+
+<AccordionGroup>
+<Accordion title="Logical Grouping">
+- Organize options by category or theme when possible
+- Use similar language patterns for related options
+- Consider visual grouping with colors for option categories
+- Order options from most to least common/important
+</Accordion>
+
+<Accordion title="Clear Distinctions">
+- Ensure options are mutually non-exclusive unless intended
+- Use descriptive labels that clearly differentiate choices
+- Include descriptions for options that might be ambiguous
+- Avoid overlapping categories that confuse reviewers
+</Accordion>
+
+<Accordion title="Reasonable Limits">
+- Set max_selections to prevent analysis paralysis
+- Use min_selections to ensure meaningful evaluation
+- Consider cognitive load - too many options reduce decision quality
+- Test limits with actual reviewers to find optimal ranges
+</Accordion>
+
+<Accordion title="Visual Hierarchy">
+- Use colors strategically to indicate severity or category
+- Red/orange for problems, green for positive attributes
+- Consistent color coding across similar request types
+- Consider accessibility with color-blind friendly palettes
+</Accordion>
+</AccordionGroup>
+
+### Processing Best Practices
+
+<AccordionGroup>
+<Accordion title="Weighted Decision Making">
+```python
+# Weight different selections based on business impact
+selection_weights = {
+    "critical_issue": 10,
+    "major_issue": 5, 
+    "minor_issue": 1,
+    "cosmetic_issue": 0.5
+}
+
+def calculate_severity_score(selected_values):
+    return sum(selection_weights.get(value, 0) for value in selected_values)
+```
+</Accordion>
+
+<Accordion title="Combination Logic">
+```python
+# Handle specific combinations of selections
+def process_selection_combinations(selected_values):
+    if "urgent_issue" in selected_values and "customer_facing" in selected_values:
+        escalate_immediately()
+    
+    if "billing_problem" in selected_values and "loyal_customer" in selected_values:
+        prioritize_resolution()
+        
+    if set(["spam", "scam", "malicious"]).intersection(selected_values):
+        trigger_security_review()
+```
+</Accordion>
+
+<Accordion title="Analytics and Patterns">
+```python
+# Track selection patterns for insights
+def analyze_selection_patterns(responses):
+    from collections import Counter
+    import itertools
+    
+    # Most common individual selections
+    all_selections = []
+    for response in responses:
+        all_selections.extend(response["selected_values"])
+    
+    common_selections = Counter(all_selections)
+    
+    # Most common selection combinations
+    combinations = []
+    for response in responses:
+        values = response["selected_values"]
+        if len(values) >= 2:
+            combinations.extend(itertools.combinations(sorted(values), 2))
+    
+    common_combinations = Counter(combinations)
+    
+    return {
+        "individual_frequencies": dict(common_selections),
+        "combination_patterns": dict(common_combinations.most_common(10))
+    }
+```
+</Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### Issue Escalation Matrix
+
+```python
+# Escalate based on selection combinations
+escalation_rules = {
+    ("security_threat", "customer_data"): "immediate_security_team",
+    ("billing_error", "high_value_customer"): "senior_billing_specialist",
+    ("technical_bug", "production_system"): "engineering_lead", 
+    ("content_violation", "repeat_offender"): "policy_enforcement_team"
+}
+
+def check_escalation_needed(selected_values):
+    for combination, escalation_target in escalation_rules.items():
+        if all(item in selected_values for item in combination):
+            return escalation_target
+    return None
+```
+
+### Quality Scoring System
+
+```python
+# Score content quality based on passed/failed criteria
+def calculate_quality_score(selected_criteria, all_possible_criteria):
+    # Basic completion percentage
+    completion_rate = len(selected_criteria) / len(all_possible_criteria)
+    
+    # Weight critical criteria more heavily
+    critical_criteria = ["security_compliant", "legally_compliant", "factually_accurate"]
+    critical_passed = len([c for c in selected_criteria if c in critical_criteria])
+    critical_total = len([c for c in all_possible_criteria if c in critical_criteria])
+    
+    if critical_total > 0:
+        critical_rate = critical_passed / critical_total
+        # Heavily weight critical criteria (70% of score)
+        final_score = (0.7 * critical_rate) + (0.3 * completion_rate)
+    else:
+        final_score = completion_rate
+    
+    return min(final_score, 1.0)  # Cap at 1.0
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Rating Responses" icon="star" href="/responses/rating">
+Learn about numeric rating scales for quality assessment
+</Card>
+
+<Card title="Single Select Responses" icon="circle-dot" href="/responses/single-select">
+See how to implement mutually exclusive decision workflows
+</Card>
+
+<Card title="Response Processing" icon="cog" href="/concepts/responses">
+Advanced patterns for handling and analyzing response combinations
+</Card>
+
+<Card title="Mobile Experience" icon="mobile" href="/mobile/responding">
+See how reviewers interact with multi select responses on mobile
+</Card>
+</CardGroup>

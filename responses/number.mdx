@@ -1,0 +1,858 @@
+---
+title: "Number Responses"
+description: "Complete guide to implementing number responses for pricing, quantities, measurements, and numeric data collection with validation and formatting"
+---
+
+# Number Responses
+
+Number responses allow reviewers to input precise numeric values with customizable validation, formatting, and display options. They're perfect for collecting prices, quantities, measurements, scores, or any numeric data that requires accuracy and consistency.
+
+## When to Use Number Responses
+
+Number responses are ideal for:
+
+<CardGroup cols={2}>
+<Card title="Pricing & Financial" icon="dollar-sign">
+Setting product prices, budget amounts, cost estimates, or any monetary values requiring precision
+</Card>
+
+<Card title="Quantity & Inventory" icon="boxes">
+Counting items, setting stock levels, capacity planning, or any discrete numeric quantities
+</Card>
+
+<Card title="Measurements & Metrics" icon="ruler">
+Recording dimensions, weights, distances, performance metrics, or scientific measurements
+</Card>
+
+<Card title="Scoring & Calculations" icon="calculator">
+Custom scoring systems, weighted calculations, or complex numeric evaluations beyond simple ratings
+</Card>
+</CardGroup>
+
+## Configuration Options
+
+Number responses support extensive validation and formatting options:
+
+### Required Parameters
+
+<ParamField body="max_value" type="number" required>
+Maximum allowed value (inclusive)
+</ParamField>
+
+### Optional Parameters
+
+<ParamField body="min_value" type="number" optional default="0">
+Minimum allowed value (inclusive, can be negative)
+</ParamField>
+
+<ParamField body="decimal_places" type="integer" optional default="2">
+Number of decimal places allowed (0-10)
+</ParamField>
+
+<ParamField body="prefix" type="string" optional>
+Text to display before the number (e.g., "$", "€", "#")
+</ParamField>
+
+<ParamField body="suffix" type="string" optional>
+Text to display after the number (e.g., " USD", " kg", " items")
+</ParamField>
+
+<ParamField body="allow_negative" type="boolean" optional default="false">
+Whether negative numbers are permitted
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a numeric value is mandatory for completion
+</ParamField>
+
+## Implementation Examples
+
+### Product Pricing
+
+Currency-formatted price input with validation:
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please set the pricing for this new product based on the market analysis:\n\n**Product:** Premium Wireless Headphones\n**Cost to Manufacture:** $45.00\n**Market Research:**\n- Competitor A: $89.99\n- Competitor B: $129.99 \n- Competitor C: $79.99\n**Target Margin:** 40-60%\n**Recommended Price Range:** $75-$150\n\nConsider positioning, target market, and competitive landscape when setting the final price.",
+    "response_type": "number",
+    "response_config": {
+        "min_value": 50.00,
+        "max_value": 200.00,
+        "decimal_places": 2,
+        "prefix": "$",
+        "suffix": " USD",
+        "allow_negative": False,
+        "required": True
+    },
+    "default_response": 89.99,  # Conservative competitive pricing
+    "timeout_seconds": 259200,  # 3 days
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "deferred",
+    type: "markdown",
+    priority: "medium",
+    request_text: "Please set the pricing for this new product based on the market analysis:\n\n**Product:** Premium Wireless Headphones\n**Cost to Manufacture:** $45.00\n**Market Research:**\n- Competitor A: $89.99\n- Competitor B: $129.99\n- Competitor C: $79.99\n**Target Margin:** 40-60%\n**Recommended Price Range:** $75-$150\n\nConsider positioning, target market, and competitive landscape when setting the final price.",
+    response_type: "number",
+    response_config: {
+        min_value: 50.00,
+        max_value: 200.00,
+        decimal_places: 2,
+        prefix: "$",
+        suffix: " USD", 
+        allow_negative: false,
+        required: true
+    },
+    default_response: 89.99,
+    timeout_seconds: 259200,
+    platform: "api"
+};
+```
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please set the pricing for this new product...",
+    "response_type": "number",
+    "response_config": {
+        "min_value": 50.00,
+        "max_value": 200.00,
+        "decimal_places": 2,
+        "prefix": "$",
+        "suffix": " USD",
+        "allow_negative": false,
+        "required": true
+    },
+    "default_response": 89.99,
+    "timeout_seconds": 259200,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+### Inventory Quantity Assessment  
+
+Whole number inventory count with no decimals:
+
+<CodeGroup>
+
+```python Python
+# Inventory count verification
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "image",
+    "image_url": "https://storage.company.com/warehouse/shelf-section-A7.jpg",
+    "priority": "high",
+    "request_text": "Count the number of 'Premium Coffee Blend' packages visible on this warehouse shelf section. This is for our quarterly inventory audit.\n\n**Product Details:**\n- SKU: PCB-001\n- Package Type: 12oz bags\n- Expected Range: 45-85 units\n- Location: Section A7, Shelf 3\n\nPlease provide an accurate count of visible packages.",
+    "response_type": "number",
+    "response_config": {
+        "min_value": 0,
+        "max_value": 200,
+        "decimal_places": 0,  # Whole numbers only
+        "prefix": "",
+        "suffix": " units",
+        "allow_negative": False,
+        "required": True
+    },
+    "default_response": 0,  # Conservative default for inventory
+    "timeout_seconds": 3600,  # 1 hour
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+// Production capacity estimation
+const requestData = {
+    processing_type: "deferred", 
+    type: "markdown",
+    priority: "medium",
+    request_text: "Based on the factory floor assessment, what is the realistic daily production capacity for our new assembly line?\n\n**Current Setup:**\n- 3 assembly stations\n- 2 shifts (16 hours total)\n- 4 workers per shift\n- Target: 15 minutes per unit\n\n**Factors to Consider:**\n- Break times and shift changes\n- Quality control checks\n- Equipment maintenance windows\n- Realistic worker efficiency\n\nPlease estimate daily units that can be consistently produced.",
+    response_type: "number",
+    response_config: {
+        min_value: 20,
+        max_value: 150, 
+        decimal_places: 0,
+        prefix: "",
+        suffix: " units/day",
+        allow_negative: false,
+        required: true
+    },
+    default_response: 64,  // Conservative estimate based on 16 units/hour
+    timeout_seconds: 86400,
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+### Scientific Measurement
+
+High-precision measurement with decimals:
+
+<CodeGroup>
+
+```python Python
+# Laboratory measurement verification
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Verify the pH measurement reading from this laboratory test:\n\n**Sample:** Water Quality Test #WQ-2024-0847\n**Test Method:** Calibrated pH meter\n**Expected Range:** 6.5 - 8.5 (EPA drinking water standards)\n**Digital Reading:** 7.23\n**Lab Conditions:** 22°C, calibrated this morning\n\n**Quality Control:**\nPlease confirm the pH reading is accurate based on the sample color indicators and equipment calibration status shown in the attached documentation.\n\nNote: This is for regulatory compliance reporting.",
+    "response_type": "number",
+    "response_config": {
+        "min_value": 0.0,
+        "max_value": 14.0,
+        "decimal_places": 2,
+        "prefix": "pH ",
+        "suffix": "",
+        "allow_negative": False,
+        "required": True
+    },
+    "default_response": 7.0,  # Neutral pH default
+    "timeout_seconds": 7200,  # 2 hours
+    "platform": "api"
+}
+```
+
+</CodeGroup>
+
+### Budget Allocation
+
+Financial planning with negative values allowed:
+
+<CodeGroup>
+
+```python Python
+# Budget adjustment request
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium", 
+    "request_text": "Review the Q4 marketing budget variance and recommend adjustment:\n\n**Original Budget:** $50,000\n**Current Spend:** $42,500 (85% utilized)\n**Remaining Period:** 6 weeks\n**Performance:**\n- Lead generation: 120% of target\n- Conversion rate: 15% above average\n- Cost per acquisition: 12% below target\n\n**Options:**\n- Increase budget for additional campaigns (+)\n- Return unused budget to company (-)\n- Maintain current allocation (0)\n\nRecommend budget adjustment amount (positive = increase, negative = decrease, 0 = no change).",
+    "response_type": "number",
+    "response_config": {
+        "min_value": -25000.00,
+        "max_value": 25000.00,
+        "decimal_places": 2,
+        "prefix": "$",
+        "suffix": " USD",
+        "allow_negative": True,
+        "required": True
+    },
+    "default_response": 0.00,  # No change default
+    "timeout_seconds": 604800,  # 7 days
+    "platform": "api"
+}
+```
+
+</CodeGroup>
+
+## Response Format
+
+When a reviewer enters a number, you'll receive both the raw value and formatted display:
+
+```json
+{
+  "response_data": {
+    "number": 129.99,
+    "formatted_value": "$129.99 USD"
+  }
+}
+```
+
+## Use Case Examples
+
+### 1. Product Pricing Decision
+
+<Tabs>
+<Tab title="Configuration">
+```python
+pricing_config = {
+    "response_type": "number",
+    "response_config": {
+        "min_value": 10.00,
+        "max_value": 500.00,
+        "decimal_places": 2,
+        "prefix": "$",
+        "suffix": " USD",
+        "allow_negative": False,
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "number": 149.99,
+    "formatted_value": "$149.99 USD"
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_pricing_decision(response_data, product_id):
+    price = response_data["number"]
+    formatted_price = response_data["formatted_value"]
+    
+    # Get product cost data for margin calculation
+    product_cost = get_product_cost(product_id)
+    margin_dollars = price - product_cost
+    margin_percentage = (margin_dollars / price) * 100
+    
+    # Validate pricing strategy  
+    if margin_percentage < 20:
+        flag_low_margin_warning(product_id, margin_percentage)
+    elif margin_percentage > 70:
+        flag_high_margin_review(product_id, margin_percentage)
+    
+    # Compare to competitor pricing
+    competitor_prices = get_competitor_pricing(product_id)
+    price_position = calculate_price_position(price, competitor_prices)
+    
+    # Update product pricing
+    update_product_price(product_id, price)
+    
+    # Log pricing decision
+    log_pricing_decision({
+        "product_id": product_id,
+        "new_price": price,
+        "formatted_price": formatted_price,
+        "margin_percentage": margin_percentage,
+        "price_position": price_position,
+        "decision_timestamp": datetime.utcnow()
+    })
+    
+    # Trigger related updates
+    update_inventory_valuations(product_id, price)
+    refresh_competitor_price_alerts(product_id)
+    
+    # Notify stakeholders based on price tier
+    if price >= 200:
+        notify_premium_pricing_team(product_id, price)
+    elif margin_percentage < 25:
+        notify_finance_team(product_id, margin_percentage)
+    
+    return {
+        "price_set": price,
+        "margin": f"{margin_percentage:.1f}%",
+        "competitive_position": price_position
+    }
+
+def calculate_price_position(price, competitor_prices):
+    if not competitor_prices:
+        return "no_competition_data"
+    
+    avg_competitor_price = sum(competitor_prices) / len(competitor_prices)
+    
+    if price <= min(competitor_prices):
+        return "lowest_price"
+    elif price >= max(competitor_prices):
+        return "highest_price" 
+    elif price <= avg_competitor_price * 0.95:
+        return "below_average"
+    elif price >= avg_competitor_price * 1.05:
+        return "above_average"
+    else:
+        return "competitive"
+```
+</Tab>
+</Tabs>
+
+### 2. Inventory Management
+
+<Tabs>
+<Tab title="Configuration">
+```python
+inventory_config = {
+    "response_type": "number",
+    "response_config": {
+        "min_value": 0,
+        "max_value": 10000,
+        "decimal_places": 0,
+        "prefix": "",
+        "suffix": " units",
+        "allow_negative": False,
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "number": 347,
+    "formatted_value": "347 units"
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_inventory_count(response_data, sku, location):
+    actual_count = response_data["number"]
+    formatted_count = response_data["formatted_value"]
+    
+    # Get expected count from system
+    system_count = get_system_inventory_count(sku, location)
+    variance = actual_count - system_count
+    variance_percentage = (variance / system_count * 100) if system_count > 0 else 0
+    
+    # Update inventory records
+    update_inventory_count(sku, location, actual_count)
+    
+    # Handle significant variances
+    if abs(variance_percentage) > 5:  # More than 5% difference
+        create_inventory_discrepancy_report({
+            "sku": sku,
+            "location": location,
+            "system_count": system_count,
+            "actual_count": actual_count,
+            "variance": variance,
+            "variance_percentage": variance_percentage,
+            "report_timestamp": datetime.utcnow()
+        })
+        
+        if abs(variance_percentage) > 20:  # Major discrepancy
+            escalate_to_inventory_manager(sku, variance_percentage)
+    
+    # Check reorder points
+    reorder_point = get_reorder_point(sku)
+    if actual_count <= reorder_point:
+        trigger_reorder_process(sku, actual_count, reorder_point)
+    
+    # Update forecasting data
+    update_demand_forecasting(sku, actual_count)
+    
+    # Log audit trail
+    log_inventory_audit({
+        "sku": sku,
+        "location": location,
+        "counted_by": get_current_user_id(),
+        "count": actual_count,
+        "variance_from_system": variance,
+        "audit_timestamp": datetime.utcnow()
+    })
+    
+    return {
+        "count_recorded": actual_count,
+        "variance": variance,
+        "variance_percentage": f"{variance_percentage:+.1f}%",
+        "reorder_needed": actual_count <= reorder_point
+    }
+```
+</Tab>
+</Tabs>
+
+### 3. Performance Metrics
+
+<Tabs>
+<Tab title="Configuration">
+```python
+performance_config = {
+    "response_type": "number",
+    "response_config": {
+        "min_value": 0.0,
+        "max_value": 100.0,
+        "decimal_places": 1,
+        "prefix": "",
+        "suffix": "%",
+        "allow_negative": False,
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "number": 87.5,
+    "formatted_value": "87.5%"
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_performance_metric(response_data, employee_id, metric_type, review_period):
+    performance_score = response_data["number"]
+    formatted_score = response_data["formatted_value"]
+    
+    # Store performance record
+    performance_record = {
+        "employee_id": employee_id,
+        "metric_type": metric_type,
+        "score": performance_score,
+        "review_period": review_period,
+        "recorded_timestamp": datetime.utcnow()
+    }
+    
+    store_performance_record(performance_record)
+    
+    # Determine performance tier
+    if performance_score >= 90:
+        performance_tier = "exceptional"
+        recommended_action = "promotion_consideration"
+    elif performance_score >= 80:
+        performance_tier = "exceeds_expectations"
+        recommended_action = "merit_increase"
+    elif performance_score >= 70:
+        performance_tier = "meets_expectations"
+        recommended_action = "maintain_current_role"
+    elif performance_score >= 60:
+        performance_tier = "needs_improvement"
+        recommended_action = "development_plan"
+    else:
+        performance_tier = "unsatisfactory"
+        recommended_action = "performance_improvement_plan"
+    
+    # Update employee performance profile
+    update_performance_profile(employee_id, performance_score, performance_tier)
+    
+    # Generate recommendations
+    if recommended_action in ["promotion_consideration", "merit_increase"]:
+        schedule_recognition_review(employee_id, performance_score)
+    elif recommended_action in ["development_plan", "performance_improvement_plan"]:
+        create_improvement_plan(employee_id, performance_score, metric_type)
+    
+    # Update team performance metrics
+    update_team_performance_dashboard(employee_id, performance_score)
+    
+    # Historical comparison
+    historical_scores = get_historical_performance(employee_id, metric_type, limit=5)
+    trend = calculate_performance_trend(historical_scores + [performance_score])
+    
+    return {
+        "performance_score": performance_score,
+        "performance_tier": performance_tier,
+        "recommended_action": recommended_action,
+        "trend": trend,
+        "formatted_display": formatted_score
+    }
+
+def calculate_performance_trend(scores):
+    if len(scores) < 2:
+        return "insufficient_data"
+    
+    recent_avg = sum(scores[-3:]) / len(scores[-3:])
+    earlier_avg = sum(scores[:-3]) / len(scores[:-3]) if len(scores) > 3 else scores[0]
+    
+    if recent_avg > earlier_avg + 5:
+        return "improving"
+    elif recent_avg < earlier_avg - 5:
+        return "declining"
+    else:
+        return "stable"
+```
+</Tab>
+</Tabs>
+
+## Validation and Error Handling
+
+### Automatic Validation
+
+The mobile app automatically validates number responses:
+
+- **Type validation**: Ensures input is a valid numeric value
+- **Range validation**: Checks value falls within min_value and max_value bounds
+- **Decimal precision**: Enforces decimal_places limit
+- **Required validation**: Prevents submission when required=true and no value provided
+- **Negative number handling**: Blocks negative values when allow_negative=false
+
+### Server-Side Validation
+
+Your application should validate received numbers:
+
+```python
+def validate_number_response(response_data, response_config):
+    """Validate number response against configuration"""
+    
+    if not isinstance(response_data, dict):
+        return False, "Response must be an object"
+    
+    if "number" not in response_data:
+        return False, "Missing number field"
+    
+    number = response_data["number"]
+    
+    # Validate numeric type
+    if not isinstance(number, (int, float)):
+        return False, "Value must be a number"
+    
+    # Check range bounds
+    min_value = response_config.get("min_value", 0)
+    max_value = response_config["max_value"]
+    
+    if number < min_value:
+        return False, f"Value must be at least {min_value}"
+    
+    if number > max_value:
+        return False, f"Value cannot exceed {max_value}"
+    
+    # Check negative values
+    allow_negative = response_config.get("allow_negative", False)
+    if not allow_negative and number < 0:
+        return False, "Negative values are not allowed"
+    
+    # Check decimal places
+    decimal_places = response_config.get("decimal_places", 2)
+    if decimal_places == 0 and number != int(number):
+        return False, "Decimal values are not allowed"
+    
+    # Validate decimal precision
+    decimal_str = str(number).split('.')[1] if '.' in str(number) else ""
+    if len(decimal_str) > decimal_places:
+        return False, f"Maximum {decimal_places} decimal places allowed"
+    
+    # Check required
+    if response_config.get("required", False) and number is None:
+        return False, "Number is required"
+    
+    return True, "Valid"
+
+# Usage example
+is_valid, error_message = validate_number_response(
+    response_data={
+        "number": 149.99,
+        "formatted_value": "$149.99 USD"
+    },
+    response_config={
+        "min_value": 50.00,
+        "max_value": 500.00,
+        "decimal_places": 2,
+        "allow_negative": False,
+        "required": True
+    }
+)
+```
+
+## Best Practices
+
+### Configuration Design
+
+<AccordionGroup>
+<Accordion title="Set Realistic Bounds">
+- Use min_value and max_value to prevent obviously incorrect entries
+- Consider business context (e.g., product prices can't be $0.01 or $10,000)
+- Allow some buffer beyond expected range for edge cases
+- Test bounds with actual users to ensure they're not restrictive
+</Accordion>
+
+<Accordion title="Choose Appropriate Precision">
+- **0 decimals**: For counting, whole quantities, percentages as integers
+- **2 decimals**: For currency, most business metrics
+- **3+ decimals**: For scientific measurements, precise calculations
+- Match precision to the business need and reviewer capability
+</Accordion>
+
+<Accordion title="Use Clear Formatting">
+- Add currency symbols ($, €, £) for monetary values
+- Include units (kg, miles, %, units) to clarify what's being measured
+- Use familiar formatting conventions for your target audience
+- Keep prefixes and suffixes concise but descriptive
+</Accordion>
+
+<Accordion title="Handle Edge Cases">
+- Always provide sensible default_response values
+- Consider what happens with boundary values (min/max)
+- Plan for negative values when allow_negative=true
+- Test with various input methods (typing, copy-paste)
+</Accordion>
+</AccordionGroup>
+
+### Processing Best Practices
+
+<AccordionGroup>
+<Accordion title="Range-Based Logic">
+```python
+# Process numbers based on value ranges
+def process_by_range(value, thresholds):
+    """Apply different logic based on numeric ranges"""
+    
+    if value <= thresholds["low"]:
+        return handle_low_value(value)
+    elif value <= thresholds["medium"]:
+        return handle_medium_value(value)  
+    elif value <= thresholds["high"]:
+        return handle_high_value(value)
+    else:
+        return handle_extreme_value(value)
+
+# Usage
+price_thresholds = {"low": 50, "medium": 100, "high": 200}
+inventory_thresholds = {"low": 10, "medium": 50, "high": 100}
+```
+</Accordion>
+
+<Accordion title="Precision Handling">
+```python
+# Handle floating point precision properly
+import decimal
+
+def process_financial_number(number_response):
+    """Process financial numbers with proper precision"""
+    
+    # Convert to Decimal for precise financial calculations
+    amount = decimal.Decimal(str(number_response))
+    
+    # Round to appropriate precision
+    rounded_amount = amount.quantize(decimal.Decimal('0.01'))
+    
+    return {
+        "amount": float(rounded_amount),
+        "display": f"${rounded_amount:.2f}",
+        "cents": int(rounded_amount * 100)  # For API integrations
+    }
+```
+</Accordion>
+
+<Accordion title="Comparative Analysis">
+```python
+# Compare numbers against historical data
+def analyze_number_vs_history(current_value, historical_values):
+    """Compare current number against historical patterns"""
+    
+    if not historical_values:
+        return {"comparison": "no_history"}
+    
+    avg_historical = sum(historical_values) / len(historical_values)
+    std_dev = calculate_std_deviation(historical_values)
+    
+    # Calculate z-score
+    z_score = (current_value - avg_historical) / std_dev if std_dev > 0 else 0
+    
+    # Determine significance
+    if abs(z_score) > 2:
+        significance = "highly_unusual"
+    elif abs(z_score) > 1:
+        significance = "unusual"
+    else:
+        significance = "normal"
+    
+    return {
+        "current": current_value,
+        "historical_average": avg_historical,
+        "z_score": z_score,
+        "significance": significance,
+        "percentile": calculate_percentile(current_value, historical_values)
+    }
+```
+</Accordion>
+</AccordionGroup>
+
+## Common Patterns
+
+### Dynamic Range Validation
+
+```python
+# Adjust validation ranges based on context
+def get_dynamic_price_range(product_category, market_tier):
+    """Calculate appropriate price ranges based on product context"""
+    
+    base_ranges = {
+        "electronics": {"budget": (20, 200), "premium": (200, 2000)},
+        "clothing": {"budget": (10, 100), "premium": (100, 500)},
+        "home": {"budget": (25, 250), "premium": (250, 1000)}
+    }
+    
+    if product_category in base_ranges:
+        min_val, max_val = base_ranges[product_category][market_tier]
+        return {
+            "min_value": min_val,
+            "max_value": max_val,
+            "decimal_places": 2,
+            "prefix": "$",
+            "suffix": " USD"
+        }
+    
+    # Default fallback
+    return {
+        "min_value": 1.00,
+        "max_value": 1000.00,
+        "decimal_places": 2,
+        "prefix": "$",
+        "suffix": " USD"
+    }
+```
+
+### Multi-Currency Support
+
+```python
+# Handle different currencies based on user location
+def get_currency_config(user_location):
+    """Generate number config for appropriate currency"""
+    
+    currency_configs = {
+        "US": {"prefix": "$", "suffix": " USD", "decimal_places": 2},
+        "EU": {"prefix": "€", "suffix": " EUR", "decimal_places": 2},
+        "UK": {"prefix": "£", "suffix": " GBP", "decimal_places": 2},
+        "JP": {"prefix": "¥", "suffix": " JPY", "decimal_places": 0}
+    }
+    
+    return currency_configs.get(user_location, currency_configs["US"])
+```
+
+### Aggregate Calculations
+
+```python
+# Process multiple number responses together
+def calculate_weighted_average(number_responses, weights=None):
+    """Calculate weighted average from multiple number responses"""
+    
+    if not number_responses:
+        return None
+    
+    numbers = [response["number"] for response in number_responses]
+    
+    if weights and len(weights) == len(numbers):
+        weighted_sum = sum(n * w for n, w in zip(numbers, weights))
+        total_weight = sum(weights)
+        return weighted_sum / total_weight if total_weight > 0 else None
+    else:
+        # Simple average if no weights provided
+        return sum(numbers) / len(numbers)
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Boolean Responses" icon="toggle-on" href="/responses/boolean">
+Learn about simple true/false decision workflows  
+</Card>
+
+<Card title="Text Responses" icon="message" href="/responses/text">
+Combine numeric data with detailed explanations
+</Card>
+
+<Card title="Response Validation" icon="shield-check" href="/guides/validation">
+Advanced techniques for validating and sanitizing numeric input
+</Card>
+
+<Card title="Mobile Experience" icon="mobile" href="/mobile/responding">
+See how reviewers interact with number inputs on mobile devices
+</Card>
+</CardGroup>

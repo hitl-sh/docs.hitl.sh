@@ -1,0 +1,508 @@
+---
+title: "Text Responses"
+description: "Detailed guide to implementing free-form text responses for collecting detailed feedback and explanations from reviewers"
+---
+
+# Text Responses
+
+Text responses allow reviewers to provide free-form written feedback, making them perfect for scenarios requiring detailed explanations, qualitative assessments, or open-ended input that can't be captured through structured options.
+
+## When to Use Text Responses
+
+Text responses are ideal for:
+
+<CardGroup cols={2}>
+<Card title="Content Review Feedback" icon="message-circle">
+Detailed feedback on articles, blog posts, or creative content where specific suggestions and explanations are valuable.
+</Card>
+
+<Card title="Quality Assessments" icon="search">
+Explanations of why something passed or failed review, with specific recommendations for improvement.
+</Card>
+
+<Card title="Issue Reporting" icon="flag">
+Describing problems, bugs, or policy violations where context and detail are crucial for understanding.
+</Card>
+
+<Card title="Expert Analysis" icon="brain">
+Professional opinions, technical assessments, or domain expert evaluations requiring nuanced explanations.
+</Card>
+</CardGroup>
+
+## Configuration Options
+
+Text responses support several configuration parameters to control input validation and user experience:
+
+### Required Parameters
+
+<ParamField body="max_length" type="integer" required>
+Maximum number of characters allowed (1-5000)
+</ParamField>
+
+### Optional Parameters
+
+<ParamField body="placeholder" type="string" optional>
+Placeholder text shown in the input field to guide reviewers
+</ParamField>
+
+<ParamField body="min_length" type="integer" optional default="0">
+Minimum number of characters required for the response
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether the response is mandatory or can be left empty
+</ParamField>
+
+## Implementation Examples
+
+### Basic Text Response
+
+Simple text feedback with basic validation:
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please review this blog post and provide feedback on accuracy, tone, and readability.",
+    "response_type": "text",
+    "response_config": {
+        "max_length": 1000,
+        "placeholder": "Provide your detailed feedback here...",
+        "required": True
+    },
+    "default_response": "No feedback provided within the review period",
+    "timeout_seconds": 3600,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown", 
+    priority: "medium",
+    request_text: "Please review this blog post and provide feedback on accuracy, tone, and readability.",
+    response_type: "text",
+    response_config: {
+        max_length: 1000,
+        placeholder: "Provide your detailed feedback here...",
+        required: true
+    },
+    default_response: "No feedback provided within the review period",
+    timeout_seconds: 3600,
+    platform: "api"
+};
+```
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium", 
+    "request_text": "Please review this blog post and provide feedback on accuracy, tone, and readability.",
+    "response_type": "text",
+    "response_config": {
+        "max_length": 1000,
+        "placeholder": "Provide your detailed feedback here...",
+        "required": true
+    },
+    "default_response": "No feedback provided within the review period",
+    "timeout_seconds": 3600,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+### Advanced Text Response
+
+Text response with length requirements and structured guidance:
+
+<CodeGroup>
+
+```python Python
+# Content editing request with detailed requirements
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "low",
+    "request_text": """
+Please edit this article draft and provide improvement suggestions:
+
+# Article Title: "10 Ways to Improve Your Productivity"
+
+Content here would be the actual article...
+
+Please focus on:
+1. Grammar and spelling corrections
+2. Flow and readability improvements  
+3. Factual accuracy
+4. Engagement and tone
+""",
+    "response_type": "text",
+    "response_config": {
+        "placeholder": "Provide specific editing suggestions with line references where possible. Format: '1. Grammar: Fix X in paragraph 2. 2. Flow: Restructure Y section...'",
+        "min_length": 100,
+        "max_length": 2000,
+        "required": True
+    },
+    "default_response": "Editorial review not completed within deadline. Recommend postponing publication pending review.",
+    "timeout_seconds": 86400,  # 24 hours
+    "platform": "api"
+}
+```
+
+```javascript Node.js  
+// Code review feedback request
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "high",
+    request_text: `Please review this code change and provide feedback:
+
+\`\`\`javascript
+// Code diff or snippet here
+function processUserData(userData) {
+    // Implementation details...
+}
+\`\`\`
+
+Focus on security, performance, and maintainability.`,
+    response_type: "text",
+    response_config: {
+        placeholder: "Provide specific feedback on security vulnerabilities, performance issues, code quality, and suggested improvements...",
+        min_length: 50,
+        max_length: 1500,
+        required: true
+    },
+    default_response: "Code review not completed within deadline. Do not merge pending review.",
+    timeout_seconds: 7200, // 2 hours
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+## Response Format
+
+When a reviewer submits a text response, you'll receive:
+
+```json
+{
+  "response_data": "The article is well-structured and informative. Grammar is mostly correct with a few minor issues: 'it's' should be 'its' in paragraph 3, and there's a comma splice in the conclusion. The tone is engaging and appropriate for the target audience. I'd recommend adding one more concrete example in section 4 to strengthen the argument. Overall, this is ready for publication with those minor corrections."
+}
+```
+
+## Use Case Examples
+
+### 1. Content Editorial Review
+
+<Tabs>
+<Tab title="Configuration">
+```python
+editorial_config = {
+    "response_type": "text",
+    "response_config": {
+        "placeholder": "Provide editorial feedback covering grammar, style, accuracy, and engagement. Include specific suggestions for improvement.",
+        "min_length": 50,
+        "max_length": 1200,
+        "required": True
+    },
+    "default_response": "Editorial review incomplete - recommend additional review before publication"
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": "Article structure is solid with clear progression. Grammar issues: 'affect' vs 'effect' in para 2, missing serial comma in bullet list. Style: tone shifts between formal/casual - recommend consistency. Content accuracy verified against cited sources. Suggest stronger opening hook and more specific examples in conclusion. Overall grade: B+ with recommended revisions."
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_editorial_feedback(response_data):
+    feedback = response_data
+    
+    # Parse feedback for common patterns
+    if "grammar issues:" in feedback.lower():
+        flag_for_copy_editing()
+    
+    if "accuracy verified" in feedback.lower():
+        mark_factually_approved()
+    
+    if "grade: a" in feedback.lower():
+        approve_for_publication()
+    elif "grade: b" in feedback.lower():
+        require_minor_revisions()
+    else:
+        require_major_revisions()
+    
+    # Store full feedback for author
+    save_feedback_for_author(feedback)
+```
+</Tab>
+</Tabs>
+
+### 2. Bug Report Verification
+
+<Tabs>
+<Tab title="Configuration">
+```python
+bug_verification_config = {
+    "response_type": "text", 
+    "response_config": {
+        "placeholder": "Describe steps taken to reproduce the bug, environment details, and whether you confirmed the issue. Include severity assessment.",
+        "min_length": 75,
+        "max_length": 800,
+        "required": True
+    },
+    "default_response": "Bug verification not completed within SLA timeframe"
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": "Reproduced on Chrome 120.0, Firefox 119.0, Safari 17.1 using provided steps. Issue occurs consistently when user has >100 items in cart. Error appears in console: 'Cannot read property length of undefined' in checkout.js:247. Workaround: clear cart and re-add items. Severity: Medium - affects checkout but has workaround. Recommend priority fix for next sprint."
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_bug_verification(response_data):
+    feedback = response_data
+    
+    # Extract severity
+    if "severity: critical" in feedback.lower():
+        set_bug_priority("P0")
+    elif "severity: high" in feedback.lower():
+        set_bug_priority("P1") 
+    elif "severity: medium" in feedback.lower():
+        set_bug_priority("P2")
+    else:
+        set_bug_priority("P3")
+    
+    # Check if reproduced
+    if "reproduced" in feedback.lower():
+        confirm_bug_exists()
+    elif "cannot reproduce" in feedback.lower():
+        mark_as_works_as_designed()
+    
+    # Store detailed feedback
+    update_bug_report(feedback)
+```
+</Tab>
+</Tabs>
+
+### 3. Expert Consultation
+
+<Tabs>
+<Tab title="Configuration">
+```python
+expert_consultation_config = {
+    "response_type": "text",
+    "response_config": {
+        "placeholder": "Provide your expert analysis including key insights, recommendations, risk assessment, and suggested next steps. Include confidence level in your assessment.",
+        "min_length": 200,
+        "max_length": 3000,
+        "required": True
+    },
+    "default_response": "Expert consultation not completed within consultation period"
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": "Technical Analysis: The proposed architecture shows good scalability patterns but has potential security vulnerabilities in the API gateway layer. Recommendations: 1) Implement OAuth 2.0 with PKCE, 2) Add rate limiting per endpoint, 3) Consider edge caching for static content. Risk Assessment: Medium risk if deployed as-is, low risk with recommended changes. Cost implications: Additional $2-3k monthly for security infrastructure. Timeline: 2-3 weeks for full implementation. Confidence: High (8/10) based on similar implementations. Next steps: Security audit, load testing, phased rollout."
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_expert_consultation(response_data):
+    feedback = response_data
+    
+    # Extract confidence level
+    import re
+    confidence_match = re.search(r'confidence[:\s]+(?:high|medium|low|\d+/10)', feedback.lower())
+    if confidence_match:
+        confidence = confidence_match.group()
+        store_confidence_rating(confidence)
+    
+    # Extract recommendations
+    if "recommendations:" in feedback.lower():
+        recommendations_section = extract_section_after("recommendations:", feedback)
+        parse_recommendations(recommendations_section)
+    
+    # Flag for executive summary if high-stakes
+    if "risk assessment: high" in feedback.lower():
+        escalate_to_executives()
+    
+    # Store full consultation
+    save_expert_consultation(feedback)
+```
+</Tab>
+</Tabs>
+
+## Validation and Error Handling
+
+### Client-Side Validation
+
+The mobile app automatically validates text responses:
+
+- **Length checking**: Prevents submission if outside min/max bounds
+- **Required validation**: Blocks empty submissions when required=true
+- **Character counting**: Shows real-time character count to reviewers
+- **Whitespace handling**: Trims leading/trailing whitespace before validation
+
+### Server-Side Validation
+
+Your application should also validate responses:
+
+```python
+def validate_text_response(response_data, response_config):
+    """Validate text response against configuration"""
+    
+    if not isinstance(response_data, str):
+        return False, "Response must be text"
+    
+    # Check required
+    if response_config.get("required", False) and not response_data.strip():
+        return False, "Response is required"
+    
+    # Check length bounds
+    text_length = len(response_data.strip())
+    min_length = response_config.get("min_length", 0)
+    max_length = response_config.get("max_length", 5000)
+    
+    if text_length < min_length:
+        return False, f"Response too short (minimum {min_length} characters)"
+    
+    if text_length > max_length:
+        return False, f"Response too long (maximum {max_length} characters)"
+    
+    return True, "Valid"
+
+# Usage
+is_valid, error_message = validate_text_response(
+    response_data="This is the reviewer's feedback...",
+    response_config={
+        "min_length": 20,
+        "max_length": 500,
+        "required": True
+    }
+)
+```
+
+## Best Practices
+
+### Configuration Best Practices
+
+<AccordionGroup>
+<Accordion title="Set Reasonable Length Limits">
+- **Short feedback**: 50-300 characters for quick comments
+- **Detailed reviews**: 200-1500 characters for thorough analysis  
+- **Expert consultations**: 500-3000 characters for comprehensive assessments
+- Avoid extremes: too short limits valuable feedback, too long reduces completion rates
+</Accordion>
+
+<Accordion title="Provide Clear Guidance">
+- Use descriptive placeholders that explain what you're looking for
+- Include examples of good feedback in the request_text
+- Specify focus areas or structured format when helpful
+- Guide reviewers on the level of detail expected
+</Accordion>
+
+<Accordion title="Consider Review Context">
+- Time-sensitive requests: shorter responses, clear urgency indicators
+- Expert reviews: longer limits, domain-specific guidance
+- Quality checks: structured feedback requests with specific criteria
+- Editorial reviews: formatting suggestions and style guide references
+</Accordion>
+</AccordionGroup>
+
+### Processing Best Practices
+
+<AccordionGroup>
+<Accordion title="Automated Analysis">
+```python
+# Extract actionable insights from text feedback
+def analyze_text_feedback(feedback_text):
+    insights = {
+        "sentiment": analyze_sentiment(feedback_text),
+        "action_items": extract_action_items(feedback_text), 
+        "mentioned_issues": identify_issues(feedback_text),
+        "confidence_indicators": find_confidence_signals(feedback_text)
+    }
+    return insights
+```
+</Accordion>
+
+<Accordion title="Feedback Aggregation">
+```python
+# Combine multiple text responses for consensus
+def aggregate_text_responses(responses):
+    common_themes = identify_common_themes(responses)
+    conflicting_opinions = find_disagreements(responses)
+    
+    return {
+        "consensus_points": common_themes,
+        "areas_of_disagreement": conflicting_opinions,
+        "recommendation": generate_final_recommendation(responses)
+    }
+```
+</Accordion>
+
+<Accordion title="Quality Scoring">
+```python
+# Score text response quality and usefulness
+def score_response_quality(response_text, criteria):
+    scores = {}
+    
+    # Length appropriateness
+    scores["length"] = evaluate_response_length(response_text)
+    
+    # Specificity and actionability  
+    scores["specificity"] = count_specific_examples(response_text)
+    
+    # Coverage of requested criteria
+    scores["coverage"] = check_criteria_coverage(response_text, criteria)
+    
+    return calculate_overall_score(scores)
+```
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Single Select Responses" icon="circle-dot" href="/responses/single-select">
+Learn about structured decision-making with predefined options
+</Card>
+
+<Card title="Multi Select Responses" icon="check-square" href="/responses/multi-select">
+Combine text feedback with categorical selections
+</Card>
+
+<Card title="Response Processing" icon="cog" href="/concepts/responses">
+Understand how to handle and analyze different response types
+</Card>
+
+<Card title="Mobile App Experience" icon="mobile" href="/mobile/responding">
+See how reviewers interact with text responses on mobile
+</Card>
+</CardGroup>

@@ -1,0 +1,921 @@
+---
+title: "SDKs & Libraries"
+description: "Official and community-maintained SDKs for integrating HITL.sh into your applications. Get started quickly with pre-built libraries in your favorite programming language."
+---
+
+Choose from our official SDKs or community-maintained libraries to integrate HITL.sh into your application with minimal setup. All SDKs provide typed interfaces, error handling, and built-in retry logic.
+
+## Official SDKs
+
+<CardGroup cols={2}>
+<Card title="Python SDK" icon={<svg className="w-6 h-6" viewBox="0 0 24 24"><path fill="#3776ab" d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09-.33.22zM21.1 6.11l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08-.33.23z"/></svg>}>
+**hitl-python** - Full-featured Python SDK with async support
+<br />
+`pip install hitl-python`
+</Card>
+
+<Card title="Node.js SDK" icon={<svg className="w-6 h-6" viewBox="0 0 24 24"><path fill="#339933" d="M12 0L1.608 6v12L12 24l10.392-6V6L12 0zm-1.26 17.894c0 .325-.216.576-.576.576-.36 0-.648-.251-.648-.576V9.894c0-.325.288-.576.648-.576.36 0 .576.251.576.576v8zm8.352 0c0 .325-.216.576-.576.576-.36 0-.648-.251-.648-.576V9.894c0-.325.288-.576.648-.576.36 0 .576.251.576.576v8z"/></svg>}>
+**hitl-js** - JavaScript/TypeScript SDK for Node.js and browsers
+<br />
+`npm install hitl-js`
+</Card>
+
+<Card title="Go SDK" icon={<svg className="w-6 h-6" viewBox="0 0 24 24"><path fill="#00ADD8" d="M1.811 10.231c-.047 0-.058-.023-.035-.059l.246-.315c.023-.035.081-.058.128-.058h4.172c.046 0 .058.035.035.082l-.199.34c-.024.046-.082.058-.129.058H1.811zM.047 11.306c-.047 0-.058-.024-.035-.059l.245-.315c.024-.035.082-.059.129-.059h5.738c.047 0 .07.035.058.082l-.093.34c-.012.047-.058.070-.105.070H.047zM2.828 12.38c-.047 0-.059-.023-.036-.058l.175-.315c.024-.036.082-.059.129-.059h2.635c.047 0 .07.036.058.083l-.058.34c-.012.047-.059.070-.106.070H2.828zM21.5 12.458c.186.279.221.498.175.612-.129.313-.565.392-1.064.18-.719-.307-1.444-.953-1.513-2.064-.023-.393.128-.923.434-1.417.21-.34.49-.594.747-.71.045-.021.093-.021.127.023.070.093.023.186-.128.279-.465.279-.814.795-.872 1.417-.047.434.081.814.372 1.092.21.21.465.327.722.327.198 0 .396-.070.548-.21.128-.12.198-.278.221-.439.023-.186-.023-.372-.128-.548-.128-.21-.302-.387-.502-.503-.186-.105-.384-.175-.583-.195-.023 0-.047-.023-.047-.047 0-.023.024-.047.047-.047.372 0 .743.14 1.064.42.279.233.465.559.512.909.047.35-.023.7-.198 1.01zM9.377 3.624c.721 0 1.32.279 1.737.814.372.465.558 1.1.558 1.888 0 .814-.186 1.449-.558 1.925-.418.535-1.016.814-1.737.814s-1.32-.279-1.737-.814c-.372-.476-.558-1.111-.558-1.925 0-.788.186-1.423.558-1.888.417-.535 1.016-.814 1.737-.814zm0 4.485c.651 0 .977-.651.977-1.783 0-1.132-.326-1.784-.977-1.784s-.977.652-.977 1.784c0 1.132.326 1.783.977 1.783zm6.186 0c.651 0 .977-.651.977-1.783 0-1.132-.326-1.784-.977-1.784s-.977.652-.977 1.784c0 1.132.326 1.783.977 1.783zm0-.976c-.256 0-.372-.302-.372-.807 0-.504.116-.806.372-.806s.372.302.372.806c0 .505-.116.807-.372.807z"/></svg>}>
+**hitl-go** - Go SDK with full type safety and context support
+<br />
+`go get github.com/hitl/go-sdk`
+</Card>
+
+<Card title="PHP SDK" icon={<svg className="w-6 h-6" viewBox="0 0 24 24"><path fill="#777BB4" d="M7.01 10.207h-.944l-.515 2.648h.838c.556 0 .982-.122 1.292-.391.313-.27.409-.74.409-1.234 0-.785-.333-1.023-.08-1.023zm-.292 2.508H6.27l.153-.76h.542c.316 0 .542-.17.542-.458 0-.292-.226-.458-.542-.458H6.27l.153-.76h.443c.316 0 .542-.17.542-.458 0-.292-.226-.458-.542-.458H6.27l.153-.76h.542c.316 0 .542-.17.542-.458 0-.292-.226-.458-.542-.458H5.7l-.916 4.57h1.932c1.065 0 1.81-.542 1.81-1.385 0-.626-.397-1.027-1.027-1.027zm7.732-2.508h-.944l-.515 2.648h.838c.556 0 .982-.122 1.292-.391.313-.27.409-.74.409-1.234 0-.785-.333-1.023-.08-1.023zm-.292 2.508h-.449l.153-.76h.542c.316 0 .542-.17.542-.458 0-.292-.226-.458-.542-.458h-.542l.153-.76h.443c.316 0 .542-.17.542-.458 0-.292-.226-.458-.542-.458h-.542l.153-.76h.542c.316 0 .542-.17.542-.458 0-.292-.226-.458-.542-.458h-1.07l-.916 4.57h1.932c1.065 0 1.81-.542 1.81-1.385 0-.626-.397-1.027-1.027-1.027zM24 12c0 6.627-5.373 12-12 12S0 18.627 0 12 5.373 0 12 0s12 5.373 12 12zM8.648 14.155l.414-2.133c.117-.604-.04-.977-.558-1.284-.518-.307-1.342-.463-2.298-.463H3.908l-.691 3.55-.3 1.541h1.5l.3-1.541h.729l-.691 3.55h1.5l.691-3.55h.302c.729 0 1.342-.117 1.754-.391.437-.291.691-.758.691-1.284 0-.437-.156-.787-.437-1.007-.281-.22-.651-.34-1.108-.34h-.302l.302-1.558zm3.45 0l.414-2.133c.117-.604-.04-.977-.558-1.284-.518-.307-1.342-.463-2.298-.463h-2.298l-.691 3.55-.3 1.541h1.5l.3-1.541h.729l-.691 3.55h1.5l.691-3.55h.302c.729 0 1.342-.117 1.754-.391.437-.291.691-.758.691-1.284 0-.437-.156-.787-.437-1.007-.281-.22-.651-.34-1.108-.34h-.302l.302-1.558z"/></svg>}>
+**hitl-php** - PHP SDK with PSR-4 autoloading and Composer support
+<br />
+`composer require hitl/php-sdk`
+</Card>
+</CardGroup>
+
+## Community Libraries
+
+<CardGroup cols={3}>
+<Card title="Ruby" icon="gem">
+**hitl-ruby**
+<br />
+`gem install hitl`
+</Card>
+
+<Card title="Java" icon="coffee">
+**hitl-java**  
+<br />
+Maven/Gradle available
+</Card>
+
+<Card title="C#" icon="microsoft">
+**HITL.NET**
+<br />
+`Install-Package HITL`
+</Card>
+
+<Card title="Rust" icon="gear">
+**hitl-rs**
+<br />
+`cargo add hitl`
+</Card>
+
+<Card title="Swift" icon="swift">
+**HITLSwift**
+<br />
+Swift Package Manager
+</Card>
+
+<Card title="Kotlin" icon="kotlin">
+**hitl-kotlin**
+<br />
+JVM/Android support
+</Card>
+</CardGroup>
+
+## Python SDK
+
+### Installation
+
+<CodeGroup>
+
+```bash pip
+pip install hitl-python
+```
+
+```bash conda
+conda install -c conda-forge hitl-python
+```
+
+```bash poetry
+poetry add hitl-python
+```
+
+</CodeGroup>
+
+### Quick Start
+
+```python
+from hitl import HITLClient
+import asyncio
+
+# Initialize client
+client = HITLClient(api_key="your_api_key_here")
+
+# Create a loop
+loop = client.loops.create(
+    name="Content Moderation Team",
+    description="Review user-generated content",
+    icon="🔍"
+)
+
+print(f"Created loop: {loop.name} ({loop.id})")
+
+# Create a request
+request = client.requests.create(
+    loop_id=loop.id,
+    request_text="Please review this user comment for appropriate content.",
+    response_type="single_select",
+    response_config={
+        "options": ["Approve", "Reject", "Needs Review"]
+    },
+    priority="high"
+)
+
+print(f"Created request: {request.id}")
+
+# Wait for completion (blocking)
+completed_request = client.requests.wait_for_completion(
+    request.id, 
+    timeout=300  # 5 minutes
+)
+
+print(f"Request completed with response: {completed_request.response_data}")
+```
+
+### Async Support
+
+```python
+import asyncio
+from hitl import AsyncHITLClient
+
+async def main():
+    client = AsyncHITLClient(api_key="your_api_key_here")
+    
+    # Create multiple requests concurrently
+    tasks = []
+    for i in range(5):
+        task = client.requests.create(
+            loop_id="your_loop_id",
+            request_text=f"Review request #{i+1}",
+            response_type="text"
+        )
+        tasks.append(task)
+    
+    # Wait for all requests to be created
+    requests = await asyncio.gather(*tasks)
+    print(f"Created {len(requests)} requests")
+    
+    # Monitor all requests
+    completion_tasks = [
+        client.requests.wait_for_completion(req.id, timeout=600)
+        for req in requests
+    ]
+    
+    completed = await asyncio.gather(*completion_tasks)
+    for req in completed:
+        print(f"Request {req.id}: {req.response_data}")
+
+asyncio.run(main())
+```
+
+### Advanced Features
+
+<CodeGroup>
+
+```python Error Handling
+from hitl import HITLClient, HITLError, RateLimitError, AuthenticationError
+
+client = HITLClient(
+    api_key="your_api_key_here",
+    retry_attempts=3,
+    retry_delay=1.0
+)
+
+try:
+    request = client.requests.create(
+        loop_id="invalid_loop_id",
+        request_text="Test request"
+    )
+except AuthenticationError:
+    print("Invalid API key")
+except RateLimitError as e:
+    print(f"Rate limited. Retry after: {e.retry_after} seconds")
+except HITLError as e:
+    print(f"HITL API error: {e.message}")
+```
+
+```python Webhooks Integration
+from hitl import HITLClient, WebhookHandler
+from flask import Flask, request
+
+# Set up webhook handler
+webhook_handler = WebhookHandler(secret="your_webhook_secret")
+
+app = Flask(__name__)
+
+@app.route('/webhook', methods=['POST'])
+def handle_webhook():
+    try:
+        event = webhook_handler.parse_event(request.data, request.headers)
+        
+        if event.type == 'request.completed':
+            print(f"Request completed: {event.data.request.id}")
+            # Process the completed request
+            
+        return {'status': 'success'}
+    except Exception as e:
+        return {'error': str(e)}, 400
+
+# Configure webhook in HITL
+client = HITLClient(api_key="your_api_key_here")
+client.webhooks.create(
+    url="https://your-app.com/webhook",
+    events=["request.completed", "request.claimed"]
+)
+```
+
+```python Batch Operations
+from hitl import HITLClient
+
+client = HITLClient(api_key="your_api_key_here")
+
+# Create multiple requests efficiently
+requests_data = [
+    {
+        "request_text": f"Review document #{i}",
+        "response_type": "single_select",
+        "response_config": {"options": ["Approve", "Reject"]},
+        "priority": "medium"
+    }
+    for i in range(10)
+]
+
+# Batch create (if available) or concurrent create
+requests = client.requests.batch_create(
+    loop_id="your_loop_id",
+    requests=requests_data
+)
+
+print(f"Created {len(requests)} requests in batch")
+
+# Monitor batch completion
+results = client.requests.wait_for_batch_completion(
+    [req.id for req in requests],
+    timeout=1800  # 30 minutes
+)
+
+approved = sum(1 for r in results if r.response_data == "Approve")
+print(f"Batch results: {approved}/{len(results)} approved")
+```
+
+</CodeGroup>
+
+## Node.js SDK
+
+### Installation
+
+<CodeGroup>
+
+```bash npm
+npm install hitl-js
+```
+
+```bash yarn
+yarn add hitl-js
+```
+
+```bash pnpm
+pnpm add hitl-js
+```
+
+</CodeGroup>
+
+### Quick Start
+
+```javascript
+import { HITLClient } from 'hitl-js';
+
+// Initialize client
+const client = new HITLClient({
+  apiKey: 'your_api_key_here',
+  baseURL: 'https://api.hitl.sh/v1'
+});
+
+async function main() {
+  try {
+    // Create a loop
+    const loop = await client.loops.create({
+      name: 'Content Moderation Team',
+      description: 'Review user-generated content',
+      icon: '🔍'
+    });
+    
+    console.log(`Created loop: ${loop.name} (${loop.id})`);
+    
+    // Create a request
+    const request = await client.requests.create({
+      loopId: loop.id,
+      requestText: 'Please review this user comment for appropriate content.',
+      responseType: 'single_select',
+      responseConfig: {
+        options: ['Approve', 'Reject', 'Needs Review']
+      },
+      priority: 'high'
+    });
+    
+    console.log(`Created request: ${request.id}`);
+    
+    // Wait for completion
+    const completedRequest = await client.requests.waitForCompletion(
+      request.id,
+      { timeout: 300000 } // 5 minutes
+    );
+    
+    console.log(`Request completed: ${completedRequest.responseData}`);
+    
+  } catch (error) {
+    if (error instanceof client.RateLimitError) {
+      console.log(`Rate limited. Retry after: ${error.retryAfter}ms`);
+    } else if (error instanceof client.HITLError) {
+      console.log(`HITL API error: ${error.message}`);
+    } else {
+      console.error('Unexpected error:', error);
+    }
+  }
+}
+
+main();
+```
+
+### TypeScript Support
+
+```typescript
+import { HITLClient, Loop, Request, RequestStatus } from 'hitl-js';
+
+interface ContentModerationRequest {
+  content: string;
+  userId: string;
+  reportType: 'spam' | 'harassment' | 'inappropriate';
+}
+
+class ContentModerationService {
+  private client: HITLClient;
+  private moderationLoopId: string;
+
+  constructor(apiKey: string, moderationLoopId: string) {
+    this.client = new HITLClient({ apiKey });
+    this.moderationLoopId = moderationLoopId;
+  }
+
+  async moderateContent(content: ContentModerationRequest): Promise<string> {
+    const request = await this.client.requests.create({
+      loopId: this.moderationLoopId,
+      requestText: `Review ${content.reportType} report:\n\nContent: ${content.content}\nUser: ${content.userId}`,
+      responseType: 'single_select',
+      responseConfig: {
+        options: ['Approve', 'Remove', 'Warn User', 'Suspend User']
+      },
+      priority: content.reportType === 'harassment' ? 'critical' : 'high',
+      metadata: {
+        userId: content.userId,
+        reportType: content.reportType
+      }
+    });
+
+    // Use webhook or polling to get the result
+    const result = await this.client.requests.waitForCompletion(request.id, {
+      timeout: 600000, // 10 minutes
+      pollInterval: 5000 // Check every 5 seconds
+    });
+
+    return result.responseData as string;
+  }
+
+  async getRequestStats(): Promise<{
+    total: number;
+    pending: number;
+    completed: number;
+    averageResponseTime: number;
+  }> {
+    const requests = await this.client.requests.list({
+      loopId: this.moderationLoopId,
+      limit: 100
+    });
+
+    const total = requests.length;
+    const pending = requests.filter(r => r.status === 'pending').length;
+    const completed = requests.filter(r => r.status === 'completed').length;
+    
+    const completedRequests = requests.filter(r => r.responseTimeSeconds);
+    const averageResponseTime = completedRequests.length > 0
+      ? completedRequests.reduce((sum, r) => sum + r.responseTimeSeconds!, 0) / completedRequests.length
+      : 0;
+
+    return { total, pending, completed, averageResponseTime };
+  }
+}
+
+// Usage
+const moderationService = new ContentModerationService(
+  'your_api_key_here',
+  'your_moderation_loop_id'
+);
+
+// Moderate content
+const decision = await moderationService.moderateContent({
+  content: 'Potentially inappropriate user comment...',
+  userId: 'user_12345',
+  reportType: 'inappropriate'
+});
+
+console.log(`Moderation decision: ${decision}`);
+```
+
+### Express.js Integration
+
+```javascript
+import express from 'express';
+import { HITLClient, WebhookHandler } from 'hitl-js';
+
+const app = express();
+const client = new HITLClient({ apiKey: process.env.HITL_API_KEY });
+const webhookHandler = new WebhookHandler({ secret: process.env.WEBHOOK_SECRET });
+
+app.use(express.json());
+
+// Webhook endpoint
+app.post('/webhook/hitl', async (req, res) => {
+  try {
+    const event = webhookHandler.parseEvent(req.body, req.headers);
+    
+    switch (event.type) {
+      case 'request.completed':
+        await handleRequestCompleted(event.data);
+        break;
+      case 'request.claimed':
+        await handleRequestClaimed(event.data);
+        break;
+      default:
+        console.log(`Unhandled event: ${event.type}`);
+    }
+    
+    res.json({ status: 'success' });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// API endpoint to create moderation requests
+app.post('/api/moderate', async (req, res) => {
+  try {
+    const { content, type } = req.body;
+    
+    const request = await client.requests.create({
+      loopId: process.env.MODERATION_LOOP_ID,
+      requestText: `Review ${type}: ${content}`,
+      responseType: 'single_select',
+      responseConfig: {
+        options: ['Approve', 'Reject', 'Flag for Review']
+      },
+      priority: 'high'
+    });
+    
+    res.json({ 
+      requestId: request.id,
+      status: 'submitted',
+      estimatedTime: '2-5 minutes'
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+async function handleRequestCompleted(data) {
+  const { request } = data;
+  console.log(`Request ${request.id} completed with: ${request.responseData}`);
+  
+  // Update your database, send notifications, etc.
+}
+
+async function handleRequestClaimed(data) {
+  const { request, reviewer } = data;
+  console.log(`Request ${request.id} claimed by ${reviewer.email}`);
+}
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
+```
+
+## Go SDK
+
+### Installation
+
+```bash
+go get github.com/hitl/go-sdk
+```
+
+### Quick Start
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "time"
+
+    "github.com/hitl/go-sdk"
+)
+
+func main() {
+    // Initialize client
+    client := hitl.NewClient("your_api_key_here")
+    
+    ctx := context.Background()
+    
+    // Create a loop
+    loop, err := client.Loops.Create(ctx, &hitl.CreateLoopRequest{
+        Name:        "Content Moderation Team",
+        Description: "Review user-generated content",
+        Icon:        "🔍",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    fmt.Printf("Created loop: %s (%s)\n", loop.Name, loop.ID)
+    
+    // Create a request
+    request, err := client.Requests.Create(ctx, &hitl.CreateRequestRequest{
+        LoopID:      loop.ID,
+        RequestText: "Please review this user comment for appropriate content.",
+        ResponseType: hitl.ResponseTypeSingleSelect,
+        ResponseConfig: &hitl.SingleSelectConfig{
+            Options: []string{"Approve", "Reject", "Needs Review"},
+        },
+        Priority: hitl.PriorityHigh,
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    fmt.Printf("Created request: %s\n", request.ID)
+    
+    // Wait for completion with timeout
+    ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+    defer cancel()
+    
+    completedRequest, err := client.Requests.WaitForCompletion(ctx, request.ID)
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    fmt.Printf("Request completed with response: %v\n", completedRequest.ResponseData)
+}
+```
+
+### Advanced Usage
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "sync"
+    "time"
+
+    "github.com/hitl/go-sdk"
+)
+
+type ContentModerationService struct {
+    client           *hitl.Client
+    moderationLoopID string
+}
+
+func NewContentModerationService(apiKey, loopID string) *ContentModerationService {
+    return &ContentModerationService{
+        client:           hitl.NewClient(apiKey),
+        moderationLoopID: loopID,
+    }
+}
+
+func (cms *ContentModerationService) ModerateContent(ctx context.Context, content string, userID string) (string, error) {
+    request, err := cms.client.Requests.Create(ctx, &hitl.CreateRequestRequest{
+        LoopID:      cms.moderationLoopID,
+        RequestText: fmt.Sprintf("Review content from user %s:\n\n%s", userID, content),
+        ResponseType: hitl.ResponseTypeSingleSelect,
+        ResponseConfig: &hitl.SingleSelectConfig{
+            Options: []string{"Approve", "Remove", "Warn User", "Suspend User"},
+        },
+        Priority: hitl.PriorityHigh,
+        Metadata: map[string]interface{}{
+            "userID": userID,
+            "contentType": "comment",
+        },
+    })
+    if err != nil {
+        return "", err
+    }
+
+    // Wait for completion with timeout
+    completedRequest, err := cms.client.Requests.WaitForCompletion(ctx, request.ID)
+    if err != nil {
+        return "", err
+    }
+
+    return completedRequest.ResponseData.(string), nil
+}
+
+func (cms *ContentModerationService) ModerateBatch(ctx context.Context, contents []string) ([]string, error) {
+    var wg sync.WaitGroup
+    results := make([]string, len(contents))
+    errors := make([]error, len(contents))
+
+    // Process up to 10 items concurrently
+    semaphore := make(chan struct{}, 10)
+
+    for i, content := range contents {
+        wg.Add(1)
+        go func(index int, content string) {
+            defer wg.Done()
+            
+            semaphore <- struct{}{} // Acquire
+            defer func() { <-semaphore }() // Release
+            
+            result, err := cms.ModerateContent(ctx, content, fmt.Sprintf("user_%d", index))
+            if err != nil {
+                errors[index] = err
+            } else {
+                results[index] = result
+            }
+        }(i, content)
+    }
+
+    wg.Wait()
+
+    // Check for any errors
+    for _, err := range errors {
+        if err != nil {
+            return nil, err
+        }
+    }
+
+    return results, nil
+}
+
+func main() {
+    service := NewContentModerationService("your_api_key_here", "your_loop_id")
+    
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+    defer cancel()
+
+    // Single content moderation
+    result, err := service.ModerateContent(ctx, "This is a test comment", "user123")
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Moderation result: %s\n", result)
+
+    // Batch moderation
+    contents := []string{
+        "First comment to review",
+        "Second comment to review", 
+        "Third comment to review",
+    }
+    
+    results, err := service.ModerateBatch(ctx, contents)
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    for i, result := range results {
+        fmt.Printf("Content %d: %s\n", i+1, result)
+    }
+}
+```
+
+## PHP SDK
+
+### Installation
+
+```bash
+composer require hitl/php-sdk
+```
+
+### Quick Start
+
+```php
+<?php
+require_once 'vendor/autoload.php';
+
+use HITL\Client;
+use HITL\Exception\HITLException;
+use HITL\Exception\RateLimitException;
+
+// Initialize client
+$client = new Client([
+    'api_key' => 'your_api_key_here',
+    'base_url' => 'https://api.hitl.sh/v1'
+]);
+
+try {
+    // Create a loop
+    $loop = $client->loops()->create([
+        'name' => 'Content Moderation Team',
+        'description' => 'Review user-generated content',
+        'icon' => '🔍'
+    ]);
+    
+    echo "Created loop: {$loop['name']} ({$loop['id']})\n";
+    
+    // Create a request
+    $request = $client->requests()->create([
+        'loop_id' => $loop['id'],
+        'request_text' => 'Please review this user comment for appropriate content.',
+        'response_type' => 'single_select',
+        'response_config' => [
+            'options' => ['Approve', 'Reject', 'Needs Review']
+        ],
+        'priority' => 'high'
+    ]);
+    
+    echo "Created request: {$request['id']}\n";
+    
+    // Wait for completion (with polling)
+    $completedRequest = $client->requests()->waitForCompletion($request['id'], [
+        'timeout' => 300, // 5 minutes
+        'poll_interval' => 5 // Check every 5 seconds
+    ]);
+    
+    echo "Request completed with response: {$completedRequest['response_data']}\n";
+    
+} catch (RateLimitException $e) {
+    echo "Rate limited. Retry after: {$e->getRetryAfter()} seconds\n";
+} catch (HITLException $e) {
+    echo "HITL API error: {$e->getMessage()}\n";
+} catch (Exception $e) {
+    echo "Unexpected error: {$e->getMessage()}\n";
+}
+?>
+```
+
+### Laravel Integration
+
+```php
+<?php
+// config/hitl.php
+return [
+    'api_key' => env('HITL_API_KEY'),
+    'base_url' => env('HITL_BASE_URL', 'https://api.hitl.sh/v1'),
+    'moderation_loop_id' => env('HITL_MODERATION_LOOP_ID'),
+];
+
+// app/Services/ContentModerationService.php
+<?php
+
+namespace App\Services;
+
+use HITL\Client;
+use Illuminate\Support\Facades\Log;
+
+class ContentModerationService
+{
+    private Client $client;
+    private string $moderationLoopId;
+
+    public function __construct()
+    {
+        $this->client = new Client([
+            'api_key' => config('hitl.api_key'),
+            'base_url' => config('hitl.base_url')
+        ]);
+        $this->moderationLoopId = config('hitl.moderation_loop_id');
+    }
+
+    public function moderateContent(string $content, string $userId): string
+    {
+        $request = $this->client->requests()->create([
+            'loop_id' => $this->moderationLoopId,
+            'request_text' => "Review content from user {$userId}:\n\n{$content}",
+            'response_type' => 'single_select',
+            'response_config' => [
+                'options' => ['Approve', 'Remove', 'Warn User', 'Suspend User']
+            ],
+            'priority' => 'high',
+            'metadata' => [
+                'user_id' => $userId,
+                'content_type' => 'comment'
+            ]
+        ]);
+
+        Log::info("Created moderation request: {$request['id']}");
+
+        // Return request ID for async processing
+        return $request['id'];
+    }
+
+    public function handleWebhook(array $payload): void
+    {
+        if ($payload['event'] === 'request.completed') {
+            $request = $payload['data']['request'];
+            $decision = $request['response_data'];
+            
+            Log::info("Moderation completed for request {$request['id']}: {$decision}");
+            
+            // Process the moderation decision
+            $this->processDecision($request, $decision);
+        }
+    }
+
+    private function processDecision(array $request, string $decision): void
+    {
+        $metadata = $request['metadata'];
+        $userId = $metadata['user_id'];
+        
+        switch ($decision) {
+            case 'Remove':
+                // Delete the content
+                Log::info("Removing content for user {$userId}");
+                break;
+            case 'Warn User':
+                // Send warning to user
+                Log::info("Sending warning to user {$userId}");
+                break;
+            case 'Suspend User':
+                // Suspend the user account
+                Log::info("Suspending user {$userId}");
+                break;
+            default:
+                // Content approved, no action needed
+                Log::info("Content approved for user {$userId}");
+        }
+    }
+}
+
+// app/Http/Controllers/WebhookController.php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Services\ContentModerationService;
+use HITL\WebhookHandler;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+
+class WebhookController extends Controller
+{
+    private ContentModerationService $moderationService;
+    private WebhookHandler $webhookHandler;
+
+    public function __construct(ContentModerationService $moderationService)
+    {
+        $this->moderationService = $moderationService;
+        $this->webhookHandler = new WebhookHandler([
+            'secret' => config('hitl.webhook_secret')
+        ]);
+    }
+
+    public function handle(Request $request): Response
+    {
+        try {
+            $payload = $this->webhookHandler->parseEvent(
+                $request->getContent(),
+                $request->headers->all()
+            );
+            
+            $this->moderationService->handleWebhook($payload);
+            
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+}
+```
+
+## SDK Comparison
+
+| Feature | Python | Node.js | Go | PHP |
+|---------|--------|---------|----|----- |
+| **Async Support** | ✅ Full | ✅ Native | ✅ Context | ❌ Sync only |
+| **Type Safety** | ✅ Typed | ✅ TypeScript | ✅ Strong | ⚠️ Partial |
+| **Webhooks** | ✅ Built-in | ✅ Built-in | ✅ Built-in | ✅ Built-in |
+| **Retry Logic** | ✅ Configurable | ✅ Configurable | ✅ Configurable | ✅ Basic |
+| **Rate Limiting** | ✅ Auto-handle | ✅ Auto-handle | ✅ Auto-handle | ✅ Auto-handle |
+| **Batch Ops** | ✅ Available | ✅ Available | ✅ Manual | ✅ Manual |
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Quickstart Tutorial" icon="rocket" href="/quickstart">
+  Follow our step-by-step guide to build your first HITL application.
+</Card>
+
+<Card title="API Playground" icon="play" href="/api-reference/playground">
+  Test API endpoints interactively in your browser.
+</Card>
+
+<Card title="Code Examples" icon="code" href="/examples">
+  Browse production-ready code examples and templates.
+</Card>
+
+<Card title="Best Practices" icon="star" href="/guides/best-practices">
+  Learn optimization techniques for production applications.
+</Card>
+</CardGroup>

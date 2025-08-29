@@ -1,0 +1,385 @@
+---
+title: "Get Loop by ID"
+api: "GET https://api.hitl.sh/v1/loops/{id}"
+description: "Retrieve detailed information about a specific loop including members, statistics, and current status"
+---
+
+Get comprehensive details about a specific loop by its ID. This endpoint provides complete loop information including member details, statistics, and metadata.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the loop (24-character MongoDB ObjectID)
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="loop" type="object">
+      Complete loop information
+      <Expandable title="loop">
+        <ResponseField name="id" type="string">
+          Unique identifier for the loop
+        </ResponseField>
+        <ResponseField name="name" type="string">
+          Name of the loop
+        </ResponseField>
+        <ResponseField name="description" type="string">
+          Description of the loop
+        </ResponseField>
+        <ResponseField name="icon" type="string">
+          Icon identifier
+        </ResponseField>
+        <ResponseField name="creator_id" type="string">
+          ID of the loop creator
+        </ResponseField>
+        <ResponseField name="members" type="array">
+          Array of loop members with status
+          <Expandable title="member">
+            <ResponseField name="user_id" type="string">
+              ID of the member user
+            </ResponseField>
+            <ResponseField name="email" type="string">
+              Email address of the member
+            </ResponseField>
+            <ResponseField name="status" type="string">
+              Member status (pending, active)
+            </ResponseField>
+            <ResponseField name="joined_at" type="string">
+              ISO timestamp when member joined (null for pending)
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+        <ResponseField name="member_count" type="integer">
+          Total number of members in the loop
+        </ResponseField>
+        <ResponseField name="pending_count" type="integer">
+          Number of pending member invitations
+        </ResponseField>
+        <ResponseField name="created_at" type="string">
+          ISO timestamp of loop creation
+        </ResponseField>
+        <ResponseField name="updated_at" type="string">
+          ISO timestamp of last update
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.hitl.sh/v1/loops/65f1234567890abcdef12345 \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+```python Python
+import requests
+
+loop_id = "65f1234567890abcdef12345"
+url = f"https://api.hitl.sh/v1/loops/{loop_id}"
+headers = {
+    "Authorization": "Bearer your_api_key_here"
+}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const loopId = '65f1234567890abcdef12345';
+const response = await axios.get(`https://api.hitl.sh/v1/loops/${loopId}`, {
+  headers: {
+    'Authorization': 'Bearer your_api_key_here'
+  }
+});
+
+console.log(response.data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "error": false,
+  "msg": "Loop retrieved successfully",
+  "data": {
+    "loop": {
+      "id": "65f1234567890abcdef12345",
+      "name": "Content Moderation Review",
+      "description": "Review user-generated content for community guidelines compliance",
+      "icon": "shield-check",
+      "creator_id": "65f1234567890abcdef12346",
+      "members": [
+        {
+          "user_id": "65f1234567890abcdef12346",
+          "email": "creator@example.com",
+          "status": "active",
+          "joined_at": "2024-03-15T10:30:00Z"
+        },
+        {
+          "user_id": "65f1234567890abcdef12347",
+          "email": "reviewer1@example.com", 
+          "status": "active",
+          "joined_at": "2024-03-15T11:45:00Z"
+        },
+        {
+          "user_id": "65f1234567890abcdef12348",
+          "email": "reviewer2@example.com",
+          "status": "pending",
+          "joined_at": null
+        }
+      ],
+      "member_count": 3,
+      "pending_count": 1,
+      "created_at": "2024-03-15T10:30:00Z",
+      "updated_at": "2024-03-15T11:45:00Z"
+    }
+  }
+}
+```
+
+</ResponseExample>
+
+## Loop Information Overview
+
+### Member Status Types
+
+<CardGroup cols={2}>
+<Card title="Active Members" icon="check-circle">
+Users who have accepted the invitation and can receive review requests.
+</Card>
+
+<Card title="Pending Members" icon="clock">
+Users who have been invited but haven't joined the loop yet.
+</Card>
+</CardGroup>
+
+### Loop Statistics
+
+This endpoint provides key metrics about your loop:
+
+- **Total Members**: Complete count of all loop participants
+- **Active Members**: Users ready to receive review requests
+- **Pending Invitations**: Outstanding invitations that need acceptance
+- **Activity Timeline**: Creation and last update timestamps
+
+## Access Control
+
+### Who Can View Loops
+
+<AccordionGroup>
+<Accordion title="Loop Creators">
+Can view complete loop details including all member information and statistics.
+</Accordion>
+
+<Accordion title="Loop Members">
+Can view basic loop information but with limited member details (via mobile app).
+</Accordion>
+
+<Accordion title="API Key Access">
+API keys can only access loops created by the same user account.
+</Accordion>
+</AccordionGroup>
+
+## Use Cases
+
+### Monitoring Loop Health
+
+Check if your loop has enough active members:
+
+```python
+def check_loop_health(loop_id, min_active_members=2):
+    response = requests.get(f"https://api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+    loop_data = response.json()["data"]["loop"]
+    
+    active_members = loop_data["member_count"] - loop_data["pending_count"]
+    
+    if active_members < min_active_members:
+        print(f"Warning: Loop only has {active_members} active members")
+        return False
+    
+    return True
+```
+
+### Member Management
+
+Track pending invitations:
+
+```javascript
+function checkPendingInvitations(loopData) {
+    const pendingMembers = loopData.members.filter(member => member.status === 'pending');
+    
+    if (pendingMembers.length > 0) {
+        console.log(`${pendingMembers.length} pending invitations:`);
+        pendingMembers.forEach(member => {
+            console.log(`- ${member.email} (invited but not joined)`);
+        });
+    }
+    
+    return pendingMembers;
+}
+```
+
+### Loop Analytics
+
+Calculate member join rate:
+
+```python
+from datetime import datetime
+
+def calculate_join_rate(loop_data):
+    total_members = len(loop_data["members"])
+    active_members = sum(1 for m in loop_data["members"] if m["status"] == "active")
+    
+    if total_members == 0:
+        return 0
+    
+    join_rate = (active_members / total_members) * 100
+    return round(join_rate, 2)
+
+# Usage
+loop_data = response.json()["data"]["loop"]
+join_rate = calculate_join_rate(loop_data)
+print(f"Member join rate: {join_rate}%")
+```
+
+## Error Handling
+
+### Common Error Scenarios
+
+<AccordionGroup>
+<Accordion title="Loop Not Found">
+```json
+{
+  "error": true,
+  "msg": "Loop not found"
+}
+```
+
+**Causes:**
+- Invalid loop ID format
+- Loop doesn't exist
+- Loop was deleted
+- User doesn't have access to the loop
+</Accordion>
+
+<Accordion title="Invalid Loop ID Format">
+```json
+{
+  "error": true,
+  "msg": "Invalid loop ID format"
+}
+```
+
+**Cause:**
+Loop ID must be a valid 24-character MongoDB ObjectID (hexadecimal).
+
+**Valid format:** `65f1234567890abcdef12345`
+</Accordion>
+
+<Accordion title="Access Denied">
+```json
+{
+  "error": true,
+  "msg": "Access denied to this loop"
+}
+```
+
+**Cause:**
+API key doesn't have permission to access this loop. Only the loop creator can access loop details via API.
+</Accordion>
+</AccordionGroup>
+
+## Integration Examples
+
+### Loop Status Dashboard
+
+Build a dashboard to monitor all your loops:
+
+```python
+def get_loop_dashboard():
+    # Get all loops
+    loops_response = requests.get("https://api.hitl.sh/v1/loops", headers=headers)
+    loops = loops_response.json()["data"]["loops"]
+    
+    dashboard = []
+    for loop in loops:
+        # Get detailed info for each loop
+        detail_response = requests.get(f"https://api.hitl.sh/v1/loops/{loop['id']}", headers=headers)
+        loop_detail = detail_response.json()["data"]["loop"]
+        
+        dashboard.append({
+            "name": loop_detail["name"],
+            "id": loop_detail["id"],
+            "active_members": loop_detail["member_count"] - loop_detail["pending_count"],
+            "pending_members": loop_detail["pending_count"],
+            "created": loop_detail["created_at"],
+            "health": "healthy" if (loop_detail["member_count"] - loop_detail["pending_count"]) >= 2 else "needs_attention"
+        })
+    
+    return dashboard
+```
+
+### Automated Member Follow-up
+
+Send reminders to pending members:
+
+```javascript
+async function followUpPendingMembers(loopId) {
+    const response = await fetch(`https://api.hitl.sh/v1/loops/${loopId}`, {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+    
+    const loopData = await response.json();
+    const loop = loopData.data.loop;
+    
+    const pendingMembers = loop.members.filter(member => member.status === 'pending');
+    
+    for (const member of pendingMembers) {
+        // Send reminder email (implement your email service)
+        await sendReminderEmail({
+            to: member.email,
+            subject: `Reminder: Join ${loop.name} loop`,
+            loopName: loop.name,
+            joinUrl: `https://app.hitl.sh/join/${loop.invite_code}`
+        });
+    }
+    
+    return `Sent reminders to ${pendingMembers.length} pending members`;
+}
+```
+
+## Next Steps
+
+<Card title="Update Loop" icon="edit" href="/api-reference/loops/update-loop">
+  Modify loop details like name, description, or icon.
+</Card>
+
+<Card title="Manage Members" icon="users" href="/api-reference/loops/loop-members">
+  View detailed member information and manage loop membership.
+</Card>
+
+<Card title="Create Request" icon="plus" href="/api-reference/requests/create-request">
+  Start creating human review requests within this loop.
+</Card>

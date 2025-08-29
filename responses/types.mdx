@@ -1,453 +1,805 @@
 ---
-title: "Types of Responses"
-description: "Learn about the different types of responses reviewers can provide and how to use them effectively in HITL.sh"
+title: "Response Types"
+description: "Complete guide to all response types supported by HITL.sh - from simple text to complex ratings and multi-select options"
 ---
 
-# Types of Responses
+# Response Types
 
-In HITL.sh, reviewers provide structured responses that guide the next steps in your workflow. Understanding the different response types and when to use them is crucial for effective human-in-the-loop systems.
+HITL.sh supports six different response types that allow reviewers to provide structured feedback. Each response type has its own configuration options and validation rules, giving you flexibility to design the perfect review experience for your use case.
 
-## Response Overview
+## Overview
 
-A response in HITL.sh is a structured decision that includes:
+When creating a request, you specify the `response_type` and `response_config` to define how reviewers will respond. The response type determines the UI reviewers see in the mobile app and how their responses are structured and validated.
 
-- **Decision Type**: The primary choice (approved, rejected, etc.)
-- **Reasoning**: Explanation for the decision
-- **Additional Feedback**: Optional comments and suggestions
-- **Confidence Level**: How certain the reviewer is about their decision
-- **Metadata**: Response timestamp and reviewer information
-
-<Card title="Response Examples" icon="message-circle">
-- Content approval with minor edit suggestions
-- Transaction rejection with fraud reasoning
-- Quality review with specific improvement notes
-- Escalation request with senior reviewer assignment
+<CardGroup cols={3}>
+<Card title="Text" icon="message">
+Free-form text responses with character limits and validation
 </Card>
 
-## Primary Response Types
-
-### 1. Approved
-
-**When to Use**: Content meets all requirements and can proceed
-
-**Response Structure**:
-```json
-{
-  "decision": "approved",
-  "reasoning": "Content meets all community guidelines and quality standards",
-  "confidence": 0.95,
-  "feedback": {
-    "positive_aspects": [
-      "Clear and informative content",
-      "Appropriate tone and language",
-      "Accurate information"
-    ]
-  }
-}
-```
-
-**Use Cases**:
-- Content passes moderation checks
-- Documents meet compliance requirements
-- Transactions are legitimate
-- AI-generated content is accurate
-
-**Next Steps**: Content proceeds to the next stage of your workflow
-
-### 2. Rejected
-
-**When to Use**: Content violates policies or fails quality standards
-
-**Response Structure**:
-```json
-{
-  "decision": "rejected",
-  "reasoning": "Content violates community guidelines regarding hate speech",
-  "confidence": 0.98,
-  "feedback": {
-    "violations": [
-      "Contains discriminatory language",
-      "Promotes harmful stereotypes",
-      "Violates platform policies"
-    ],
-    "recommendations": [
-      "Remove discriminatory content",
-      "Rewrite with inclusive language",
-      "Review community guidelines"
-    ]
-  }
-}
-```
-
-**Use Cases**:
-- Content violates community guidelines
-- Documents fail compliance checks
-- Transactions appear fraudulent
-- AI-generated content is inaccurate
-
-**Next Steps**: Content is blocked or returned for correction
-
-### 3. Needs Changes
-
-**When to Use**: Content has potential but requires modifications before approval
-
-**Response Structure**:
-```json
-{
-  "decision": "needs_changes",
-  "reasoning": "Content has potential but requires revisions for clarity",
-  "confidence": 0.85,
-  "feedback": {
-    "required_changes": [
-      "Clarify technical terminology",
-      "Add examples for better understanding",
-      "Fix grammatical errors"
-    ],
-    "optional_improvements": [
-      "Consider adding visual aids",
-      "Include related resources"
-    ],
-    "deadline": "2024-01-20T23:59:59Z"
-  }
-}
-```
-
-**Use Cases**:
-- Content is mostly correct but needs clarification
-- Documents are incomplete or have errors
-- AI-generated content needs human refinement
-- Quality issues can be easily addressed
-
-**Next Steps**: Content is returned to creator for modifications
-
-### 4. Escalate
-
-**When to Use**: Request requires additional expertise or senior review
-
-**Response Structure**:
-```json
-{
-  "decision": "escalate",
-  "reasoning": "Complex legal compliance issue requiring expert review",
-  "confidence": 0.7,
-  "feedback": {
-    "escalation_reason": "Legal compliance complexity",
-    "required_expertise": ["legal_review", "compliance_specialist"],
-    "urgency": "high",
-    "additional_context": "Previous similar cases had legal implications"
-  }
-}
-```
-
-**Use Cases**:
-- Complex policy violations
-- Legal or compliance questions
-- High-value or high-risk decisions
-- Requests outside reviewer expertise
-
-**Next Steps**: Request is routed to senior reviewer or specialist
-
-## Response Confidence Levels
-
-### High Confidence (0.8-1.0)
-
-**Characteristics**:
-- Clear decision criteria
-- Obvious policy violations or compliance
-- Standard content types
-- Familiar scenarios
-
-**Example**: "This is clearly spam content with multiple links and promotional language."
-
-### Medium Confidence (0.5-0.79)
-
-**Characteristics**:
-- Some uncertainty about decision
-- Edge cases or borderline content
-- Complex policy interpretations
-- Mixed signals from content
-
-**Example**: "The content seems mostly appropriate but has some language that could be interpreted as inflammatory."
-
-### Low Confidence (0.0-0.49)
-
-**Characteristics**:
-- High uncertainty about decision
-- Unfamiliar content types
-- Complex or ambiguous situations
-- Need for additional context
-
-**Example**: "I'm unsure about the technical accuracy of this content and would need expert review."
-
-## Response Feedback Types
-
-### Required Changes
-
-Specific modifications that must be made:
-
-<CardGroup cols={2}>
-<Card title="Content Issues" icon="edit">
-- Factual corrections
-- Grammar and spelling fixes
-- Policy compliance adjustments
-- Format improvements
+<Card title="Single Select" icon="circle-dot">
+Choose one option from a predefined list with labels and colors
 </Card>
 
-<Card title="Technical Issues" icon="settings">
-- Code quality improvements
-- Documentation completeness
-- API specification updates
-- Security considerations
+<Card title="Multi Select" icon="check-square">
+Choose multiple options with minimum/maximum selection limits
+</Card>
+
+<Card title="Rating" icon="star">
+Numeric ratings with custom scales, steps, and labeled endpoints
+</Card>
+
+<Card title="Number" icon="hashtag">
+Numeric input with ranges, decimal places, and formatting
+</Card>
+
+<Card title="Boolean" icon="toggle-on">
+Yes/No decisions with custom labels and visual styling
 </Card>
 </CardGroup>
 
-### Optional Improvements
+## Text Response
 
-Suggestions for enhancement:
+Free-form text input allowing reviewers to provide detailed written feedback.
 
-<CardGroup cols={2}>
-<Card title="User Experience" icon="user">
-- Better organization
-- Additional examples
-- Visual enhancements
-- Accessibility improvements
-</Card>
+### Configuration
 
-<Card title="Content Quality" icon="star">
-- More detailed explanations
-- Related resources
-- Professional formatting
-- Brand consistency
-</Card>
-</CardGroup>
+<ParamField body="placeholder" type="string" optional>
+Placeholder text shown in the input field
+</ParamField>
 
-### Escalation Details
+<ParamField body="min_length" type="integer" optional default="0">
+Minimum number of characters required
+</ParamField>
 
-Information needed for proper escalation:
+<ParamField body="max_length" type="integer" required>
+Maximum number of characters allowed (1-5000)
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether the response is required
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```python Python
+import requests
+
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown", 
+    "priority": "medium",
+    "request_text": "Please review this article and provide detailed feedback on accuracy and tone.",
+    "response_type": "text",
+    "response_config": {
+        "placeholder": "Provide your detailed feedback here...",
+        "min_length": 50,
+        "max_length": 1000,
+        "required": True
+    },
+    "default_response": "No feedback provided within timeout period",
+    "timeout_seconds": 3600,
+    "platform": "api"
+}
+
+response = requests.post(
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=request_data
+)
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "medium", 
+    request_text: "Please review this article and provide detailed feedback on accuracy and tone.",
+    response_type: "text",
+    response_config: {
+        placeholder: "Provide your detailed feedback here...",
+        min_length: 50,
+        max_length: 1000,
+        required: true
+    },
+    default_response: "No feedback provided within timeout period",
+    timeout_seconds: 3600,
+    platform: "api"
+};
+
+const response = await axios.post(
+    `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
+    requestData,
+    { headers: { Authorization: `Bearer ${apiKey}` }}
+);
+```
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please review this article and provide detailed feedback on accuracy and tone.",
+    "response_type": "text", 
+    "response_config": {
+        "placeholder": "Provide your detailed feedback here...",
+        "min_length": 50,
+        "max_length": 1000,
+        "required": true
+    },
+    "default_response": "No feedback provided within timeout period",
+    "timeout_seconds": 3600,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+### Response Format
+
+When a reviewer submits a text response, you'll receive:
+
+```json
+{
+  "response_data": "This article is well-written and factually accurate. The tone is professional and engaging. I recommend approval with minor grammar corrections on paragraph 3."
+}
+```
+
+## Single Select Response
+
+Allow reviewers to choose one option from a predefined list.
+
+### Configuration
+
+<ParamField body="options" type="array" required>
+Array of SelectOption objects (1-20 options max)
+<Expandable title="SelectOption">
+  <ParamField body="value" type="string" required>
+    Internal value for the option (max 100 chars)
+  </ParamField>
+  <ParamField body="label" type="string" required>
+    Display text for the option (max 200 chars)
+  </ParamField>
+  <ParamField body="description" type="string" optional>
+    Additional context about the option
+  </ParamField>
+  <ParamField body="color" type="string" optional>
+    Color code for visual styling
+  </ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a selection is required
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Please review this user comment for community guideline compliance:",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "approve",
+                "label": "✅ Approve",
+                "description": "Content follows all community guidelines",
+                "color": "#22c55e"
+            },
+            {
+                "value": "approve_with_warning", 
+                "label": "⚠️ Approve with Warning",
+                "description": "Minor issues but acceptable",
+                "color": "#f59e0b"
+            },
+            {
+                "value": "reject",
+                "label": "❌ Reject",
+                "description": "Violates community guidelines",
+                "color": "#ef4444"
+            },
+            {
+                "value": "escalate",
+                "label": "🚨 Escalate",
+                "description": "Requires senior reviewer decision",
+                "color": "#8b5cf6"
+            }
+        ],
+        "required": True
+    },
+    "default_response": "reject",
+    "timeout_seconds": 1800,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown", 
+    priority: "high",
+    request_text: "Please review this user comment for community guideline compliance:",
+    response_type: "single_select",
+    response_config: {
+        options: [
+            {
+                value: "approve",
+                label: "✅ Approve",
+                description: "Content follows all community guidelines",
+                color: "#22c55e"
+            },
+            {
+                value: "approve_with_warning",
+                label: "⚠️ Approve with Warning", 
+                description: "Minor issues but acceptable",
+                color: "#f59e0b"
+            },
+            {
+                value: "reject",
+                label: "❌ Reject",
+                description: "Violates community guidelines", 
+                color: "#ef4444"
+            },
+            {
+                value: "escalate",
+                label: "🚨 Escalate",
+                description: "Requires senior reviewer decision",
+                color: "#8b5cf6"
+            }
+        ],
+        required: true
+    },
+    default_response: "reject",
+    timeout_seconds: 1800,
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+### Response Format
+
+```json
+{
+  "response_data": {
+    "selected_value": "approve_with_warning",
+    "selected_label": "⚠️ Approve with Warning"
+  }
+}
+```
+
+## Multi Select Response
+
+Allow reviewers to choose multiple options from a predefined list.
+
+### Configuration  
+
+<ParamField body="options" type="array" required>
+Array of SelectOption objects (same format as single select)
+</ParamField>
+
+<ParamField body="min_selections" type="integer" optional default="0">
+Minimum number of options that must be selected
+</ParamField>
+
+<ParamField body="max_selections" type="integer" required>
+Maximum number of options that can be selected
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether at least one selection is required
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "What issues do you see in this business listing? Select all that apply:",
+    "response_type": "multi_select",
+    "response_config": {
+        "options": [
+            {
+                "value": "incorrect_address",
+                "label": "📍 Incorrect Address",
+                "description": "Address doesn't match business location"
+            },
+            {
+                "value": "wrong_phone",
+                "label": "📞 Wrong Phone Number", 
+                "description": "Phone number is disconnected or incorrect"
+            },
+            {
+                "value": "outdated_hours",
+                "label": "🕒 Outdated Hours",
+                "description": "Operating hours are no longer accurate"
+            },
+            {
+                "value": "poor_photos",
+                "label": "📸 Poor Quality Photos",
+                "description": "Images are blurry, outdated, or misleading"
+            },
+            {
+                "value": "duplicate_listing",
+                "label": "👥 Duplicate Listing",
+                "description": "This business already has another listing"
+            },
+            {
+                "value": "no_issues",
+                "label": "✅ No Issues Found",
+                "description": "Listing appears accurate and complete"
+            }
+        ],
+        "min_selections": 1,
+        "max_selections": 5,
+        "required": True
+    },
+    "default_response": ["no_issues"],
+    "timeout_seconds": 2400,
+    "platform": "api"
+}
+```
+
+</CodeGroup>
+
+### Response Format
+
+```json
+{
+  "response_data": {
+    "selected_values": ["incorrect_address", "outdated_hours"],
+    "selected_labels": ["📍 Incorrect Address", "🕒 Outdated Hours"]
+  }
+}
+```
+
+## Rating Response
+
+Numeric rating scale with configurable range and step values.
+
+### Configuration
+
+<ParamField body="scale_min" type="number" required>
+Minimum value of the rating scale
+</ParamField>
+
+<ParamField body="scale_max" type="number" required>
+Maximum value of the rating scale (must be > scale_min)
+</ParamField>
+
+<ParamField body="scale_step" type="number" required>
+Step increment for the rating (e.g., 0.5 for half-point ratings)
+</ParamField>
+
+<ParamField body="labels" type="object" optional>
+Custom labels for scale endpoints and intermediate values
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a rating is required
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium", 
+    "request_text": "Please rate the quality of this AI-generated content on a scale of 1-10:",
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 10,
+        "scale_step": 0.5,
+        "labels": {
+            "1": "Poor Quality",
+            "3": "Below Average", 
+            "5": "Average",
+            "7": "Good Quality",
+            "10": "Excellent"
+        },
+        "required": True
+    },
+    "default_response": 5,
+    "timeout_seconds": 1800,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "medium",
+    request_text: "Please rate the quality of this AI-generated content on a scale of 1-10:",
+    response_type: "rating",
+    response_config: {
+        scale_min: 1,
+        scale_max: 10, 
+        scale_step: 0.5,
+        labels: {
+            "1": "Poor Quality",
+            "3": "Below Average",
+            "5": "Average", 
+            "7": "Good Quality",
+            "10": "Excellent"
+        },
+        required: true
+    },
+    default_response: 5,
+    timeout_seconds: 1800,
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+### Response Format
+
+```json
+{
+  "response_data": {
+    "rating": 7.5,
+    "rating_label": "Good Quality"
+  }
+}
+```
+
+## Number Response
+
+Numeric input with validation and formatting options.
+
+### Configuration
+
+<ParamField body="min_value" type="number" required>
+Minimum allowed value
+</ParamField>
+
+<ParamField body="max_value" type="number" required>
+Maximum allowed value (must be > min_value)
+</ParamField>
+
+<ParamField body="decimal_places" type="integer" optional default="0">
+Number of decimal places allowed (0-10)
+</ParamField>
+
+<ParamField body="prefix" type="string" optional>
+Text to display before the number (e.g., "$", "€")
+</ParamField>
+
+<ParamField body="suffix" type="string" optional>
+Text to display after the number (e.g., "%", "kg")
+</ParamField>
+
+<ParamField body="placeholder" type="string" optional>
+Placeholder text for the input field
+</ParamField>
+
+<ParamField body="allow_negative" type="boolean" optional default="false">
+Whether negative numbers are allowed
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a value is required
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive", 
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "What's a fair market price for this product based on your expertise?",
+    "response_type": "number",
+    "response_config": {
+        "min_value": 0,
+        "max_value": 10000,
+        "decimal_places": 2,
+        "prefix": "$",
+        "suffix": " USD",
+        "placeholder": "Enter price",
+        "allow_negative": False,
+        "required": True
+    },
+    "default_response": 0,
+    "timeout_seconds": 2400,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown", 
+    priority: "medium",
+    request_text: "What's a fair market price for this product based on your expertise?",
+    response_type: "number",
+    response_config: {
+        min_value: 0,
+        max_value: 10000,
+        decimal_places: 2,
+        prefix: "$",
+        suffix: " USD", 
+        placeholder: "Enter price",
+        allow_negative: false,
+        required: true
+    },
+    default_response: 0,
+    timeout_seconds: 2400,
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+### Response Format
+
+```json
+{
+  "response_data": {
+    "number": 299.99,
+    "formatted_value": "$299.99 USD"
+  }
+}
+```
+
+## Boolean Response
+
+Simple yes/no or true/false decisions with custom labels.
+
+### Configuration
+
+<ParamField body="true_label" type="string" required>
+Label for the true/yes option
+</ParamField>
+
+<ParamField body="false_label" type="string" required>
+Label for the false/no option  
+</ParamField>
+
+<ParamField body="true_color" type="string" optional>
+Color code for the true option
+</ParamField>
+
+<ParamField body="false_color" type="string" optional>
+Color code for the false option
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a selection is required
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Does this financial transaction appear suspicious and require further investigation?",
+    "response_type": "boolean", 
+    "response_config": {
+        "true_label": "🚨 Suspicious - Investigate",
+        "false_label": "✅ Normal - Approve",
+        "true_color": "#dc2626",
+        "false_color": "#16a34a",
+        "required": True
+    },
+    "default_response": True,  # Default to suspicious for security
+    "timeout_seconds": 900,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "high", 
+    request_text: "Does this financial transaction appear suspicious and require further investigation?",
+    response_type: "boolean",
+    response_config: {
+        true_label: "🚨 Suspicious - Investigate",
+        false_label: "✅ Normal - Approve",
+        true_color: "#dc2626",
+        false_color: "#16a34a",
+        required: true
+    },
+    default_response: true, // Default to suspicious for security
+    timeout_seconds: 900,
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+### Response Format
+
+```json
+{
+  "response_data": {
+    "boolean": false,
+    "boolean_label": "✅ Normal - Approve"
+  }
+}
+```
+
+## Validation Rules
+
+HITL.sh validates all responses against the configured rules:
 
 <AccordionGroup>
-<Accordion title="Reason for Escalation">
-- Specific expertise required
-- Complexity level
-- Risk assessment
-- Previous similar cases
+<Accordion title="Text Validation">
+- Response must be a string
+- Length must be within min_length and max_length bounds
+- Required responses cannot be empty strings
 </Accordion>
 
-<Accordion title="Urgency Level">
-- Time sensitivity
-- Business impact
-- Compliance deadlines
-- Customer impact
+<Accordion title="Single Select Validation">
+- Response must be a valid option value from the options array
+- Required responses must include a selection
+- Only one option can be selected
 </Accordion>
 
-<Accordion title="Additional Context">
-- Related information
-- Background details
-- Stakeholder involvement
-- Historical context
-</Accordion>
-</AccordionGroup>
-
-## Response Workflows
-
-### Standard Approval Workflow
-
-<Steps>
-<Step title="Review Content">
-Examine the content against established criteria.
-</Step>
-
-<Step title="Make Decision">
-Choose appropriate response type based on findings.
-</Step>
-
-<Step title="Provide Reasoning">
-Explain the decision with clear justification.
-</Step>
-
-<Step title="Add Feedback">
-Include any additional comments or suggestions.
-</Step>
-
-<Step title="Submit Response">
-Send the response to complete the review.
-</Step>
-</Steps>
-
-### Escalation Workflow
-
-<Steps>
-<Step title="Identify Need">
-Recognize when escalation is required.
-</Step>
-
-<Step title="Document Reasons">
-Clearly explain why escalation is needed.
-</Step>
-
-<Step title="Specify Requirements">
-Detail what expertise or level is required.
-</Step>
-
-<Step title="Set Priority">
-Indicate urgency and business impact.
-</Step>
-
-<Step title="Submit Escalation">
-Route the request to appropriate reviewer.
-</Step>
-</Steps>
-
-## Response Quality Standards
-
-### Consistency Requirements
-
-<CardGroup cols={2}>
-<Card title="Decision Consistency" icon="repeat">
-- Apply same criteria across similar requests
-- Maintain consistent standards over time
-- Follow established policies and procedures
-- Use consistent language and terminology
-</Card>
-
-<Card title="Reasoning Quality" icon="message-square">
-- Provide clear, specific explanations
-- Reference relevant policies or guidelines
-- Include actionable feedback when possible
-- Maintain professional tone and language
-</Card>
-</CardGroup>
-
-### Documentation Standards
-
-<AccordionGroup>
-<Accordion title="Required Information">
-- Decision type and reasoning
-- Specific policy violations (if any)
-- Required changes (if applicable)
-- Escalation details (if needed)
+<Accordion title="Multi Select Validation">
+- All selected values must be valid options from the options array
+- Number of selections must be within min_selections and max_selections bounds
+- No duplicate selections allowed
 </Accordion>
 
-<Accordion title="Optional Enhancements">
-- Additional context or background
-- Suggestions for improvement
-- Related examples or resources
-- Professional recommendations
+<Accordion title="Rating Validation">
+- Response must be a number within scale_min and scale_max bounds
+- Value must align with scale_step increments (e.g., only .0 and .5 for step=0.5)
+- Required ratings cannot be null
+</Accordion>
+
+<Accordion title="Number Validation">
+- Response must be a number within min_value and max_value bounds
+- Decimal places must not exceed configured decimal_places
+- Negative numbers only allowed if allow_negative is true
+</Accordion>
+
+<Accordion title="Boolean Validation">
+- Response must be exactly true or false
+- Required boolean responses cannot be null
 </Accordion>
 </AccordionGroup>
-
-## Response Analytics
-
-### Metrics to Track
-
-Monitor response quality and effectiveness:
-
-<CardGroup cols={2}>
-<Card title="Decision Distribution" icon="pie-chart">
-- Percentage of each response type
-- Trends over time
-- Comparison across reviewers
-- Loop-specific patterns
-</Card>
-
-<Card title="Quality Metrics" icon="target">
-- Response consistency scores
-- Inter-rater reliability
-- Feedback quality ratings
-- Escalation appropriateness
-</Card>
-
-<Card title="Performance Metrics" icon="clock">
-- Average response time
-- Response completion rates
-- Escalation frequency
-- Reviewer productivity
-</Card>
-
-<Card title="Impact Metrics" icon="trending-up">
-- Decision accuracy rates
-- Content improvement rates
-- Policy compliance improvements
-- User satisfaction scores
-</Card>
-</AccordionGroup>
-
-### Continuous Improvement
-
-<Steps>
-<Step title="Monitor Metrics">
-Track response quality and performance indicators.
-</Step>
-
-<Step title="Identify Patterns">
-Look for trends in decision-making and feedback.
-</Step>
-
-<Step title="Provide Training">
-Address areas where reviewers need improvement.
-</Step>
-
-<Step title="Update Guidelines">
-Refine policies based on reviewer feedback and outcomes.
-</Step>
-</Steps>
 
 ## Best Practices
 
-### Effective Decision Making
-
-<CardGroup cols={2}>
-<Card title="Follow Guidelines" icon="book">
-- Reference established policies and procedures
-- Apply consistent criteria across requests
-- Consider context and nuance
-- Document reasoning clearly
-</Card>
-
-<Card title="Quality Feedback" icon="message-circle">
-- Provide specific, actionable feedback
-- Include positive aspects when appropriate
-- Suggest improvements constructively
-- Maintain professional tone
-</Card>
-</CardGroup>
-
-### Escalation Management
+### Choosing Response Types
 
 <Steps>
-<Step title="Know Your Limits">
-Recognize when requests exceed your expertise.
+<Step title="Text for Complex Feedback">
+Use text responses when you need detailed explanations, qualitative feedback, or open-ended input that can't be captured in predefined options.
 </Step>
 
-<Step title="Document Thoroughly">
-Provide complete context for escalated requests.
+<Step title="Single Select for Decisions">
+Use single select for clear decisions with mutually exclusive options. Perfect for approval workflows, categorization, and status assignments.
 </Step>
 
-<Step title="Set Appropriate Priority">
-Indicate urgency and business impact clearly.
+<Step title="Multi Select for Categorization">
+Use multi select when multiple aspects need to be evaluated simultaneously, such as content issues, feature requests, or compliance checklist items.
 </Step>
 
-<Step title="Follow Up">
-Check on escalated requests to ensure resolution.
+<Step title="Rating for Quality Assessment">
+Use ratings for quantitative assessments where you need to measure quality, satisfaction, confidence levels, or performance on a scale.
+</Step>
+
+<Step title="Number for Quantitative Input">
+Use number responses for pricing, quantities, measurements, or any numeric data that needs validation and formatting.
+</Step>
+
+<Step title="Boolean for Yes/No Decisions">
+Use boolean for simple binary decisions where you need clear true/false, approve/reject, or pass/fail responses.
 </Step>
 </Steps>
 
+### Configuration Tips
+
+<CardGroup cols={2}>
+<Card title="Keep Options Clear" icon="eye">
+Use descriptive labels and include helpful descriptions for select options. Consider adding colors for visual clarity.
+</Card>
+
+<Card title="Set Reasonable Limits" icon="shield-check">
+Configure appropriate min/max values, character limits, and selection bounds to prevent invalid or unusable responses.
+</Card>
+
+<Card title="Provide Good Defaults" icon="settings">
+Always specify meaningful default responses that represent the safest or most common expected outcome.
+</Card>
+
+<Card title="Consider Mobile UX" icon="mobile">
+Remember that reviewers will interact with these response types on mobile devices. Keep options concise and touch-friendly.
+</Card>
+</CardGroup>
+
+### Response Handling
+
+When processing responses in your application:
+
+```python
+def handle_response(request_id, response_data, response_type):
+    """Handle different response types appropriately"""
+    
+    if response_type == "text":
+        text = response_data
+        # Process free-form text feedback
+        analyze_sentiment(text)
+        extract_keywords(text)
+        
+    elif response_type == "single_select":
+        selected = response_data["selected_value"]
+        if selected == "approve":
+            approve_content()
+        elif selected == "reject":
+            reject_content()
+        elif selected == "escalate":
+            escalate_to_senior_reviewer()
+            
+    elif response_type == "multi_select":
+        issues = response_data["selected_values"]
+        for issue in issues:
+            handle_identified_issue(issue)
+            
+    elif response_type == "rating":
+        score = response_data["rating"]
+        if score >= 8:
+            mark_as_high_quality()
+        elif score <= 3:
+            flag_for_improvement()
+            
+    elif response_type == "number":
+        value = response_data["number"]
+        update_pricing_model(request_id, value)
+        
+    elif response_type == "boolean":
+        decision = response_data["boolean"]
+        if decision:
+            trigger_investigation()
+        else:
+            approve_transaction()
+```
+
 ## Next Steps
 
-Ready to master the different response types?
-
-<Card title="Text-Based Responses" icon="type" href="/responses/text-based">
-Learn how to provide effective text-based responses.
+<CardGroup cols={2}>
+<Card title="Create Your First Request" icon="rocket" href="/api-reference/requests/create-request">
+Start using these response types in your requests
 </Card>
 
-<Card title="Multiple Choice Responses" icon="list" href="/responses/multiple-choice">
-Understand structured multiple choice response options.
+<Card title="Mobile App Guide" icon="mobile" href="/mobile/responding">
+See how reviewers interact with these response types
 </Card>
 
-<Card title="Number Input Responses" icon="hash" href="/responses/number-input">
-Explore numerical response types and their uses.
+<Card title="Webhooks" icon="webhook" href="/webhooks/global">
+Set up webhooks to receive responses in real-time
 </Card>
 
-<Card title="Rating Responses" icon="star" href="/responses/rating">
-Learn about rating and scoring response systems.
+<Card title="Best Practices" icon="star" href="/guides/best-practices">
+Learn optimization strategies for better response quality
 </Card>
+</CardGroup>
