@@ -1,123 +1,128 @@
 ---
-title: "HITL.sh - Human Supervision for AI Agents"
-description: "Add human oversight to your AI workflows with our mobile-first platform. Approve critical actions, review AI outputs, and maintain control over your automated processes."
+title: "HITL.sh - Human-in-the-Loop for AI Workflows"
+description: "Add human oversight to your AI workflows with our mobile-first platform. Create loops, send requests for human review, and receive structured responses via API."
 ---
 
-## Human supervision for your AI agents
+## Human-in-the-loop for your AI workflows
 
-Keep your AI workflows safe and accurate with human oversight. HITL.sh provides a customizable review interface that's easy to integrate and quick to adopt.
+Keep your AI systems safe and accurate with human oversight. HITL.sh provides a mobile-first platform for routing critical decisions to human reviewers with instant notifications and structured responses.
 
 <Card
-  title="Get started in minutes"
+  title="Create your first loop"
   icon="rocket"
-  href="/quickstart"
+  href="/first-loop"
   horizontal
 >
-  Follow our quickstart guide to add human supervision to your AI agents.
+  Set up your first human-in-the-loop workflow in minutes with our API.
 </Card>
 
 ## How it works
 
 <Steps>
-  <Step title="Setup review">
-    Create a review template with our no-code editor for the type of content to be reviewed and the input to be captured.
+  <Step title="Create a loop">
+    Set up a human review loop using the API. Each loop automatically generates invite codes and QR codes for easy team onboarding.
   </Step>
-  <Step title="Send request">
-    Request a human review using any of our integrations, referencing the template and including all relevant content.
+  <Step title="Add reviewers">
+    Invite team members to join your loop using invite codes, QR codes, or direct links. They receive the mobile app for instant notifications.
+  </Step>
+  <Step title="Send requests">
+    Submit review requests to your loop via API with customizable response types (single-select, text, rating, etc.) and timeout settings.
   </Step>
   <Step title="Human review">
-    Pending items appear in our Agent Inbox or can be opened directly via one of the notification options.
+    Reviewers receive push notifications on mobile and can respond immediately with structured feedback.
   </Step>
-  <Step title="Handle webhook">
-    Completed reviews are sent to your workflow via webhook so it can continue with the provided feedback.
+  <Step title="Get responses">
+    Receive human decisions via webhooks or polling, with structured data ready for your application logic.
   </Step>
 </Steps>
 
 ## Core features
 
-Everything you need to keep a human in the loop
+Everything you need for human-in-the-loop workflows
 
 <Columns cols={2}>
   <Card
-    title="Agent Inbox"
-    icon="inbox"
-    href="/features/inbox"
+    title="Mobile-First Reviews"
+    icon="mobile"
+    href="/mobile/home-screen"
   >
-    Centralized dashboard where reviewers find all items that need input - whether reviews were assigned to them or to the whole team.
+    Reviewers receive instant push notifications and can respond on-the-go using our native mobile app for iOS and Android.
   </Card>
   <Card
-    title="Review Templates"
-    icon="file-text"
-    href="/templates/overview"
+    title="Flexible Response Types"
+    icon="layers"
+    href="/responses/types"
   >
-    Customize review templates to capture content of various types with our no-code editor for the right preview and editing tools.
+    Configure exactly how reviewers respond: single-select decisions, text feedback, ratings, numbers, or boolean choices.
   </Card>
   <Card
-    title="Smart Notifications"
-    icon="bell"
-    href="/features/notifications"
+    title="Easy Team Onboarding"
+    icon="user-plus"
+    href="/mobile/join-loop"
   >
-    Turn on email digests or Slack notifications with optional short-lived public links for seamless collaboration.
+    Invite codes, QR codes, and direct links make it simple to add reviewers to your loops instantly.
   </Card>
   <Card
-    title="Workflow Control"
-    icon="workflow"
-    href="/features/workflows"
+    title="Real-time Integration"
+    icon="webhook"
+    href="/webhooks/global"
   >
-    Advanced workflows include multiple review steps or manual triggers with easy navigation across workflow runs.
+    Get instant webhooks when requests complete, or poll for status updates with structured JSON responses.
   </Card>
 </Columns>
 
 ## Integrations
 
-Add human supervision without restricting your choice of tooling, framework, or model.
+Integrate human oversight into any application or workflow
 
 <Columns cols={3}>
   <Card
-    title="Python SDK"
-    icon="python"
-    href="/integrations/python"
-  >
-    Simple Python integration for your AI applications and workflows.
-  </Card>
-  <Card
-    title="TypeScript SDK"
-    icon="typescript"
-    href="/integrations/typescript"
-  >
-    Full-featured TypeScript SDK for Node.js and browser environments.
-  </Card>
-  <Card
-    title="n8n Node"
-    icon="n8n"
-    href="/integrations/n8n"
-  >
-    Native n8n integration for seamless workflow automation.
-  </Card>
-  <Card
-    title="Make.com"
-    icon="make"
-    href="/integrations/make"
-  >
-    Connect HITL.sh to your Make.com scenarios and workflows.
-  </Card>
-  <Card
-    title="LangGraph"
-    icon="langgraph"
-    href="/integrations/langgraph"
-  >
-    Integrate with LangGraph for sophisticated AI agent workflows.
-  </Card>
-  <Card
-    title="HTTP API"
+    title="RESTful API"
     icon="api"
     href="/api-reference/introduction"
   >
-    RESTful API for custom integrations and webhook handling.
+    Full-featured REST API for creating loops, submitting requests, and receiving responses.
+  </Card>
+  <Card
+    title="n8n Integration"
+    icon="n8n"
+    href="/integrations/n8n"
+  >
+    Native n8n nodes for seamless workflow automation with human-in-the-loop steps.
+  </Card>
+  <Card
+    title="Zapier Integration"
+    icon="zap"
+    href="/integrations/zapier"
+  >
+    Connect HITL.sh to thousands of apps through Zapier's automation platform.
+  </Card>
+  <Card
+    title="Webhooks"
+    icon="webhook"
+    href="/webhooks/global"
+  >
+    Receive real-time notifications when human reviews are completed.
+  </Card>
+  <Card
+    title="Mobile App"
+    icon="smartphone"
+    href="/mobile/home-screen"
+  >
+    Native iOS and Android apps for reviewers to handle requests on-the-go.
+  </Card>
+  <Card
+    title="Python & JavaScript"
+    icon="code"
+    href="/api-reference/introduction"
+  >
+    Code examples and SDKs for popular programming languages.
   </Card>
 </Columns>
 
 ## Use cases
+
+Real-world applications for human-in-the-loop workflows
 
 <Columns cols={2}>
   <Card
@@ -125,47 +130,59 @@ Add human supervision without restricting your choice of tooling, framework, or 
     icon="shield-check"
     href="/examples/content-moderation"
   >
-    Review AI-generated content before publication to ensure quality and compliance.
+    Review user-generated content for policy compliance with mobile-first moderation teams.
   </Card>
   <Card
-    title="Sales Approval"
-    icon="handshake"
-    href="/examples/sales-approval"
+    title="AI Quality Control"
+    icon="beaker"
   >
-    Automate sales processes while maintaining human oversight for critical decisions.
+    Validate AI outputs before they reach customers, with structured feedback for model improvement.
   </Card>
   <Card
-    title="AI Training"
-    icon="brain"
-    href="/examples/ai-training"
+    title="Document Approval"
+    icon="file-check"
   >
-    Collect human feedback to improve AI model performance and create training datasets.
+    Route contracts, proposals, and sensitive documents through human approval workflows.
   </Card>
   <Card
-    title="Workflow Control"
-    icon="cogs"
-    href="/examples/workflow-control"
+    title="Risk Assessment"
+    icon="shield-alert"
   >
-    Add checkpoints and manual triggers to complex automated workflows.
+    Flag high-risk transactions, user accounts, or system anomalies for human review.
   </Card>
 </Columns>
 
-## Trusted by innovators
-
-<Card
-  title="PayFacto Case Study"
-  icon="chart-line"
-  href="/examples/payfacto-case-study"
->
-  See how PayFacto, a leading global payment processing company handling $10 billion in annual transaction volume, uses HITL.sh to automate key sales and marketing processes with AI.
-</Card>
-
 ## Get started today
 
-<Card
-  title="Start building"
-  icon="code"
-  href="/quickstart"
->
-  Add human supervision to your AI agents in minutes with our comprehensive documentation and examples.
-</Card>
+Ready to add human oversight to your AI workflows?
+
+<Columns cols={2}>
+  <Card
+    title="Create Your First Loop"
+    icon="plus"
+    href="/first-loop"
+  >
+    Follow our step-by-step guide to set up your first human-in-the-loop workflow with API examples.
+  </Card>
+  <Card
+    title="Explore the API"
+    icon="book"
+    href="/api-reference/introduction"
+  >
+    Browse our complete API documentation with code examples in Python, JavaScript, and cURL.
+  </Card>
+  <Card
+    title="Download Mobile App"
+    icon="mobile"
+    href="https://app.hitl.sh"
+  >
+    Get the HITL.sh mobile app for iOS and Android to start reviewing requests on-the-go.
+  </Card>
+  <Card
+    title="Join a Loop"
+    icon="users"
+    href="/mobile/join-loop"
+  >
+    Learn how to join existing loops using invite codes, QR codes, or direct links.
+  </Card>
+</Columns>
