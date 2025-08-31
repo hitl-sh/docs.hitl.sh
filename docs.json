@@ -123,14 +123,14 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://docs.hitl.sh",
-          "icon": "book-open-cover"
+          "anchor": "Install App",
+          "href": "https://app.hitl.sh/download",
+          "icon": "mobile-app"
         },
         {
           "anchor": "Community",
           "href": "https://discord.gg/jYVrpmnMP9",
-          "icon": "slack"
+          "icon": "discord"
         },
         {
           "anchor": "GitHub",
