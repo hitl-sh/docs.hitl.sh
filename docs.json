@@ -1,13 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "HITL.sh",
+  "name": "Human in the Loop",
   "colors": {
     "primary": "#2D3748",
     "light": "#4A5568",
     "dark": "#1A202C"
   },
-  "favicon": "/favicon-3.svg?v=3",
+  "favicon": "/favicon-2.svg?v=4",
   "navigation": {
     "tabs": [
       {
