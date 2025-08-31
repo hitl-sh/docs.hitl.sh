@@ -124,8 +124,8 @@
       "anchors": [
         {
           "anchor": "Install App",
-          "href": "https://app.hitl.sh/download",
-          "icon": "mobile-app"
+          "href": "https://hitl.sh/download",
+          "icon": "smartphone"
         },
         {
           "anchor": "Community",
