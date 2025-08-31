@@ -1275,7 +1275,7 @@
             "type": "string",
             "format": "uri",
             "description": "Direct URL for joining the loop",
-            "example": "https://app.hitl.sh/join/ABC123DEF"
+            "example": "https://my.hitl.sh/join/ABC123DEF"
           }
         }
       },

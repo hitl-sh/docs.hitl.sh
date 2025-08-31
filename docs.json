@@ -169,7 +169,7 @@
     "primary": {
       "type": "button",
       "label": "Get Started",
-      "href": "https://app.hitl.sh"
+              "href": "https://my.hitl.sh"
     }
   },
   "contextual": {
