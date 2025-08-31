@@ -118,17 +118,6 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "Examples",
-        "groups": [
-          {
-            "group": "Use cases",
-            "pages": [
-              "examples/content-moderation"
-            ]
-          }
-        ]
       }
     ],
     "global": {
