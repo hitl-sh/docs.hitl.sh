@@ -147,12 +147,8 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:support@hitl.sh"
-      },
-      {
-        "label": "Pricing",
-        "href": "https://hitl.sh/pricing"
+        "label": "Contact Team",
+        "href": "mailto:team@hitl.sh"
       }
     ],
     "primary": {
