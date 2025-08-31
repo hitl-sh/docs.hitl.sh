@@ -1,0 +1,702 @@
+---
+title: "Add Request Feedback"
+api: "POST https://api.hitl.sh/v1/requests/{id}/feedback"
+description: "Provide feedback on completed requests to improve reviewer performance and system quality over time"
+---
+
+Add feedback to completed requests to help improve reviewer performance and overall system quality. Feedback can include ratings, comments, and specific quality metrics that help reviewers understand what worked well and what could be improved.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the completed request
+</ParamField>
+
+## Body Parameters
+
+<ParamField body="feedback" type="object" required>
+  Feedback object containing ratings, comments, and quality metrics
+</ParamField>
+
+### Feedback Object Structure
+
+The feedback object can contain any combination of the following fields:
+
+<ParamField body="feedback.rating" type="number">
+  Overall quality rating (1-5 scale, where 5 is excellent)
+</ParamField>
+
+<ParamField body="feedback.comment" type="string">
+  Free-form text feedback and comments (max 1000 characters)
+</ParamField>
+
+<ParamField body="feedback.accuracy" type="number">
+  Response accuracy rating (1-5 scale)
+</ParamField>
+
+<ParamField body="feedback.timeliness" type="number">
+  Response timeliness rating (1-5 scale)
+</ParamField>
+
+<ParamField body="feedback.helpfulness" type="number">
+  Response helpfulness rating (1-5 scale)
+</ParamField>
+
+<ParamField body="feedback.would_recommend" type="boolean">
+  Whether you would recommend this reviewer for similar requests
+</ParamField>
+
+<ParamField body="feedback.tags" type="array">
+  Array of feedback tags (e.g., ["thorough", "quick", "insightful"])
+</ParamField>
+
+<ParamField body="feedback.follow_up_needed" type="boolean">
+  Whether this request requires follow-up action
+</ParamField>
+
+<ParamField body="feedback.category" type="string">
+  Feedback category: "positive", "constructive", "issue"
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="request_id" type="string">
+      ID of the request that received feedback
+    </ResponseField>
+    <ResponseField name="feedback" type="object">
+      The feedback object that was submitted
+    </ResponseField>
+    <ResponseField name="feedback_id" type="string">
+      Unique identifier for this feedback entry
+    </ResponseField>
+    <ResponseField name="submitted_at" type="string">
+      ISO timestamp when feedback was submitted
+    </ResponseField>
+    <ResponseField name="reviewer_notified" type="boolean">
+      Whether the reviewer was notified about the feedback
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/requests/65f1234567890abcdef12348/feedback \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "feedback": {
+      "rating": 5,
+      "comment": "Excellent review! Very thorough analysis and quick turnaround time.",
+      "accuracy": 5,
+      "timeliness": 5,
+      "helpfulness": 4,
+      "would_recommend": true,
+      "tags": ["thorough", "quick", "professional"],
+      "category": "positive"
+    }
+  }'
+```
+
+```python Python
+import requests
+
+def add_request_feedback(request_id, feedback_data):
+    """Add comprehensive feedback to a completed request"""
+    
+    url = f"https://api.hitl.sh/v1/requests/{request_id}/feedback"
+    headers = {
+        "Authorization": "Bearer your_api_key_here",
+        "Content-Type": "application/json"
+    }
+    
+    # Validate feedback data
+    if "rating" in feedback_data:
+        if not (1 <= feedback_data["rating"] <= 5):
+            raise ValueError("Rating must be between 1 and 5")
+    
+    if "comment" in feedback_data:
+        if len(feedback_data["comment"]) > 1000:
+            raise ValueError("Comment must be 1000 characters or less")
+    
+    payload = {"feedback": feedback_data}
+    
+    response = requests.post(url, headers=headers, json=payload)
+    
+    if response.status_code == 200:
+        result = response.json()
+        print(f"✅ Feedback submitted successfully")
+        print(f"   Feedback ID: {result['data']['feedback_id']}")
+        return result
+    else:
+        error_msg = response.json().get("msg", "Unknown error")
+        print(f"❌ Failed to submit feedback: {error_msg}")
+        return {"error": True, "msg": error_msg}
+
+# Example usage
+feedback = {
+    "rating": 5,
+    "comment": "Excellent work! Very detailed analysis and spot-on recommendations.",
+    "accuracy": 5,
+    "timeliness": 4,
+    "helpfulness": 5,
+    "would_recommend": True,
+    "tags": ["thorough", "insightful", "professional"],
+    "category": "positive"
+}
+
+result = add_request_feedback("65f1234567890abcdef12348", feedback)
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+class FeedbackManager {
+    constructor(apiKey) {
+        this.apiKey = apiKey;
+        this.baseURL = 'https://api.hitl.sh/v1';
+    }
+    
+    async addFeedback(requestId, feedbackData) {
+        try {
+            // Validate feedback data
+            this.validateFeedback(feedbackData);
+            
+            const response = await axios.post(
+                `${this.baseURL}/requests/${requestId}/feedback`,
+                { feedback: feedbackData },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            
+            console.log('✅ Feedback submitted successfully');
+            return response.data;
+            
+        } catch (error) {
+            console.error('❌ Failed to submit feedback:', error.response?.data?.msg);
+            throw error;
+        }
+    }
+    
+    validateFeedback(feedback) {
+        // Validate rating fields
+        const ratingFields = ['rating', 'accuracy', 'timeliness', 'helpfulness'];
+        ratingFields.forEach(field => {
+            if (feedback[field] !== undefined) {
+                if (!Number.isInteger(feedback[field]) || feedback[field] < 1 || feedback[field] > 5) {
+                    throw new Error(`${field} must be an integer between 1 and 5`);
+                }
+            }
+        });
+        
+        // Validate comment length
+        if (feedback.comment && feedback.comment.length > 1000) {
+            throw new Error('Comment must be 1000 characters or less');
+        }
+        
+        // Validate category
+        if (feedback.category) {
+            const validCategories = ['positive', 'constructive', 'issue'];
+            if (!validCategories.includes(feedback.category)) {
+                throw new Error('Category must be one of: positive, constructive, issue');
+            }
+        }
+    }
+    
+    // Helper method for quick positive feedback
+    async addPositiveFeedback(requestId, comment, rating = 5) {
+        return this.addFeedback(requestId, {
+            rating,
+            comment,
+            category: 'positive',
+            would_recommend: true
+        });
+    }
+    
+    // Helper method for constructive feedback
+    async addConstructiveFeedback(requestId, comment, suggestions) {
+        return this.addFeedback(requestId, {
+            rating: 3,
+            comment,
+            category: 'constructive',
+            tags: suggestions,
+            follow_up_needed: true
+        });
+    }
+}
+
+// Usage
+const feedbackManager = new FeedbackManager('your_api_key_here');
+
+// Detailed feedback
+await feedbackManager.addFeedback('65f1234567890abcdef12348', {
+    rating: 4,
+    comment: 'Good analysis but could have been more detailed in the recommendations section.',
+    accuracy: 5,
+    timeliness: 3,
+    helpfulness: 4,
+    would_recommend: true,
+    tags: ['accurate', 'could-be-more-detailed'],
+    category: 'constructive'
+});
+
+// Quick positive feedback
+await feedbackManager.addPositiveFeedback(
+    '65f1234567890abcdef12349', 
+    'Perfect response, exactly what we needed!'
+);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "error": false,
+  "msg": "Feedback added successfully",
+  "data": {
+    "request_id": "65f1234567890abcdef12348",
+    "feedback": {
+      "rating": 5,
+      "comment": "Excellent review! Very thorough analysis and quick turnaround time.",
+      "accuracy": 5,
+      "timeliness": 5,
+      "helpfulness": 4,
+      "would_recommend": true,
+      "tags": ["thorough", "quick", "professional"],
+      "category": "positive"
+    },
+    "feedback_id": "65f1234567890abcdef12355",
+    "submitted_at": "2024-03-15T12:30:00Z",
+    "reviewer_notified": true
+  }
+}
+```
+
+</ResponseExample>
+
+## Feedback Categories
+
+<CardGroup cols={3}>
+<Card title="Positive" icon="thumbs-up">
+**Category**: `positive`
+- High ratings (4-5)
+- Appreciation for good work
+- Reinforces desired behaviors
+- Builds reviewer confidence
+</Card>
+
+<Card title="Constructive" icon="lightbulb">
+**Category**: `constructive`  
+- Moderate ratings (2-4)
+- Specific improvement suggestions
+- Educational feedback
+- Growth-oriented
+</Card>
+
+<Card title="Issue" icon="exclamation-triangle">
+**Category**: `issue`
+- Low ratings (1-2)
+- Identifies problems
+- May require follow-up
+- Used sparingly for serious issues
+</Card>
+</CardGroup>
+
+## Feedback Best Practices
+
+### Effective Feedback Structure
+
+<AccordionGroup>
+<Accordion title="Be Specific">
+**Good**: "The analysis was thorough and covered all the key policy violations I mentioned in the request."
+
+**Avoid**: "Good job."
+
+**Why**: Specific feedback helps reviewers understand exactly what they did well.
+</Accordion>
+
+<Accordion title="Balance Appreciation and Improvement">
+**Good**: "Great attention to detail in identifying spam patterns. For future requests, could you also mention the confidence level of your assessment?"
+
+**Avoid**: "Everything was perfect" or "Everything was wrong."
+
+**Why**: Balanced feedback encourages growth while recognizing strengths.
+</Accordion>
+
+<Accordion title="Focus on Behavior, Not Person">
+**Good**: "The response could benefit from more detailed examples to support the conclusion."
+
+**Avoid**: "You're not very thorough."
+
+**Why**: Focus on actions and outcomes rather than personal characteristics.
+</Accordion>
+
+<Accordion title="Include Context">
+**Good**: "Given the urgent nature of this content moderation request, the 15-minute response time was exactly what we needed."
+
+**Avoid**: "Too slow."
+
+**Why**: Context helps reviewers understand the specific requirements of different request types.
+</Accordion>
+</AccordionGroup>
+
+## Feedback Analytics
+
+### Track Feedback Patterns
+
+Monitor your feedback trends to improve request quality:
+
+```python
+def analyze_feedback_patterns():
+    """Analyze feedback patterns across all requests"""
+    
+    # Get all completed requests
+    response = requests.get(
+        "https://api.hitl.sh/v1/requests?status=completed&limit=100",
+        headers={"Authorization": "Bearer your_api_key_here"}
+    )
+    
+    completed_requests = response.json()["data"]["requests"]
+    
+    # Analyze feedback patterns (this would require additional API endpoints)
+    feedback_stats = {
+        "total_requests": len(completed_requests),
+        "feedback_given": 0,
+        "avg_rating": 0,
+        "common_tags": {},
+        "category_breakdown": {"positive": 0, "constructive": 0, "issue": 0},
+        "reviewer_performance": {}
+    }
+    
+    # Note: In a real implementation, you'd need endpoints to retrieve 
+    # feedback data to perform this analysis
+    
+    return feedback_stats
+
+def generate_feedback_suggestions(request_data, response_quality):
+    """Generate feedback suggestions based on request and response analysis"""
+    
+    suggestions = {
+        "recommended_rating": 3,
+        "suggested_tags": [],
+        "feedback_template": "",
+        "category": "constructive"
+    }
+    
+    # Analyze response time
+    response_time = request_data.get("response_time_seconds", 0)
+    if response_time < 300:  # Under 5 minutes
+        suggestions["suggested_tags"].append("quick")
+        suggestions["recommended_rating"] += 1
+    elif response_time > 3600:  # Over 1 hour
+        suggestions["feedback_template"] += "Consider faster response times for future requests. "
+    
+    # Analyze priority handling
+    if request_data["priority"] == "critical" and response_time < 600:
+        suggestions["suggested_tags"].append("urgent-handling")
+        suggestions["recommended_rating"] += 1
+    
+    # Generate template
+    if suggestions["recommended_rating"] >= 4:
+        suggestions["category"] = "positive"
+        suggestions["feedback_template"] = "Great work! " + suggestions["feedback_template"]
+    elif suggestions["recommended_rating"] <= 2:
+        suggestions["category"] = "issue"
+        suggestions["feedback_template"] = "There are some areas for improvement: " + suggestions["feedback_template"]
+    
+    return suggestions
+```
+
+### Bulk Feedback Operations
+
+Provide feedback on multiple completed requests:
+
+```javascript
+async function bulkFeedback(requestFeedbackPairs, options = {}) {
+    const { delay = 200, validateFirst = true } = options;
+    const results = [];
+    
+    for (const { requestId, feedback } of requestFeedbackPairs) {
+        try {
+            if (validateFirst) {
+                // Get request details to ensure it's completed
+                const requestResponse = await axios.get(
+                    `https://api.hitl.sh/v1/requests/${requestId}`,
+                    { headers: { 'Authorization': 'Bearer your_api_key_here' } }
+                );
+                
+                const requestData = requestResponse.data.data.request;
+                
+                if (requestData.status !== 'completed') {
+                    results.push({
+                        requestId,
+                        success: false,
+                        error: `Request status is '${requestData.status}', not 'completed'`
+                    });
+                    continue;
+                }
+            }
+            
+            // Submit feedback
+            const feedbackResponse = await axios.post(
+                `https://api.hitl.sh/v1/requests/${requestId}/feedback`,
+                { feedback },
+                { headers: { 'Authorization': 'Bearer your_api_key_here', 'Content-Type': 'application/json' } }
+            );
+            
+            results.push({
+                requestId,
+                success: true,
+                feedbackId: feedbackResponse.data.data.feedback_id
+            });
+            
+            // Rate limiting delay
+            if (delay > 0) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+            
+        } catch (error) {
+            results.push({
+                requestId,
+                success: false,
+                error: error.response?.data?.msg || error.message
+            });
+        }
+    }
+    
+    return {
+        total: requestFeedbackPairs.length,
+        successful: results.filter(r => r.success).length,
+        failed: results.filter(r => !r.success).length,
+        results
+    };
+}
+
+// Usage
+const feedbackBatch = [
+    {
+        requestId: '65f1234567890abcdef12348',
+        feedback: { rating: 5, comment: 'Excellent work!', category: 'positive' }
+    },
+    {
+        requestId: '65f1234567890abcdef12349', 
+        feedback: { rating: 4, comment: 'Good job, could be more detailed', category: 'constructive' }
+    }
+];
+
+const results = await bulkFeedback(feedbackBatch);
+console.log(`Submitted feedback for ${results.successful}/${results.total} requests`);
+```
+
+## Feedback Templates
+
+### Pre-built Feedback Templates
+
+Create reusable feedback templates for common scenarios:
+
+<AccordionGroup>
+<Accordion title="Excellent Performance Template">
+```json
+{
+  "rating": 5,
+  "comment": "Outstanding work! Response was accurate, timely, and exceeded expectations. The detailed analysis and clear recommendations were exactly what we needed.",
+  "accuracy": 5,
+  "timeliness": 5,
+  "helpfulness": 5,
+  "would_recommend": true,
+  "tags": ["excellent", "thorough", "professional"],
+  "category": "positive"
+}
+```
+</Accordion>
+
+<Accordion title="Good with Minor Improvements Template">
+```json
+{
+  "rating": 4,
+  "comment": "Solid work overall. The analysis was accurate and helpful. For future requests, consider providing more specific examples to support your conclusions.",
+  "accuracy": 5,
+  "timeliness": 4,
+  "helpfulness": 4,
+  "would_recommend": true,
+  "tags": ["accurate", "could-add-examples"],
+  "category": "constructive"
+}
+```
+</Accordion>
+
+<Accordion title="Needs Improvement Template">
+```json
+{
+  "rating": 2,
+  "comment": "The response addressed the basic question but lacked the depth and detail specified in the request. Please review the requirements more carefully for future requests.",
+  "accuracy": 3,
+  "timeliness": 3,
+  "helpfulness": 2,
+  "would_recommend": false,
+  "tags": ["incomplete", "needs-detail"],
+  "category": "issue",
+  "follow_up_needed": true
+}
+```
+</Accordion>
+
+<Accordion title="Quick Appreciation Template">
+```json
+{
+  "rating": 5,
+  "comment": "Perfect response! Quick, accurate, and exactly what we needed. Thank you!",
+  "timeliness": 5,
+  "would_recommend": true,
+  "tags": ["quick", "accurate"],
+  "category": "positive"
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Access Control
+
+### Feedback Permissions
+
+<AccordionGroup>
+<Accordion title="Request Creators Only">
+Only the API key that created the request can provide feedback on it.
+</Accordion>
+
+<Accordion title="Completed Requests Only">
+Feedback can only be added to requests with status "completed".
+</Accordion>
+
+<Accordion title="One Feedback Per Request">
+Currently, each request can receive one feedback entry. Future versions may support multiple feedback entries or feedback updates.
+</Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+### Common Error Scenarios
+
+<AccordionGroup>
+<Accordion title="Request Not Completed">
+```json
+{
+  "error": true,
+  "msg": "Feedback can only be added to completed requests"
+}
+```
+
+**Cause:** Request status is not "completed".
+**Solution:** Wait for request completion or check request status.
+</Accordion>
+
+<Accordion title="Invalid Rating Values">
+```json
+{
+  "error": true,
+  "msg": "Rating values must be between 1 and 5"
+}
+```
+
+**Cause:** Rating fields contain values outside the 1-5 range.
+**Solution:** Ensure all rating fields are integers between 1 and 5.
+</Accordion>
+
+<Accordion title="Comment Too Long">
+```json
+{
+  "error": true,
+  "msg": "Comment exceeds maximum length of 1000 characters"
+}
+```
+
+**Cause:** Feedback comment is longer than 1000 characters.
+**Solution:** Shorten the comment or split into multiple sentences.
+</Accordion>
+
+<Accordion title="Request Not Found">
+```json
+{
+  "error": true,
+  "msg": "Request not found"
+}
+```
+
+**Cause:** Invalid request ID or request doesn't belong to your API key.
+**Solution:** Verify the request ID and ownership.
+</Accordion>
+</AccordionGroup>
+
+## Impact of Feedback
+
+### On Reviewers
+
+<AccordionGroup>
+<Accordion title="Performance Insights">
+Feedback helps reviewers understand what works well and what needs improvement in their review process.
+</Accordion>
+
+<Accordion title="Motivation and Recognition">
+Positive feedback boosts reviewer motivation and recognizes good work.
+</Accordion>
+
+<Accordion title="Skill Development">
+Constructive feedback provides specific areas for improvement and learning opportunities.
+</Accordion>
+
+<Accordion title="Quality Standards">
+Consistent feedback helps establish and maintain quality standards across the reviewer team.
+</Accordion>
+</AccordionGroup>
+
+### On System Quality
+
+<AccordionGroup>
+<Accordion title="Improved Matching">
+Feedback data can be used to better match requests with appropriate reviewers based on past performance.
+</Accordion>
+
+<Accordion title="Quality Metrics">
+Aggregate feedback provides insights into overall system performance and areas for improvement.
+</Accordion>
+
+<Accordion title="Process Optimization">
+Feedback patterns help identify bottlenecks and optimization opportunities in the review process.
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<Card title="View Request History" icon="history" href="/api-reference/requests/get-requests">
+  Review your request history and identify requests that could benefit from feedback.
+</Card>
+
+<Card title="Loop Analytics" icon="chart-line" href="/api-reference/loops/analytics">
+  See how feedback is improving your loop performance over time.
+</Card>
+
+<Card title="Reviewer Guidelines" icon="users" href="/mobile/responding">
+  Learn how reviewers see and respond to feedback on the mobile app.
+</Card>

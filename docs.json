@@ -44,20 +44,19 @@
           {
             "group": "Requests",
             "pages": [
-              "requests/introduction",
-              "requests/text-based",
-              "requests/image-based",
-              "requests/video-based"
+              "requests/introduction"
             ]
           },
           {
             "group": "Responses",
             "pages": [
               "responses/types",
-              "responses/text-based",
-              "responses/multiple-choice",
-              "responses/number-input",
-              "responses/rating"
+              "responses/text",
+              "responses/single-select",
+              "responses/multi-select",
+              "responses/rating",
+              "responses/number",
+              "responses/boolean"
             ]
           },
           {
@@ -81,13 +80,41 @@
         "tab": "API reference",
         "groups": [
           {
-            "group": "Core API",
+            "group": "Getting Started",
             "pages": [
               "api-reference/introduction",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/authentication",
+              "api-reference/test-api-key",
+              "api-reference/errors"
+            ]
+          },
+          {
+            "group": "Loops",
+            "pages": [
+              "api-reference/loops/create-loop",
+              "api-reference/loops/get-loops",
+              "api-reference/loops/get-loop",
+              "api-reference/loops/update-loop",
+              "api-reference/loops/delete-loop",
+              "api-reference/loops/loop-members"
+            ]
+          },
+          {
+            "group": "Requests",
+            "pages": [
+              "api-reference/requests/create-request",
+              "api-reference/requests/get-requests",
+              "api-reference/requests/get-request",
+              "api-reference/requests/cancel-request",
+              "api-reference/requests/add-feedback"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/webhooks/overview",
+              "api-reference/webhooks/setup",
+              "api-reference/webhooks/payloads"
             ]
           }
         ]

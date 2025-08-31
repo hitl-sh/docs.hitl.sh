@@ -1,0 +1,389 @@
+---
+title: "Create Request"
+api: "POST https://api.hitl.sh/v1/loops/{loopId}/requests"
+description: "Create a new human review request within a loop and broadcast it to active members with push notifications"
+---
+
+Create a new request that will be sent to all active members of a loop for human review. The request supports multiple content types, response configurations, and notification systems.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="loopId" type="string" required>
+  The ID of the loop where the request will be created
+</ParamField>
+
+## Body Parameters
+
+<ParamField body="processing_type" type="string" required>
+  Processing urgency type
+  <br />
+  <strong>Options:</strong> `time-sensitive`, `deferred`
+  <br />
+  <strong>Note:</strong> `timeout_seconds` is required for `time-sensitive` requests
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  Content type of the request
+  <br />
+  <strong>Options:</strong> `markdown`, `image`
+</ParamField>
+
+<ParamField body="priority" type="string" required>
+  Priority level of the request
+  <br />
+  <strong>Options:</strong> `low`, `medium`, `high`, `critical`
+</ParamField>
+
+<ParamField body="request_text" type="string" required>
+  The main content of the request (1-2000 characters)
+</ParamField>
+
+<ParamField body="image_url" type="string">
+  URL of the image to review (required when `type` is `image`)
+</ParamField>
+
+<ParamField body="context" type="object">
+  Additional context data for the request (any valid JSON object)
+</ParamField>
+
+<ParamField body="timeout_seconds" type="integer">
+  Timeout in seconds (60-86400)
+  <br />
+  <strong>Required for:</strong> `time-sensitive` requests
+  <br />
+  <strong>Optional for:</strong> `deferred` requests (default: 30 days)
+</ParamField>
+
+<ParamField body="response_type" type="string" required>
+  Type of response expected from reviewers
+  <br />
+  <strong>Options:</strong> `text`, `single_select`, `multi_select`, `rating`, `number`, `boolean`
+</ParamField>
+
+<ParamField body="response_config" type="object" required>
+  Configuration for the response type (varies by response_type)
+</ParamField>
+
+<ParamField body="default_response" type="object" required>
+  Default response if timeout occurs
+</ParamField>
+
+<ParamField body="platform" type="string" required>
+  Platform creating the request
+  <br />
+  <strong>Options:</strong> `n8n`, `zapier`, `web_portal`, `api`, `mobile`, `webhook`
+</ParamField>
+
+<ParamField body="platform_version" type="string">
+  Version of the platform used
+</ParamField>
+
+<ParamField body="callback_url" type="string">
+  URL to call when request is completed (webhook)
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="request_id" type="string">
+      ID of the created request
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      Current status of the request (always "pending" on creation)
+    </ResponseField>
+    <ResponseField name="processing_type" type="string">
+      Processing urgency type
+    </ResponseField>
+    <ResponseField name="type" type="string">
+      Content type of the request
+    </ResponseField>
+    <ResponseField name="priority" type="string">
+      Priority level of the request
+    </ResponseField>
+    <ResponseField name="timeout_at" type="string">
+      ISO timestamp when the request times out
+    </ResponseField>
+    <ResponseField name="broadcasted_to" type="integer">
+      Number of users who received the request notification
+    </ResponseField>
+    <ResponseField name="notifications_sent" type="integer">
+      Number of successful push notifications sent
+    </ResponseField>
+    <ResponseField name="polling_url" type="string">
+      URL for polling request status
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Response Type Configurations
+
+### Single Select
+```json
+{
+  "response_config": {
+    "options": ["Approve", "Reject", "Needs Changes"]
+  },
+  "default_response": "Approve"
+}
+```
+
+### Multi Select
+```json
+{
+  "response_config": {
+    "options": ["Policy Violation", "Spam", "Inappropriate Content", "Copyright"]
+  },
+  "default_response": ["Policy Violation"]
+}
+```
+
+### Rating
+```json
+{
+  "response_config": {
+    "min": 1,
+    "max": 5
+  },
+  "default_response": 3
+}
+```
+
+### Number
+```json
+{
+  "response_config": {
+    "min": 0,
+    "max": 100
+  },
+  "default_response": 50
+}
+```
+
+### Boolean
+```json
+{
+  "response_config": {},
+  "default_response": true
+}
+```
+
+### Text
+```json
+{
+  "response_config": {},
+  "default_response": "No issues found"
+}
+```
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/loops/65f1234567890abcdef12345/requests \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Please review this user-generated content for community guidelines compliance. The content has been flagged by our automated system.",
+    "context": {
+      "user_id": "user123",
+      "post_id": "post456",
+      "automated_flags": ["potential_spam"]
+    },
+    "timeout_seconds": 3600,
+    "response_type": "single_select",
+    "response_config": {
+      "options": ["Approve", "Reject", "Needs Changes"]
+    },
+    "default_response": "Approve",
+    "platform": "api",
+    "platform_version": "1.0.0",
+    "callback_url": "https://example.com/webhook/response"
+  }'
+```
+
+```python Python
+import requests
+
+url = "https://api.hitl.sh/v1/loops/65f1234567890abcdef12345/requests"
+headers = {
+    "Authorization": "Bearer your_api_key_here",
+    "Content-Type": "application/json"
+}
+data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown", 
+    "priority": "high",
+    "request_text": "Please review this user-generated content for compliance.",
+    "context": {
+        "user_id": "user123",
+        "post_id": "post456"
+    },
+    "timeout_seconds": 3600,
+    "response_type": "single_select",
+    "response_config": {
+        "options": ["Approve", "Reject", "Needs Changes"]
+    },
+    "default_response": "Approve",
+    "platform": "api",
+    "callback_url": "https://example.com/webhook/response"
+}
+
+response = requests.post(url, headers=headers, json=data)
+print(response.json())
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.post(
+  'https://api.hitl.sh/v1/loops/65f1234567890abcdef12345/requests',
+  {
+    processing_type: 'time-sensitive',
+    type: 'markdown',
+    priority: 'high',
+    request_text: 'Please review this user-generated content for compliance.',
+    context: {
+      user_id: 'user123',
+      post_id: 'post456'
+    },
+    timeout_seconds: 3600,
+    response_type: 'single_select',
+    response_config: {
+      options: ['Approve', 'Reject', 'Needs Changes']
+    },
+    default_response: 'Approve',
+    platform: 'api',
+    callback_url: 'https://example.com/webhook/response'
+  },
+  {
+    headers: {
+      'Authorization': 'Bearer your_api_key_here',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+
+console.log(response.data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "error": false,
+  "msg": "Request created and broadcasted successfully",
+  "data": {
+    "request_id": "65f1234567890abcdef12348",
+    "status": "pending",
+    "processing_type": "time-sensitive", 
+    "type": "markdown",
+    "priority": "high",
+    "timeout_at": "2024-03-15T11:30:00Z",
+    "broadcasted_to": 4,
+    "notifications_sent": 3,
+    "polling_url": "/v1/api/requests/65f1234567890abcdef12348"
+  }
+}
+```
+
+</ResponseExample>
+
+## Use Cases
+
+### Content Moderation
+Review flagged user-generated content:
+
+```json
+{
+  "processing_type": "time-sensitive",
+  "type": "markdown",
+  "priority": "medium",
+  "request_text": "Review this comment for policy violations",
+  "timeout_seconds": 1800,
+  "response_type": "single_select",
+  "response_config": {
+    "options": ["Approve", "Remove", "Shadow Ban"]
+  },
+  "default_response": "Approve",
+  "platform": "api"
+}
+```
+
+### Image Review
+Review images for appropriate content:
+
+```json
+{
+  "processing_type": "time-sensitive",
+  "type": "image",
+  "priority": "high",
+  "request_text": "Review this uploaded image for inappropriate content",
+  "image_url": "https://example.com/uploads/image123.jpg",
+  "timeout_seconds": 900,
+  "response_type": "boolean",
+  "response_config": {},
+  "default_response": true,
+  "platform": "api"
+}
+```
+
+### Quality Rating
+Rate AI-generated content quality:
+
+```json
+{
+  "processing_type": "deferred",
+  "type": "markdown",
+  "priority": "low",
+  "request_text": "Rate the quality of this AI-generated response",
+  "response_type": "rating",
+  "response_config": {
+    "min": 1,
+    "max": 5
+  },
+  "default_response": 3,
+  "platform": "api"
+}
+```
+
+## Request Lifecycle
+
+1. **Creation** - Request is created and assigned a unique ID
+2. **Broadcasting** - Push notifications sent to all active loop members
+3. **Pending** - Waiting for a reviewer to claim and respond
+4. **Claimed** - A reviewer has started working on the request
+5. **Completed** - Reviewer has submitted their response
+6. **Webhook** - Callback URL is notified (if configured)
+
+## Next Steps
+
+<Card title="Poll Request Status" icon="refresh" href="/api-reference/requests/get-request">
+  Check the status and response of your request using the polling URL.
+</Card>
+
+<Card title="Set Up Webhooks" icon="webhook" href="/api-reference/webhooks/setup">
+  Configure webhooks to receive real-time notifications when requests complete.
+</Card>
+
+<Card title="Cancel Request" icon="x" href="/api-reference/requests/cancel-request">
+  Cancel a pending request if it's no longer needed.
+</Card>

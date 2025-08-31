@@ -1,0 +1,215 @@
+---
+title: "Get User Loops"
+api: "GET https://api.hitl.sh/v1/loops"
+description: "Retrieve all loops created by the authenticated user with member counts and status information"
+---
+
+Get a list of all loops you have created. This endpoint returns comprehensive information about each loop including member statistics and current status.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="loops" type="array">
+      Array of loop objects
+      <Expandable title="loop">
+        <ResponseField name="id" type="string">
+          Unique identifier for the loop
+        </ResponseField>
+        <ResponseField name="name" type="string">
+          Name of the loop
+        </ResponseField>
+        <ResponseField name="description" type="string">
+          Description of the loop
+        </ResponseField>
+        <ResponseField name="icon" type="string">
+          Icon identifier
+        </ResponseField>
+        <ResponseField name="creator_id" type="string">
+          ID of the loop creator
+        </ResponseField>
+        <ResponseField name="members" type="array">
+          Array of loop members with status
+        </ResponseField>
+        <ResponseField name="member_count" type="integer">
+          Total number of members in the loop
+        </ResponseField>
+        <ResponseField name="pending_count" type="integer">
+          Number of pending member invitations
+        </ResponseField>
+        <ResponseField name="created_at" type="string">
+          ISO timestamp of creation
+        </ResponseField>
+        <ResponseField name="updated_at" type="string">
+          ISO timestamp of last update
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="count" type="integer">
+      Total number of loops returned
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.hitl.sh/v1/loops \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+```python Python
+import requests
+
+url = "https://api.hitl.sh/v1/loops"
+headers = {
+    "Authorization": "Bearer your_api_key_here"
+}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.get('https://api.hitl.sh/v1/loops', {
+  headers: {
+    'Authorization': 'Bearer your_api_key_here'
+  }
+});
+
+console.log(response.data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "error": false,
+  "msg": "Loops retrieved successfully",
+  "data": {
+    "loops": [
+      {
+        "id": "65f1234567890abcdef12345",
+        "name": "Content Moderation Review",
+        "description": "Review user-generated content for community guidelines compliance",
+        "icon": "shield-check",
+        "creator_id": "65f1234567890abcdef12346",
+        "members": [
+          {
+            "user_id": "65f1234567890abcdef12346",
+            "email": "creator@example.com",
+            "status": "active",
+            "joined_at": "2024-03-15T10:30:00Z"
+          },
+          {
+            "user_id": "65f1234567890abcdef12347",
+            "email": "reviewer1@example.com",
+            "status": "active",
+            "joined_at": "2024-03-15T11:45:00Z"
+          },
+          {
+            "user_id": "65f1234567890abcdef12348",
+            "email": "reviewer2@example.com",
+            "status": "pending",
+            "joined_at": null
+          }
+        ],
+        "member_count": 3,
+        "pending_count": 1,
+        "created_at": "2024-03-15T10:30:00Z",
+        "updated_at": "2024-03-15T11:45:00Z"
+      },
+      {
+        "id": "65f1234567890abcdef12349",
+        "name": "Document Approval",
+        "description": "Legal review of customer contracts",
+        "icon": "document-check",
+        "creator_id": "65f1234567890abcdef12346",
+        "members": [
+          {
+            "user_id": "65f1234567890abcdef12346",
+            "email": "creator@example.com",
+            "status": "active",
+            "joined_at": "2024-03-14T09:15:00Z"
+          },
+          {
+            "user_id": "65f1234567890abcdef12350",
+            "email": "legal@example.com",
+            "status": "active",
+            "joined_at": "2024-03-14T14:30:00Z"
+          }
+        ],
+        "member_count": 2,
+        "pending_count": 0,
+        "created_at": "2024-03-14T09:15:00Z",
+        "updated_at": "2024-03-14T14:30:00Z"
+      }
+    ],
+    "count": 2
+  }
+}
+```
+
+</ResponseExample>
+
+## Understanding Loop Status
+
+### Member Status Types
+
+<CardGroup cols={2}>
+<Card title="Active Members" icon="check-circle">
+Users who have joined the loop and can receive review requests.
+</Card>
+
+<Card title="Pending Members" icon="clock">
+Users who have been invited but haven't joined the loop yet.
+</Card>
+</CardGroup>
+
+### Loop Information
+
+Each loop provides:
+- **Member statistics** to understand team capacity
+- **Creation and update timestamps** for tracking
+- **Complete member list** with join status
+- **Creator information** for ownership
+
+## Filtering and Management
+
+Use this endpoint to:
+- **Monitor loop health** by checking member counts
+- **Identify inactive loops** with no recent updates
+- **Track team growth** through member statistics
+- **Manage loop portfolios** across different use cases
+
+## Next Steps
+
+<Card title="Get Specific Loop" icon="search" href="/api-reference/loops/get-loop">
+  Retrieve detailed information about a specific loop by ID.
+</Card>
+
+<Card title="Update Loop" icon="edit" href="/api-reference/loops/update-loop">
+  Modify loop details like name, description, or icon.
+</Card>
+
+<Card title="View Loop Members" icon="users" href="/api-reference/loops/loop-members">
+  Get detailed member information and manage loop membership.
+</Card>

@@ -1,0 +1,394 @@
+---
+title: "Get Request"
+api: "GET https://api.hitl.sh/v1/requests/{id}"
+description: "Retrieve detailed information about a specific request including status, response data, and broadcast results"
+---
+
+Get comprehensive information about a specific request. This endpoint is useful for polling request status and retrieving the human reviewer's response once completed.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the request
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="request" type="object">
+      The complete request object
+      <Expandable title="request">
+        <ResponseField name="id" type="string">
+          Unique identifier for the request
+        </ResponseField>
+        <ResponseField name="loop_id" type="string">
+          ID of the loop this request belongs to
+        </ResponseField>
+        <ResponseField name="creator_id" type="string">
+          ID of the user who created the request
+        </ResponseField>
+        <ResponseField name="api_key_id" type="string">
+          ID of the API key used to create the request
+        </ResponseField>
+        <ResponseField name="processing_type" type="string">
+          Processing urgency type (`time-sensitive`, `deferred`)
+        </ResponseField>
+        <ResponseField name="type" type="string">
+          Content type (`markdown`, `image`)
+        </ResponseField>
+        <ResponseField name="priority" type="string">
+          Priority level (`low`, `medium`, `high`, `critical`)
+        </ResponseField>
+        <ResponseField name="request_text" type="string">
+          The main content of the request
+        </ResponseField>
+        <ResponseField name="image_url" type="string">
+          URL of the image to review (if applicable)
+        </ResponseField>
+        <ResponseField name="context" type="object">
+          Additional context data
+        </ResponseField>
+        <ResponseField name="platform" type="string">
+          Platform that created the request
+        </ResponseField>
+        <ResponseField name="platform_version" type="string">
+          Version of the platform used
+        </ResponseField>
+        <ResponseField name="response_type" type="string">
+          Type of response expected
+        </ResponseField>
+        <ResponseField name="response_config" type="object">
+          Configuration for the response type
+        </ResponseField>
+        <ResponseField name="default_response" type="object">
+          Default response if timeout occurs
+        </ResponseField>
+        <ResponseField name="timeout_at" type="string">
+          ISO timestamp when the request times out
+        </ResponseField>
+        <ResponseField name="callback_url" type="string">
+          URL to call when request is completed
+        </ResponseField>
+        <ResponseField name="broadcasted_to" type="array">
+          List of users who received the request notification
+        </ResponseField>
+        <ResponseField name="broadcasted_at" type="string">
+          ISO timestamp when the request was broadcasted
+        </ResponseField>
+        <ResponseField name="status" type="string">
+          Current status (`pending`, `claimed`, `completed`, `timeout`, `cancelled`)
+        </ResponseField>
+        <ResponseField name="response_by" type="string">
+          ID of the user who responded (if completed)
+        </ResponseField>
+        <ResponseField name="response_at" type="string">
+          ISO timestamp when the response was submitted
+        </ResponseField>
+        <ResponseField name="response_data" type="object">
+          The actual response data from the reviewer
+        </ResponseField>
+        <ResponseField name="response_time_seconds" type="number">
+          Time taken to respond in seconds
+        </ResponseField>
+        <ResponseField name="created_at" type="string">
+          ISO timestamp when the request was created
+        </ResponseField>
+        <ResponseField name="updated_at" type="string">
+          ISO timestamp when the request was last updated
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.hitl.sh/v1/requests/65f1234567890abcdef12348 \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+```python Python
+import requests
+
+url = "https://api.hitl.sh/v1/requests/65f1234567890abcdef12348"
+headers = {
+    "Authorization": "Bearer your_api_key_here"
+}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.get(
+  'https://api.hitl.sh/v1/requests/65f1234567890abcdef12348',
+  {
+    headers: {
+      'Authorization': 'Bearer your_api_key_here'
+    }
+  }
+);
+
+console.log(response.data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Pending Request
+{
+  "error": false,
+  "msg": "Request retrieved successfully",
+  "data": {
+    "request": {
+      "id": "65f1234567890abcdef12348",
+      "loop_id": "65f1234567890abcdef12345",
+      "creator_id": "65f1234567890abcdef12346",
+      "api_key_id": "65f1234567890abcdef12349",
+      "processing_type": "time-sensitive",
+      "type": "markdown",
+      "priority": "high",
+      "request_text": "Please review this user-generated content for community guidelines compliance.",
+      "image_url": null,
+      "context": {
+        "user_id": "user123",
+        "post_id": "post456",
+        "automated_flags": ["potential_spam"]
+      },
+      "platform": "api",
+      "platform_version": "1.0.0",
+      "response_type": "single_select",
+      "response_config": {
+        "options": ["Approve", "Reject", "Needs Changes"]
+      },
+      "default_response": "Approve",
+      "timeout_at": "2024-03-15T11:30:00Z",
+      "callback_url": "https://example.com/webhook/response",
+      "broadcasted_to": [
+        {
+          "user_id": "65f1234567890abcdef12350",
+          "email": "reviewer1@example.com",
+          "role": "member",
+          "notification_sent": true,
+          "notification_error": null
+        },
+        {
+          "user_id": "65f1234567890abcdef12351",
+          "email": "reviewer2@example.com", 
+          "role": "member",
+          "notification_sent": true,
+          "notification_error": null
+        }
+      ],
+      "broadcasted_at": "2024-03-15T10:30:00Z",
+      "status": "pending",
+      "response_by": null,
+      "response_at": null,
+      "response_data": null,
+      "response_time_seconds": null,
+      "created_at": "2024-03-15T10:30:00Z",
+      "updated_at": "2024-03-15T10:30:00Z"
+    }
+  }
+}
+```
+
+```json Completed Request
+{
+  "error": false,
+  "msg": "Request retrieved successfully",
+  "data": {
+    "request": {
+      "id": "65f1234567890abcdef12348",
+      "loop_id": "65f1234567890abcdef12345",
+      "creator_id": "65f1234567890abcdef12346",
+      "api_key_id": "65f1234567890abcdef12349",
+      "processing_type": "time-sensitive",
+      "type": "markdown",
+      "priority": "high",
+      "request_text": "Please review this user-generated content for community guidelines compliance.",
+      "image_url": null,
+      "context": {
+        "user_id": "user123",
+        "post_id": "post456",
+        "automated_flags": ["potential_spam"]
+      },
+      "platform": "api",
+      "platform_version": "1.0.0",
+      "response_type": "single_select",
+      "response_config": {
+        "options": ["Approve", "Reject", "Needs Changes"]
+      },
+      "default_response": "Approve",
+      "timeout_at": "2024-03-15T11:30:00Z",
+      "callback_url": "https://example.com/webhook/response",
+      "broadcasted_to": [
+        {
+          "user_id": "65f1234567890abcdef12350",
+          "email": "reviewer1@example.com",
+          "role": "member",
+          "notification_sent": true,
+          "notification_error": null
+        }
+      ],
+      "broadcasted_at": "2024-03-15T10:30:00Z",
+      "status": "completed",
+      "response_by": "65f1234567890abcdef12350",
+      "response_at": "2024-03-15T10:45:00Z",
+      "response_data": "Approve",
+      "response_time_seconds": 900.5,
+      "created_at": "2024-03-15T10:30:00Z",
+      "updated_at": "2024-03-15T10:45:00Z"
+    }
+  }
+}
+```
+
+</ResponseExample>
+
+## Request Status Types
+
+<CardGroup cols={2}>
+<Card title="Pending" icon="clock">
+Request is waiting for a reviewer to claim it. No response yet.
+</Card>
+
+<Card title="Claimed" icon="user-check">
+A reviewer has claimed the request and is working on it.
+</Card>
+
+<Card title="Completed" icon="check-circle">
+Reviewer has submitted their response. Check `response_data` field.
+</Card>
+
+<Card title="Cancelled" icon="x-circle">
+Request was cancelled before completion.
+</Card>
+
+<Card title="Timeout" icon="clock-x">
+Request timed out. `default_response` was used as the final response.
+</Card>
+</CardGroup>
+
+## Polling Strategy
+
+### Basic Polling
+Poll every 30 seconds for time-sensitive requests:
+
+```python
+import time
+import requests
+
+def poll_request_status(request_id, api_key, max_attempts=120):
+    """Poll request status for up to 1 hour (120 * 30 seconds)"""
+    url = f"https://api.hitl.sh/v1/requests/{request_id}"
+    headers = {"Authorization": f"Bearer {api_key}"}
+    
+    for attempt in range(max_attempts):
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        
+        if data["data"]["request"]["status"] in ["completed", "cancelled", "timeout"]:
+            return data["data"]["request"]
+        
+        time.sleep(30)  # Wait 30 seconds before next poll
+    
+    return None  # Timeout reached
+```
+
+### Exponential Backoff
+More efficient polling with increasing intervals:
+
+```python
+import time
+import requests
+
+def poll_with_backoff(request_id, api_key):
+    """Poll with exponential backoff"""
+    url = f"https://api.hitl.sh/v1/requests/{request_id}"
+    headers = {"Authorization": f"Bearer {api_key}"}
+    
+    intervals = [5, 10, 30, 60, 120, 300]  # seconds
+    
+    for interval in intervals:
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        
+        status = data["data"]["request"]["status"]
+        if status in ["completed", "cancelled", "timeout"]:
+            return data["data"]["request"]
+        
+        time.sleep(interval)
+    
+    return None
+```
+
+## Response Data Examples
+
+### Single Select Response
+```json
+{
+  "response_data": "Approve"
+}
+```
+
+### Multi Select Response
+```json
+{
+  "response_data": ["Policy Violation", "Spam"]
+}
+```
+
+### Rating Response
+```json
+{
+  "response_data": 4
+}
+```
+
+### Text Response
+```json
+{
+  "response_data": "The content looks good but could benefit from better formatting."
+}
+```
+
+### Boolean Response
+```json
+{
+  "response_data": true
+}
+```
+
+## Next Steps
+
+<Card title="Add Feedback" icon="comment" href="/api-reference/requests/add-feedback">
+  Provide feedback on completed requests to improve reviewer performance.
+</Card>
+
+<Card title="Cancel Request" icon="x" href="/api-reference/requests/cancel-request">
+  Cancel a pending request if it's no longer needed.
+</Card>
+
+<Card title="Set Up Webhooks" icon="webhook" href="/api-reference/webhooks/setup">
+  Get real-time notifications instead of polling for status updates.
+</Card>

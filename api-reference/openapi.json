@@ -1,16 +1,22 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+    "title": "HITL.sh API",
+    "description": "Human-in-the-Loop API for adding human oversight to AI workflows. Manage loops and requests to route decisions to human reviewers.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "HITL.sh Support",
+      "email": "support@hitl.sh",
+      "url": "https://hitl.sh"
+    },
     "license": {
       "name": "MIT"
-    },
-    "version": "1.0.0"
+    }
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api.hitl.sh/v1",
+      "description": "HITL.sh API Server"
     }
   ],
   "security": [
@@ -19,134 +25,915 @@
     }
   ],
   "paths": {
-    "/plants": {
+    "/loops": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "summary": "Get user's loops",
+        "description": "Retrieve all loops created by the authenticated user",
+        "tags": ["Loops"],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Successfully retrieved loops",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Loops retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "loops": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Loop"
+                          }
+                        },
+                        "count": {
+                          "type": "integer",
+                          "example": 3
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new loop",
+        "description": "Create a new loop with automatic creator membership, invite code, QR code, and join URL generation",
+        "tags": ["Loops"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLoopRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Loop created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Loop created successfully with QR code"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreateLoopResponse"
+                    }
                   }
                 }
               }
             }
           },
           "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
+            "$ref": "#/components/responses/BadRequest"
           },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
           }
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/loops/{id}": {
+      "get": {
+        "summary": "Get loop by ID",
+        "description": "Retrieve a specific loop by its ID",
+        "tags": ["Loops"],
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "ID of plant to delete",
             "required": true,
+            "description": "Loop ID",
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Loop retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Loop retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "loop": {
+                          "$ref": "#/components/schemas/Loop"
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
+      },
+      "put": {
+        "summary": "Update loop",
+        "description": "Update an existing loop's details",
+        "tags": ["Loops"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Loop ID",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/UpdateLoopRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Loop updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Loop updated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "loop": {
+                          "$ref": "#/components/schemas/Loop"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete loop",
+        "description": "Delete a loop (only creators can delete loops)",
+        "tags": ["Loops"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Loop ID",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Loop deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Loop deleted successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "loop_id": {
+                          "type": "string",
+                          "example": "65f1234567890abcdef12345"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/loops/{id}/members": {
+      "get": {
+        "summary": "Get loop members",
+        "description": "Retrieve all members of a specific loop",
+        "tags": ["Loops"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Loop ID",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Loop members retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Loop members retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "members": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Member"
+                          }
+                        },
+                        "total_count": {
+                          "type": "integer",
+                          "example": 5
+                        },
+                        "active_count": {
+                          "type": "integer",
+                          "example": 4
+                        },
+                        "pending_count": {
+                          "type": "integer",
+                          "example": 1
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/loops/{id}/members/{userId}": {
+      "delete": {
+        "summary": "Remove loop member",
+        "description": "Remove a member from a loop (only creators can remove members)",
+        "tags": ["Loops"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Loop ID",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User ID to remove",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Member removed from loop successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "loop_id": {
+                          "type": "string",
+                          "example": "65f1234567890abcdef12345"
+                        },
+                        "user_id": {
+                          "type": "string",
+                          "example": "65f1234567890abcdef12346"
+                        },
+                        "removed_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/test": {
+      "get": {
+        "summary": "Test API key",
+        "description": "Verify that your API key is valid and working correctly. This endpoint returns basic account information and API key status.",
+        "tags": ["Authentication"],
+        "responses": {
+          "200": {
+            "description": "API key is valid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "API key is valid"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "api_key_id": {
+                          "type": "string",
+                          "description": "Unique identifier of the API key",
+                          "example": "65f1234567890abcdef12349"
+                        },
+                        "user_id": {
+                          "type": "string",
+                          "description": "User ID associated with the API key",
+                          "example": "65f1234567890abcdef12346"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email",
+                          "description": "Email address associated with the account",
+                          "example": "user@example.com"
+                        },
+                        "account_status": {
+                          "type": "string",
+                          "enum": ["active", "suspended"],
+                          "description": "Current account status",
+                          "example": "active"
+                        },
+                        "rate_limit": {
+                          "type": "object",
+                          "properties": {
+                            "limit": {
+                              "type": "integer",
+                              "description": "Maximum requests per hour",
+                              "example": 100
+                            },
+                            "remaining": {
+                              "type": "integer",
+                              "description": "Remaining requests in current hour",
+                              "example": 95
+                            },
+                            "reset_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "When the rate limit resets"
+                            }
+                          }
+                        },
+                        "permissions": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "API key permissions",
+                          "example": ["loops:read", "loops:write", "requests:read", "requests:write"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/requests": {
+      "get": {
+        "summary": "Get user's requests",
+        "description": "Retrieve all requests created by the authenticated API key",
+        "tags": ["Requests"],
+        "responses": {
+          "200": {
+            "description": "Requests retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Requests retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "requests": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Request"
+                          }
+                        },
+                        "count": {
+                          "type": "integer",
+                          "example": 15
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
+          }
+        }
+      }
+    },
+    "/requests/{id}": {
+      "get": {
+        "summary": "Get request by ID",
+        "description": "Retrieve a specific request by its ID",
+        "tags": ["Requests"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Request ID",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Request retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "request": {
+                          "$ref": "#/components/schemas/Request"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cancel request",
+        "description": "Cancel a pending or claimed request",
+        "tags": ["Requests"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Request ID",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request cancelled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Request cancelled successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "example": "65f1234567890abcdef12345"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "cancelled"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/requests/{id}/feedback": {
+      "post": {
+        "summary": "Add request feedback",
+        "description": "Add feedback to a completed request",
+        "tags": ["Requests"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Request ID",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddFeedbackRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feedback added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Feedback added successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "example": "65f1234567890abcdef12345"
+                        },
+                        "feedback": {
+                          "type": "object",
+                          "example": {
+                            "rating": 5,
+                            "comment": "Great response, very helpful"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/loops/{loopId}/requests": {
+      "get": {
+        "summary": "Get loop requests",
+        "description": "Retrieve all requests for a specific loop",
+        "tags": ["Requests"],
+        "parameters": [
+          {
+            "name": "loopId",
+            "in": "path",
+            "required": true,
+            "description": "Loop ID",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Loop requests retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Loop requests retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "loop_id": {
+                          "type": "string",
+                          "example": "65f1234567890abcdef12345"
+                        },
+                        "requests": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Request"
+                          }
+                        },
+                        "count": {
+                          "type": "integer",
+                          "example": 8
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create request in loop",
+        "description": "Create a new request within a specific loop and broadcast it to active members",
+        "tags": ["Requests"],
+        "parameters": [
+          {
+            "name": "loopId",
+            "in": "path",
+            "required": true,
+            "description": "Loop ID",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Request created and broadcasted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "Request created and broadcasted successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreateRequestResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitExceeded"
           }
         }
       }
@@ -154,55 +941,618 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "Loop": {
         "type": "object",
+        "required": ["id", "name", "icon", "creator_id", "members", "created_at"],
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the loop",
+            "example": "65f1234567890abcdef12345"
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+          "name": {
+            "type": "string",
+            "description": "Name of the loop",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Content Moderation Review"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the loop's purpose",
+            "maxLength": 500,
+            "example": "Review flagged content for community guidelines compliance"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon identifier for the loop",
+            "example": "shield-check"
+          },
+          "creator_id": {
+            "type": "string",
+            "description": "ID of the user who created the loop",
+            "example": "65f1234567890abcdef12346"
+          },
+          "members": {
+            "type": "array",
+            "description": "List of loop members",
+            "items": {
+              "$ref": "#/components/schemas/Member"
+            }
+          },
+          "member_count": {
+            "type": "integer",
+            "description": "Total number of members in the loop",
+            "example": 5
+          },
+          "pending_count": {
+            "type": "integer",
+            "description": "Number of pending member invitations",
+            "example": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the loop was created"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the loop was last updated"
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
+      "Member": {
+        "type": "object",
+        "required": ["user_id", "email", "status"],
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "ID of the member user",
+            "example": "65f1234567890abcdef12347"
           },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of the member",
+            "example": "reviewer@example.com"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "active"],
+            "description": "Membership status",
+            "example": "active"
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the member joined",
+            "nullable": true
           }
-        ]
+        }
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+      "Request": {
+        "type": "object",
+        "required": ["id", "loop_id", "creator_id", "processing_type", "type", "priority", "request_text", "response_type", "status", "created_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the request",
+            "example": "65f1234567890abcdef12348"
+          },
+          "loop_id": {
+            "type": "string",
+            "description": "ID of the loop this request belongs to",
+            "example": "65f1234567890abcdef12345"
+          },
+          "creator_id": {
+            "type": "string",
+            "description": "ID of the user who created the request",
+            "example": "65f1234567890abcdef12346"
+          },
+          "api_key_id": {
+            "type": "string",
+            "description": "ID of the API key used to create the request",
+            "example": "65f1234567890abcdef12349"
+          },
+          "processing_type": {
+            "type": "string",
+            "enum": ["time-sensitive", "deferred"],
+            "description": "Processing urgency type",
+            "example": "time-sensitive"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["markdown", "image"],
+            "description": "Content type of the request",
+            "example": "markdown"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"],
+            "description": "Priority level of the request",
+            "example": "high"
+          },
+          "request_text": {
+            "type": "string",
+            "description": "The main content of the request",
+            "minLength": 1,
+            "maxLength": 2000,
+            "example": "Please review this user-generated content for compliance with community guidelines."
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the image to review (required when type is 'image')",
+            "nullable": true,
+            "example": "https://example.com/image.jpg"
+          },
+          "context": {
+            "type": "object",
+            "description": "Additional context data for the request",
+            "nullable": true,
+            "example": {
+              "user_id": "user123",
+              "post_id": "post456"
+            }
+          },
+          "platform": {
+            "type": "string",
+            "enum": ["n8n", "zapier", "web_portal", "api", "mobile", "webhook"],
+            "description": "Platform that created the request",
+            "example": "api"
+          },
+          "platform_version": {
+            "type": "string",
+            "description": "Version of the platform used",
+            "nullable": true,
+            "example": "1.0.0"
+          },
+          "response_type": {
+            "type": "string",
+            "enum": ["text", "single_select", "multi_select", "rating", "number", "boolean"],
+            "description": "Type of response expected from reviewers",
+            "example": "single_select"
+          },
+          "response_config": {
+            "type": "object",
+            "description": "Configuration for the response type",
+            "example": {
+              "options": ["Approve", "Reject", "Needs Changes"]
+            }
+          },
+          "default_response": {
+            "type": "object",
+            "description": "Default response if timeout occurs",
+            "example": "Approve"
+          },
+          "timeout_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the request times out"
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to call when request is completed",
+            "nullable": true,
+            "example": "https://example.com/webhook/response"
+          },
+          "broadcasted_to": {
+            "type": "array",
+            "description": "List of users who received the request notification",
+            "items": {
+              "$ref": "#/components/schemas/BroadcastRecipient"
+            }
+          },
+          "broadcasted_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the request was broadcasted"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "claimed", "completed", "timeout", "cancelled"],
+            "description": "Current status of the request",
+            "example": "pending"
+          },
+          "response_by": {
+            "type": "string",
+            "description": "ID of the user who responded",
+            "nullable": true,
+            "example": "65f1234567890abcdef12350"
+          },
+          "response_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the response was submitted",
+            "nullable": true
+          },
+          "response_data": {
+            "type": "object",
+            "description": "The actual response data from the reviewer",
+            "nullable": true,
+            "example": "Approve"
+          },
+          "response_time_seconds": {
+            "type": "number",
+            "description": "Time taken to respond in seconds",
+            "nullable": true,
+            "example": 1800.5
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the request was created"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the request was last updated"
+          }
+        }
+      },
+      "BroadcastRecipient": {
+        "type": "object",
+        "required": ["user_id", "email", "role", "notification_sent"],
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "ID of the recipient user",
+            "example": "65f1234567890abcdef12347"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email of the recipient",
+            "example": "reviewer@example.com"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role of the recipient in the loop",
+            "example": "member"
+          },
+          "notification_sent": {
+            "type": "boolean",
+            "description": "Whether the notification was sent successfully",
+            "example": true
+          },
+          "notification_error": {
+            "type": "string",
+            "description": "Error message if notification failed",
+            "nullable": true
+          }
+        }
+      },
+      "CreateLoopRequest": {
+        "type": "object",
+        "required": ["name", "icon"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the loop",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Content Moderation Review"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the loop's purpose",
+            "maxLength": 500,
+            "example": "Review flagged content for community guidelines compliance"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon identifier for the loop",
+            "example": "shield-check"
+          }
+        }
+      },
+      "CreateLoopResponse": {
+        "type": "object",
+        "required": ["loop", "invite_code", "qr_code_base64", "qr_code_url", "join_url"],
+        "properties": {
+          "loop": {
+            "$ref": "#/components/schemas/Loop"
+          },
+          "invite_code": {
+            "type": "string",
+            "description": "Generated invite code for joining the loop",
+            "example": "ABC123DEF"
+          },
+          "qr_code_base64": {
+            "type": "string",
+            "description": "Base64 encoded QR code image",
+            "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+          },
+          "qr_code_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to access the QR code image",
+            "example": "https://api.hitl.sh/qr/ABC123DEF.png"
+          },
+          "join_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Direct URL for joining the loop",
+            "example": "https://app.hitl.sh/join/ABC123DEF"
+          }
+        }
+      },
+      "UpdateLoopRequest": {
         "type": "object",
         "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
+          "name": {
+            "type": "string",
+            "description": "Name of the loop",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Updated Content Moderation"
           },
-          "message": {
-            "type": "string"
+          "description": {
+            "type": "string",
+            "description": "Description of the loop's purpose",
+            "maxLength": 500,
+            "example": "Updated description for content moderation workflow"
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon identifier for the loop",
+            "example": "shield-alt"
+          }
+        }
+      },
+      "CreateRequestRequest": {
+        "type": "object",
+        "required": ["processing_type", "type", "priority", "request_text", "response_type", "response_config", "default_response", "platform"],
+        "properties": {
+          "processing_type": {
+            "type": "string",
+            "enum": ["time-sensitive", "deferred"],
+            "description": "Processing urgency type",
+            "example": "time-sensitive"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["markdown", "image"],
+            "description": "Content type of the request",
+            "example": "markdown"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"],
+            "description": "Priority level of the request",
+            "example": "high"
+          },
+          "request_text": {
+            "type": "string",
+            "description": "The main content of the request",
+            "minLength": 1,
+            "maxLength": 2000,
+            "example": "Please review this user-generated content for compliance."
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the image to review (required when type is 'image')",
+            "example": "https://example.com/image.jpg"
+          },
+          "context": {
+            "type": "object",
+            "description": "Additional context data for the request",
+            "example": {
+              "user_id": "user123",
+              "post_id": "post456"
+            }
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 86400,
+            "description": "Timeout in seconds (required for time-sensitive, optional for deferred)",
+            "example": 3600
+          },
+          "response_type": {
+            "type": "string",
+            "enum": ["text", "single_select", "multi_select", "rating", "number", "boolean"],
+            "description": "Type of response expected from reviewers",
+            "example": "single_select"
+          },
+          "response_config": {
+            "type": "object",
+            "description": "Configuration for the response type",
+            "example": {
+              "options": ["Approve", "Reject", "Needs Changes"]
+            }
+          },
+          "default_response": {
+            "type": "object",
+            "description": "Default response if timeout occurs",
+            "example": "Approve"
+          },
+          "platform": {
+            "type": "string",
+            "enum": ["n8n", "zapier", "web_portal", "api", "mobile", "webhook"],
+            "description": "Platform creating the request",
+            "example": "api"
+          },
+          "platform_version": {
+            "type": "string",
+            "description": "Version of the platform used",
+            "example": "1.0.0"
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to call when request is completed",
+            "example": "https://example.com/webhook/response"
+          }
+        }
+      },
+      "CreateRequestResponse": {
+        "type": "object",
+        "required": ["request_id", "status", "processing_type", "type", "priority", "timeout_at", "broadcasted_to", "notifications_sent", "polling_url"],
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "description": "ID of the created request",
+            "example": "65f1234567890abcdef12348"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "claimed", "completed", "timeout", "cancelled"],
+            "description": "Current status of the request",
+            "example": "pending"
+          },
+          "processing_type": {
+            "type": "string",
+            "enum": ["time-sensitive", "deferred"],
+            "description": "Processing urgency type",
+            "example": "time-sensitive"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["markdown", "image"],
+            "description": "Content type of the request",
+            "example": "markdown"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"],
+            "description": "Priority level of the request",
+            "example": "high"
+          },
+          "timeout_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the request times out"
+          },
+          "broadcasted_to": {
+            "type": "integer",
+            "description": "Number of users who received the request",
+            "example": 4
+          },
+          "notifications_sent": {
+            "type": "integer",
+            "description": "Number of successful push notifications sent",
+            "example": 3
+          },
+          "polling_url": {
+            "type": "string",
+            "description": "URL for polling request status",
+            "example": "/v1/api/requests/65f1234567890abcdef12348"
+          }
+        }
+      },
+      "AddFeedbackRequest": {
+        "type": "object",
+        "required": ["feedback"],
+        "properties": {
+          "feedback": {
+            "type": "object",
+            "description": "Feedback data for the completed request",
+            "example": {
+              "rating": 5,
+              "comment": "Great response, very helpful"
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error", "msg"],
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "example": true
+          },
+          "msg": {
+            "type": "string",
+            "description": "Error message",
+            "example": "Invalid request format"
+          },
+          "data": {
+            "type": "object",
+            "description": "Additional error details",
+            "nullable": true
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request format or validation error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "msg": "Validation failed",
+              "data": "name is required"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Invalid or missing authorization token",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "msg": "Invalid authorization token"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Access denied to this resource",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "msg": "Access denied to this loop"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "msg": "Loop not found"
+            }
+          }
+        }
+      },
+      "RateLimitExceeded": {
+        "description": "API rate limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "msg": "API rate limit exceeded",
+              "data": {
+                "usage_count": 100,
+                "usage_limit": 100,
+                "remaining": 0
+              }
+            }
           }
         }
       }
@@ -210,8 +1560,24 @@
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "bearerFormat": "Token",
+        "description": "API key for HITL.sh API access (100 requests/hour limit)"
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Authentication and API key testing endpoints"
+    },
+    {
+      "name": "Loops",
+      "description": "Loop management endpoints for creating and managing human review workflows"
+    },
+    {
+      "name": "Requests",
+      "description": "Request management endpoints for creating and tracking human review requests"
+    }
+  ]
 }

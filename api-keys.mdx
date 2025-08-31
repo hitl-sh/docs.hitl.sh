@@ -11,11 +11,11 @@ API keys are your secure credentials for integrating HITL.sh with your applicati
 
 API keys in HITL.sh serve as your application's identity and provide secure access to:
 
-- **Loop Management**: Create, update, and delete loops
-- **Request Submission**: Send requests for human review
-- **Response Retrieval**: Fetch human decisions and feedback
+- **Loop Management**: Create, read, update, and delete loops
+- **Request Operations**: Submit requests and retrieve responses
+- **Loop Members**: Add and remove reviewers from loops  
 - **Webhook Configuration**: Set up event notifications
-- **Analytics Access**: Retrieve performance metrics and reports
+- **Request Feedback**: Add feedback to completed requests
 
 <Warning>
 Keep your API keys secure and never expose them in client-side code or public repositories. Treat them like passwords.
@@ -24,29 +24,26 @@ Keep your API keys secure and never expose them in client-side code or public re
 ## Generating Your First API Key
 
 <Steps>
-<Step title="Access API Settings">
-Navigate to your dashboard and click on "Settings" → "API Keys" in the sidebar.
+<Step title="Log In to Dashboard">
+Visit [app.hitl.sh](https://app.hitl.sh) and log in to your account.
 </Step>
 
-<Step title="Create New Key">
-Click the "Generate New API Key" button to create a new key.
+<Step title="Navigate to API Keys">
+Go to Settings → API Keys from the main navigation menu.
 </Step>
 
-<Step title="Configure Permissions">
-Set the appropriate permissions for your use case:
-- **Read**: View loops, requests, and responses
-- **Write**: Create and update loops and requests
-- **Admin**: Full access including deletion and user management
+<Step title="Create New API Key">
+Click the "Create New API Key" button to generate a new key.
 </Step>
 
-<Step title="Copy and Store">
-Copy the generated API key immediately and store it securely. You won't be able to see the full key again.
+<Step title="Copy and Store Securely">
+Copy the generated API key immediately and store it securely in environment variables. The key is only shown once for security reasons.
 </Step>
 </Steps>
 
-<Info>
-API keys are generated as 64-character hexadecimal strings. Store them securely in environment variables or secure configuration files.
-</Info>
+<Warning>
+API keys are shown only once when created. Store them immediately in a secure location like environment variables or a secrets manager.
+</Warning>
 
 ## API Key Management
 
@@ -60,28 +57,28 @@ Your dashboard shows all active API keys with their:
 - **Last Used**: Most recent activity timestamp
 - **Status**: Active, suspended, or expired
 
-### Key Permissions
+### API Key Permissions
+
+API keys have specific permissions based on your account and plan:
 
 <AccordionGroup>
-<Accordion title="Read Permissions">
-- View loop configurations and settings
-- Retrieve request and response data
-- Access analytics and performance metrics
-- Read webhook configurations
+<Accordion title="Loop Operations">
+- Create, read, update, and delete loops
+- Manage loop members (add/remove reviewers)
+- View loop statistics and activity
 </Accordion>
 
-<Accordion title="Write Permissions">
-- Create and update loops
-- Submit new requests for review
-- Modify webhook settings
-- Update loop configurations
+<Accordion title="Request Operations">
+- Create requests in loops you own
+- View and cancel your requests
+- Add feedback to completed requests
+- Access request history and responses
 </Accordion>
 
-<Accordion title="Admin Permissions">
-- Delete loops and requests
-- Manage user accounts and permissions
-- Configure system-wide settings
-- Access billing and usage information
+<Accordion title="Webhook Configuration">
+- Set up webhook endpoints for real-time notifications
+- Configure webhook events and filters
+- View webhook delivery logs and status
 </Accordion>
 </AccordionGroup>
 
@@ -115,42 +112,132 @@ Include your API key in the `Authorization` header of all API requests:
 Authorization: Bearer YOUR_API_KEY_HERE
 ```
 
-### Example API Request
+### Testing Your API Key
 
-<RequestExample>
+Use the test endpoint to verify your API key is working correctly:
+
+<CodeGroup>
 ```bash cURL
-curl -X POST 'https://api.hitl.sh/v1/loops' \
-  -H 'Authorization: Bearer YOUR_API_KEY' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "name": "Content Moderation",
-    "description": "Review flagged content for inappropriate material"
-  }'
+curl -X GET 'https://api.hitl.sh/v1/test' \
+  -H 'Authorization: Bearer YOUR_API_KEY'
 ```
-</RequestExample>
 
-<ResponseExample>
-```json Success
+```python Python
+import requests
+
+headers = {
+    'Authorization': 'Bearer YOUR_API_KEY'
+}
+
+response = requests.get('https://api.hitl.sh/v1/test', headers=headers)
+data = response.json()
+
+if data["error"] == False:
+    print("✅ API key is valid!")
+    print(f"Rate limit: {data['data']['rate_limit']['remaining']}/{data['data']['rate_limit']['limit']}")
+else:
+    print("❌ API key validation failed")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const headers = {
+    'Authorization': 'Bearer YOUR_API_KEY'
+};
+
+async function testApiKey() {
+    try {
+        const response = await axios.get('https://api.hitl.sh/v1/test', { headers });
+        if (!response.data.error) {
+            console.log('✅ API key is valid!');
+            console.log(`Rate limit: ${response.data.data.rate_limit.remaining}/${response.data.data.rate_limit.limit}`);
+        }
+    } catch (error) {
+        console.error('❌ API key validation failed:', error.response?.data);
+    }
+}
+
+testApiKey();
+```
+</CodeGroup>
+
+**Expected Response:**
+```json
 {
-  "id": "loop_abc123",
-  "name": "Content Moderation",
-  "description": "Review flagged content for inappropriate material",
-  "status": "active",
-  "created_at": "2024-01-15T10:30:00Z"
+  "error": false,
+  "msg": "API key is valid",
+  "data": {
+    "api_key_id": "65f1234567890abcdef12349",
+    "user_id": "65f1234567890abcdef12346",
+    "email": "user@example.com", 
+    "account_status": "active",
+    "rate_limit": {
+      "limit": 100,
+      "remaining": 95,
+      "reset_at": "2024-03-15T15:00:00Z"
+    },
+    "permissions": ["loops:read", "loops:write", "requests:read", "requests:write"]
+  }
 }
 ```
-</ResponseExample>
+
+## Rate Limits
+
+API keys have usage limits to ensure fair usage:
+
+<Card title="Current Rate Limits" icon="clock">
+- **100 requests per hour** per API key
+- Rate limits reset hourly from the first request
+- Rate limit information included in response headers
+</Card>
+
+**Rate Limit Headers:**
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 85  
+X-RateLimit-Reset: 1642237200
+```
+
+### Handling Rate Limits
+
+```python
+import time
+import requests
+
+def make_api_request_with_retry(url, headers, data=None, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            if data:
+                response = requests.post(url, headers=headers, json=data)
+            else:
+                response = requests.get(url, headers=headers)
+            
+            if response.status_code == 429:
+                # Rate limited - wait and retry
+                retry_after = int(response.headers.get('Retry-After', 60))
+                print(f"Rate limited. Waiting {retry_after} seconds...")
+                time.sleep(retry_after)
+                continue
+                
+            return response
+            
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise e
+            time.sleep(2 ** attempt)  # Exponential backoff
+    
+    return None
+```
 
 ## Integration Examples
 
-### Python Integration
+### Creating Your First Loop
 
 ```python
 import requests
 
 api_key = "YOUR_API_KEY"
-base_url = "https://api.hitl.sh/v1"
-
 headers = {
     "Authorization": f"Bearer {api_key}",
     "Content-Type": "application/json"
@@ -158,43 +245,63 @@ headers = {
 
 # Create a new loop
 response = requests.post(
-    f"{base_url}/loops",
+    "https://api.hitl.sh/v1/api/loops",
     headers=headers,
     json={
-        "name": "Quality Review",
-        "description": "Review AI-generated content quality"
+        "name": "Content Moderation Loop",
+        "description": "Review user-generated content for compliance"
     }
 )
+
+if response.status_code == 200:
+    loop_data = response.json()
+    print(f"✅ Loop created: {loop_data['data']['id']}")
 ```
 
-### Node.js Integration
+### Submitting a Request
 
 ```javascript
 const axios = require('axios');
 
 const apiKey = 'YOUR_API_KEY';
-const baseURL = 'https://api.hitl.sh/v1';
+const loopId = 'your_loop_id';
 
-const client = axios.create({
-  baseURL,
-  headers: {
+const headers = {
     'Authorization': `Bearer ${apiKey}`,
     'Content-Type': 'application/json'
-  }
-});
-
-// Submit a request for review
-const submitRequest = async (loopId, content) => {
-  try {
-    const response = await client.post(`/loops/${loopId}/requests`, {
-      content,
-      priority: 'high'
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error submitting request:', error);
-  }
 };
+
+async function submitRequest() {
+    try {
+        const response = await axios.post(
+            `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
+            {
+                processing_type: 'time-sensitive',
+                type: 'markdown',
+                priority: 'medium',
+                request_text: 'Please review this content for appropriateness.',
+                response_type: 'single_select',
+                response_config: {
+                    options: [
+                        { value: 'approve', label: 'Approve' },
+                        { value: 'reject', label: 'Reject' }
+                    ],
+                    required: true
+                },
+                timeout_seconds: 3600,
+                platform: 'api'
+            },
+            { headers }
+        );
+        
+        console.log('✅ Request submitted:', response.data.data.id);
+        return response.data.data;
+    } catch (error) {
+        console.error('❌ Error submitting request:', error.response?.data);
+    }
+}
+
+submitRequest();
 ```
 
 ## Troubleshooting
@@ -202,33 +309,96 @@ const submitRequest = async (loopId, content) => {
 ### Common Issues
 
 <AccordionGroup>
-<Accordion title="Invalid API Key">
-- Verify the key is copied correctly without extra spaces
-- Check if the key has expired or been revoked
-- Ensure the key has the required permissions
+<Accordion title="401 Unauthorized - Invalid API Key">
+**Symptoms:** `{"error": true, "msg": "Invalid authorization token"}`
+
+**Solutions:**
+- Verify the API key is copied correctly without extra spaces
+- Check if the key has been revoked in your dashboard
+- Ensure you're using the Bearer format: `Authorization: Bearer YOUR_API_KEY`
+- Confirm you're not including extra characters or line breaks
 </Accordion>
 
-<Accordion title="Permission Denied">
-- Review the key's permission settings
-- Check if the requested operation requires higher permissions
-- Verify the key is associated with the correct account
+<Accordion title="403 Forbidden - Insufficient Permissions">
+**Symptoms:** `{"error": true, "msg": "Access denied to this resource"}`
+
+**Solutions:**
+- Verify your API key has the required permissions
+- Check if you're trying to access resources you don't own
+- Ensure your account has the necessary features enabled
 </Accordion>
 
-<Accordion title="Rate Limiting">
-- Check your current usage against plan limits
-- Implement exponential backoff for retries
-- Consider upgrading your plan for higher limits
+<Accordion title="429 Rate Limited">
+**Symptoms:** `{"error": true, "msg": "API rate limit exceeded"}`
+
+**Solutions:**
+- Wait for the rate limit to reset (check `X-RateLimit-Reset` header)
+- Implement exponential backoff in your retry logic
+- Use the `/test` endpoint to check your current rate limit status
+- Consider batching requests to optimize usage
+</Accordion>
+
+<Accordion title="Network or Connection Issues">
+**Symptoms:** Connection timeouts or network errors
+
+**Solutions:**
+- Verify you can reach `api.hitl.sh` from your network
+- Check if you're behind a corporate firewall blocking the API
+- Ensure you're using HTTPS (not HTTP) for all requests
+- Try from a different network to isolate connectivity issues
 </Accordion>
 </AccordionGroup>
 
+### Debug Authentication
+
+Use this debug script to troubleshoot API key issues:
+
+```python
+import requests
+
+def debug_api_key(api_key):
+    """Debug API key authentication issues"""
+    headers = {"Authorization": f"Bearer {api_key}"}
+    
+    try:
+        response = requests.get("https://api.hitl.sh/v1/test", headers=headers)
+        
+        print(f"Status Code: {response.status_code}")
+        print(f"Response: {response.json()}")
+        
+        if response.status_code == 200:
+            data = response.json()["data"]
+            print("\n🔍 API Key Debug Info:")
+            print(f"   Account: {data['email']}")
+            print(f"   Status: {data['account_status']}")
+            print(f"   Rate Limit: {data['rate_limit']['remaining']}/{data['rate_limit']['limit']}")
+            print(f"   Permissions: {', '.join(data['permissions'])}")
+        
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+# Test your API key
+debug_api_key("YOUR_API_KEY_HERE")
+```
+
 ## Next Steps
 
-With your API key configured, you're ready to:
+Now that you have your API key set up, you're ready to:
 
-<Card title="Create Your First Loop" icon="rocket" href="/first-loop">
+<CardGroup cols={2}>
+<Card title="Test Your API Key" icon="vial" href="/api-reference/test-api-key">
+Verify your API key is working with the test endpoint.
+</Card>
+
+<Card title="Create Your First Loop" icon="plus" href="/api-reference/loops/create-loop">
 Set up a human-in-the-loop workflow using the API.
 </Card>
 
-<Card title="Explore API Reference" icon="book" href="/api-reference/introduction">
-Learn about all available API endpoints and parameters.
+<Card title="Submit Your First Request" icon="paper-plane" href="/api-reference/requests/create-request">
+Send content for human review and get responses.
 </Card>
+
+<Card title="API Reference" icon="book" href="/api-reference/introduction">
+Explore all available endpoints and integration options.
+</Card>
+</CardGroup>

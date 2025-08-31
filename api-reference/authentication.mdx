@@ -1,0 +1,446 @@
+---
+title: "Authentication"
+description: "Learn about API key authentication and security best practices for accessing the HITL.sh API"
+---
+
+# Authentication
+
+HITL.sh uses API key authentication for secure access to the API. All requests must include your API key in the Authorization header using the Bearer token format.
+
+## API Key Authentication
+
+API keys are designed for server-to-server communication and automated workflows. They provide access to the HITL.sh API at `https://api.hitl.sh/v1`.
+
+### Getting Your API Key
+
+1. **Log in** to your HITL.sh dashboard
+2. **Navigate** to Settings → API Keys
+3. **Click** "Create New API Key"
+4. **Copy** the generated key (shown only once)
+5. **Store securely** in your environment variables
+
+### Using API Keys
+
+Include your API key in the `Authorization` header with the `Bearer` prefix:
+
+```bash
+curl -H "Authorization: Bearer your_api_key_here" \
+     -H "Content-Type: application/json" \
+     https://api.hitl.sh/v1/loops
+```
+
+<CodeGroup>
+
+```python Python
+import requests
+
+headers = {
+    'Authorization': 'Bearer your_api_key_here',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get('https://api.hitl.sh/v1/loops', headers=headers)
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const headers = {
+    'Authorization': 'Bearer your_api_key_here',
+    'Content-Type': 'application/json'
+};
+
+const response = await axios.get('https://api.hitl.sh/v1/loops', { headers });
+```
+
+```go Go
+package main
+
+import (
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.hitl.sh/v1/loops", nil)
+    req.Header.Set("Authorization", "Bearer your_api_key_here")
+    req.Header.Set("Content-Type", "application/json")
+    
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+}
+```
+
+```php PHP
+<?php
+$curl = curl_init();
+
+curl_setopt_array($curl, [
+    CURLOPT_URL => "https://api.hitl.sh/v1/loops",
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        "Authorization: Bearer your_api_key_here",
+        "Content-Type: application/json"
+    ],
+]);
+
+$response = curl_exec($curl);
+curl_close($curl);
+?>
+```
+
+</CodeGroup>
+
+### API Key Rate Limits
+
+Each API key has the following limits:
+
+<Card title="Rate Limits" icon="clock">
+- **100 requests per hour** per API key
+- Resets every hour from first request
+- Rate limit headers included in all responses
+</Card>
+
+**Rate limit headers:**
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 85
+X-RateLimit-Reset: 1642237200
+```
+
+### API Key Permissions
+
+API keys have specific permissions based on your account:
+
+<AccordionGroup>
+<Accordion title="Loop Management">
+- Create, read, update, and delete loops
+- Manage loop members (add/remove)
+- View loop statistics and analytics
+</Accordion>
+
+<Accordion title="Request Operations">
+- Create requests in loops you own
+- View and cancel your requests
+- Add feedback to completed requests
+- Access request history and analytics
+</Accordion>
+
+<Accordion title="Webhook Configuration">
+- Set up webhook endpoints
+- Configure webhook events
+- View webhook delivery logs
+</Accordion>
+</AccordionGroup>
+
+## Security Best Practices
+
+### API Key Security
+
+<Steps>
+<Step title="Environment Variables">
+Store API keys in environment variables, never in code:
+
+```bash
+export HITL_API_KEY="your_api_key_here"
+```
+
+```python
+import os
+api_key = os.environ.get('HITL_API_KEY')
+```
+</Step>
+
+<Step title="Key Rotation">
+Rotate API keys regularly:
+- Set up automatic rotation (recommended: every 90 days)
+- Have a backup key ready before rotating
+- Update all systems using the old key
+</Step>
+
+<Step title="Least Privilege">
+Use separate API keys for different environments:
+- Development keys with limited permissions
+- Production keys with full access
+- Testing keys for CI/CD pipelines
+</Step>
+
+<Step title="Monitor Usage">
+Track API key usage in your dashboard:
+- Monitor request patterns for anomalies
+- Set up alerts for unusual activity
+- Review access logs regularly
+</Step>
+</Steps>
+
+### Secure Headers
+
+Always use HTTPS and proper security headers:
+
+```python
+import requests
+
+headers = {
+    'Authorization': 'Bearer your_api_key_here',
+    'Content-Type': 'application/json',
+    'User-Agent': 'YourApp/1.0.0',
+    'Accept': 'application/json'
+}
+
+# Always use HTTPS
+response = requests.get('https://api.hitl.sh/v1/loops', headers=headers)
+```
+
+## Error Handling
+
+### Authentication Errors
+
+<AccordionGroup>
+<Accordion title="401 Unauthorized - Invalid API Key">
+```json
+{
+  "error": true,
+  "msg": "Invalid authorization token"
+}
+```
+
+**Solutions:**
+- Verify API key is correct
+- Check if key has been revoked
+- Ensure proper Authorization header format with "Bearer " prefix
+- Verify you're not including extra spaces or characters
+</Accordion>
+
+<Accordion title="401 Unauthorized - Missing Authorization Header">
+```json
+{
+  "error": true,
+  "msg": "Missing or invalid authorization header"
+}
+```
+
+**Solutions:**
+- Include the Authorization header in your request
+- Use the correct format: `Authorization: Bearer your_api_key_here`
+- Check header name capitalization (case-sensitive)
+</Accordion>
+
+<Accordion title="403 Forbidden - Insufficient Permissions">
+```json
+{
+  "error": true,
+  "msg": "Access denied to this resource"
+}
+```
+
+**Solutions:**
+- Check API key permissions
+- Verify resource ownership
+- Contact support for permission updates
+</Accordion>
+
+<Accordion title="429 Rate Limit Exceeded">
+```json
+{
+  "error": true,
+  "msg": "API rate limit exceeded",
+  "data": {
+    "usage_count": 100,
+    "usage_limit": 100,
+    "remaining": 0
+  }
+}
+```
+
+**Solutions:**
+- Wait for rate limit reset
+- Implement exponential backoff
+- Upgrade to higher tier if needed
+</Accordion>
+</AccordionGroup>
+
+### Retry Logic
+
+Implement robust retry logic for authentication failures:
+
+<CodeGroup>
+
+```python Python
+import time
+import requests
+from functools import wraps
+
+def retry_auth(max_retries=3):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    response = func(*args, **kwargs)
+                    if response.status_code == 401:
+                        # Log the authentication failure
+                        print(f"Authentication failed on attempt {attempt + 1}")
+                        if attempt < max_retries - 1:
+                            # Wait before retrying (maybe refresh API key)
+                            time.sleep(2 ** attempt)
+                            continue
+                    return response
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        raise e
+                    time.sleep(2 ** attempt)  # Exponential backoff
+            return None
+        return wrapper
+    return decorator
+
+@retry_auth()
+def make_api_request(url, headers):
+    return requests.get(url, headers=headers)
+```
+
+```javascript Node.js
+async function makeRequestWithRetry(url, options, maxRetries = 3) {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+            
+            if (response.status === 401) {
+                console.log(`Authentication failed on attempt ${attempt + 1}`);
+                if (attempt < maxRetries - 1) {
+                    // Wait before retrying
+                    await new Promise(resolve => 
+                        setTimeout(resolve, 2 ** attempt * 1000)
+                    );
+                    continue;
+                }
+            }
+            
+            return response;
+        } catch (error) {
+            if (attempt === maxRetries - 1) throw error;
+            await new Promise(resolve => 
+                setTimeout(resolve, 2 ** attempt * 1000)
+            );
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+## Testing Authentication
+
+### API Key Testing
+
+Use the dedicated test endpoint to verify your API key:
+
+```bash
+# Test API key validity and get account info
+curl -H "Authorization: Bearer your_api_key_here" \
+     https://api.hitl.sh/v1/test
+
+# Expected response for valid key:
+{
+  "error": false,
+  "msg": "API key is valid",
+  "data": {
+    "api_key_id": "65f1234567890abcdef12349",
+    "user_id": "65f1234567890abcdef12346", 
+    "email": "user@example.com",
+    "account_status": "active",
+    "rate_limit": {
+      "limit": 100,
+      "remaining": 95,
+      "reset_at": "2024-03-15T15:00:00Z"
+    },
+    "permissions": ["loops:read", "loops:write", "requests:read", "requests:write"]
+  }
+}
+
+# Expected response for invalid key:
+{
+  "error": true,
+  "msg": "Invalid authorization token"
+}
+```
+
+<Info>
+The `/test` endpoint provides detailed information about your API key, including rate limits and permissions. Use this for debugging and monitoring.
+</Info>
+
+### Debug Authentication Issues
+
+Use verbose curl to debug authentication problems:
+
+```bash
+# Verbose request to see headers and response
+curl -v -H "Authorization: Bearer your_api_key_here" \
+     -H "Content-Type: application/json" \
+     https://api.hitl.sh/v1/loops
+
+# Check if your header is being sent correctly
+curl -H "Authorization: Bearer your_api_key_here" \
+     -H "Content-Type: application/json" \
+     -w "HTTP Status: %{http_code}\n" \
+     https://api.hitl.sh/v1/loops
+```
+
+### Environment-Specific Testing
+
+Test across different environments:
+
+```python
+import os
+import requests
+
+# Load environment-specific API key
+def get_api_key():
+    env = os.environ.get('ENVIRONMENT', 'development')
+    key_mapping = {
+        'development': os.environ.get('HITL_DEV_API_KEY'),
+        'staging': os.environ.get('HITL_STAGING_API_KEY'),
+        'production': os.environ.get('HITL_PROD_API_KEY')
+    }
+    return key_mapping.get(env)
+
+def test_authentication():
+    api_key = get_api_key()
+    if not api_key:
+        raise ValueError("API key not found for current environment")
+    
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json'
+    }
+    
+    response = requests.get('https://api.hitl.sh/v1/loops', headers=headers)
+    
+    if response.status_code == 200:
+        print("✅ Authentication successful")
+        return True
+    else:
+        print(f"❌ Authentication failed: {response.json()}")
+        return False
+
+# Test authentication
+test_authentication()
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Create Your First Loop" icon="plus" href="/api-reference/loops/create-loop">
+  Start using your API key to create loops and manage workflows.
+</Card>
+
+<Card title="Error Handling Guide" icon="exclamation-triangle" href="/api-reference/errors">
+  Learn how to handle and debug authentication errors effectively.
+</Card>
+
+<Card title="Rate Limiting" icon="clock" href="/guides/best-practices">
+  Understand rate limits and how to optimize your API usage.
+</Card>
+
+<Card title="Webhooks" icon="webhook" href="/api-reference/webhooks">
+  Set up webhooks to receive real-time notifications from HITL.sh.
+</Card>
+</CardGroup>

@@ -1,0 +1,817 @@
+---
+title: "Error Handling"
+description: "Complete reference for HITL.sh API errors, status codes, and troubleshooting guide"
+---
+
+# Error Handling
+
+HITL.sh APIs use conventional HTTP status codes and provide detailed error messages to help you debug issues quickly. All errors follow a consistent format for easy parsing and handling.
+
+## Error Response Format
+
+All API errors return a JSON response with the following structure:
+
+```json
+{
+  "error": true,
+  "msg": "Human-readable error description",
+  "data": {
+    // Additional error details (optional)
+  }
+}
+```
+
+### Error Response Fields
+
+<ResponseField name="error" type="boolean">
+  Always `true` for error responses
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Human-readable error message describing what went wrong
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Additional error context, validation details, or debugging information (optional)
+</ResponseField>
+
+## HTTP Status Codes
+
+### 2xx Success
+
+<AccordionGroup>
+<Accordion title="200 OK">
+Request succeeded. Response contains the requested data.
+
+```json
+{
+  "error": false,
+  "msg": "Operation completed successfully",
+  "data": { /* response data */ }
+}
+```
+</Accordion>
+
+<Accordion title="201 Created">
+Resource was created successfully.
+
+```json
+{
+  "error": false,
+  "msg": "Loop created successfully",
+  "data": { /* created resource */ }
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### 4xx Client Errors
+
+<AccordionGroup>
+<Accordion title="400 Bad Request">
+Request data is invalid or malformed.
+
+**Common causes:**
+- Missing required fields
+- Invalid field values
+- Malformed JSON
+- Validation failures
+
+```json
+{
+  "error": true,
+  "msg": "Validation failed",
+  "data": "timeout_seconds is required for time-sensitive requests"
+}
+```
+
+**Example - Missing required field:**
+```json
+{
+  "error": true,
+  "msg": "Invalid request body",
+  "data": {
+    "field": "name",
+    "issue": "Field is required"
+  }
+}
+```
+</Accordion>
+
+<Accordion title="401 Unauthorized">
+Authentication is missing or invalid.
+
+**Common causes:**
+- Missing API key or JWT token
+- Invalid API key
+- Expired JWT token
+- Malformed authorization header
+
+```json
+{
+  "error": true,
+  "msg": "Invalid API key"
+}
+```
+
+**JWT token expired:**
+```json
+{
+  "error": true,
+  "msg": "Token has expired"
+}
+```
+</Accordion>
+
+<Accordion title="403 Forbidden">
+Authentication is valid but access is denied.
+
+**Common causes:**
+- Insufficient permissions
+- Not the resource owner
+- Account limitations
+
+```json
+{
+  "error": true,
+  "msg": "Access denied to this loop"
+}
+```
+
+**Permission-specific error:**
+```json
+{
+  "error": true,
+  "msg": "Only loop creators can create requests"
+}
+```
+</Accordion>
+
+<Accordion title="404 Not Found">
+The requested resource doesn't exist.
+
+**Common causes:**
+- Invalid resource ID
+- Resource was deleted
+- Typo in endpoint URL
+
+```json
+{
+  "error": true,
+  "msg": "Loop not found"
+}
+```
+
+**Request not found:**
+```json
+{
+  "error": true,
+  "msg": "Request not found"
+}
+```
+</Accordion>
+
+<Accordion title="429 Too Many Requests">
+Rate limit has been exceeded.
+
+**API key rate limit:**
+```json
+{
+  "error": true,
+  "msg": "API key request limit exceeded",
+  "data": {
+    "usage_count": 100,
+    "usage_limit": 100,
+    "remaining": 0,
+    "reset_at": "2024-03-15T11:00:00Z"
+  }
+}
+```
+</Accordion>
+</AccordionGroup>
+
+### 5xx Server Errors
+
+<AccordionGroup>
+<Accordion title="500 Internal Server Error">
+An unexpected error occurred on our servers.
+
+```json
+{
+  "error": true,
+  "msg": "Internal server error"
+}
+```
+
+**What to do:**
+- Retry the request after a short delay
+- Check our status page at [status.hitl.sh](https://status.hitl.sh)
+- Contact support if the issue persists
+</Accordion>
+
+<Accordion title="502 Bad Gateway">
+Gateway or proxy error, usually temporary.
+
+```json
+{
+  "error": true,
+  "msg": "Service temporarily unavailable"
+}
+```
+</Accordion>
+
+<Accordion title="503 Service Unavailable">
+Service is temporarily unavailable, usually due to maintenance.
+
+```json
+{
+  "error": true,
+  "msg": "Service temporarily unavailable"
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Common Error Scenarios
+
+### Validation Errors
+
+**Request Text Too Long:**
+```json
+{
+  "error": true,
+  "msg": "Validation failed",
+  "data": "request_text must be between 1 and 2000 characters"
+}
+```
+
+**Invalid Response Configuration:**
+```json
+{
+  "error": true,
+  "msg": "Invalid response configuration",
+  "data": "options array required for select response type"
+}
+```
+
+**Invalid Enum Value:**
+```json
+{
+  "error": true,
+  "msg": "Validation failed",
+  "data": "priority must be one of: low, medium, high, critical"
+}
+```
+
+### Resource Access Errors
+
+**Loop Not Found:**
+```json
+{
+  "error": true,
+  "msg": "Loop not found"
+}
+```
+
+**Request Already Cancelled:**
+```json
+{
+  "error": true,
+  "msg": "Request cannot be cancelled in current state"
+}
+```
+
+**No Active Members:**
+```json
+{
+  "error": true,
+  "msg": "No active members found in the loop"
+}
+```
+
+### Authentication Errors
+
+**Missing API Key:**
+```json
+{
+  "error": true,
+  "msg": "API key required"
+}
+```
+
+**Invalid API Key Format:**
+```json
+{
+  "error": true,
+  "msg": "Invalid API key format"
+}
+```
+
+**Expired Session:**
+```json
+{
+  "error": true,
+  "msg": "Session has expired. Please log in again."
+}
+```
+
+## Error Handling Best Practices
+
+### 1. Implement Retry Logic
+
+Use exponential backoff for transient errors:
+
+<CodeGroup>
+
+```python Python
+import time
+import random
+import requests
+
+def make_request_with_retry(url, headers, data=None, max_retries=3):
+    retryable_status_codes = [429, 500, 502, 503, 504]
+    
+    for attempt in range(max_retries):
+        try:
+            if data:
+                response = requests.post(url, headers=headers, json=data)
+            else:
+                response = requests.get(url, headers=headers)
+            
+            if response.status_code not in retryable_status_codes:
+                return response
+            
+            if attempt < max_retries - 1:  # Don't delay on last attempt
+                # Exponential backoff with jitter
+                delay = (2 ** attempt) + random.uniform(0, 1)
+                time.sleep(delay)
+                
+        except requests.exceptions.RequestException as e:
+            if attempt == max_retries - 1:
+                raise e
+            time.sleep(2 ** attempt)
+    
+    return response
+```
+
+```javascript Node.js
+async function makeRequestWithRetry(url, options, maxRetries = 3) {
+    const retryableStatusCodes = [429, 500, 502, 503, 504];
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+            
+            if (!retryableStatusCodes.includes(response.status)) {
+                return response;
+            }
+            
+            if (attempt < maxRetries - 1) {
+                // Exponential backoff with jitter
+                const delay = (2 ** attempt) * 1000 + Math.random() * 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+            
+        } catch (error) {
+            if (attempt === maxRetries - 1) {
+                throw error;
+            }
+            await new Promise(resolve => setTimeout(resolve, 2 ** attempt * 1000));
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+### 2. Handle Rate Limits Gracefully
+
+<CodeGroup>
+
+```python Python
+import time
+import requests
+
+class HITLAPIClient:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = "https://api.hitl.sh/v1"
+        
+    def make_request(self, method, endpoint, data=None):
+        url = f"{self.base_url}{endpoint}"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.request(method, url, headers=headers, json=data)
+        
+        if response.status_code == 429:
+            # Extract reset time from response
+            reset_time = response.headers.get('X-RateLimit-Reset')
+            if reset_time:
+                wait_time = int(reset_time) - int(time.time())
+                if wait_time > 0:
+                    print(f"Rate limited. Waiting {wait_time} seconds...")
+                    time.sleep(wait_time)
+                    # Retry the request
+                    return self.make_request(method, endpoint, data)
+        
+        return response
+```
+
+```javascript Node.js
+class HITLAPIClient {
+    constructor(apiKey) {
+        this.apiKey = apiKey;
+        this.baseUrl = 'https://api.hitl.sh/v1';
+    }
+    
+    async makeRequest(method, endpoint, data = null) {
+        const url = `${this.baseUrl}${endpoint}`;
+        const options = {
+            method,
+            headers: {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json'
+            }
+        };
+        
+        if (data) {
+            options.body = JSON.stringify(data);
+        }
+        
+        const response = await fetch(url, options);
+        
+        if (response.status === 429) {
+            const resetTime = response.headers.get('X-RateLimit-Reset');
+            if (resetTime) {
+                const waitTime = parseInt(resetTime) - Math.floor(Date.now() / 1000);
+                if (waitTime > 0) {
+                    console.log(`Rate limited. Waiting ${waitTime} seconds...`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
+                    return this.makeRequest(method, endpoint, data);
+                }
+            }
+        }
+        
+        return response;
+    }
+}
+```
+
+</CodeGroup>
+
+### 3. Validate Requests Client-Side
+
+Implement client-side validation to catch errors early:
+
+<CodeGroup>
+
+```python Python
+def validate_create_request_payload(payload):
+    """Validate request payload before sending to API"""
+    errors = []
+    
+    # Required fields
+    required_fields = ['processing_type', 'type', 'priority', 'request_text', 
+                      'response_type', 'response_config', 'default_response', 'platform']
+    
+    for field in required_fields:
+        if field not in payload or not payload[field]:
+            errors.append(f"{field} is required")
+    
+    # Enum validations
+    if 'processing_type' in payload:
+        valid_processing_types = ['time-sensitive', 'deferred']
+        if payload['processing_type'] not in valid_processing_types:
+            errors.append(f"processing_type must be one of: {', '.join(valid_processing_types)}")
+    
+    if 'priority' in payload:
+        valid_priorities = ['low', 'medium', 'high', 'critical']
+        if payload['priority'] not in valid_priorities:
+            errors.append(f"priority must be one of: {', '.join(valid_priorities)}")
+    
+    # Custom validations
+    if payload.get('processing_type') == 'time-sensitive' and 'timeout_seconds' not in payload:
+        errors.append("timeout_seconds is required for time-sensitive requests")
+    
+    if 'timeout_seconds' in payload:
+        timeout = payload['timeout_seconds']
+        if not isinstance(timeout, int) or timeout < 60 or timeout > 86400:
+            errors.append("timeout_seconds must be between 60 and 86400")
+    
+    return errors
+```
+
+```javascript Node.js
+function validateCreateRequestPayload(payload) {
+    const errors = [];
+    
+    // Required fields
+    const requiredFields = ['processing_type', 'type', 'priority', 'request_text', 
+                           'response_type', 'response_config', 'default_response', 'platform'];
+    
+    for (const field of requiredFields) {
+        if (!payload[field]) {
+            errors.push(`${field} is required`);
+        }
+    }
+    
+    // Enum validations
+    if (payload.processing_type) {
+        const validProcessingTypes = ['time-sensitive', 'deferred'];
+        if (!validProcessingTypes.includes(payload.processing_type)) {
+            errors.push(`processing_type must be one of: ${validProcessingTypes.join(', ')}`);
+        }
+    }
+    
+    if (payload.priority) {
+        const validPriorities = ['low', 'medium', 'high', 'critical'];
+        if (!validPriorities.includes(payload.priority)) {
+            errors.push(`priority must be one of: ${validPriorities.join(', ')}`);
+        }
+    }
+    
+    // Custom validations
+    if (payload.processing_type === 'time-sensitive' && !payload.timeout_seconds) {
+        errors.push('timeout_seconds is required for time-sensitive requests');
+    }
+    
+    if (payload.timeout_seconds) {
+        const timeout = payload.timeout_seconds;
+        if (!Number.isInteger(timeout) || timeout < 60 || timeout > 86400) {
+            errors.push('timeout_seconds must be between 60 and 86400');
+        }
+    }
+    
+    return errors;
+}
+```
+
+</CodeGroup>
+
+### 4. Log Errors for Debugging
+
+Implement comprehensive error logging:
+
+<CodeGroup>
+
+```python Python
+import logging
+import json
+
+logger = logging.getLogger(__name__)
+
+def log_api_error(response, endpoint, payload=None):
+    """Log API errors with context for debugging"""
+    try:
+        error_data = response.json()
+    except:
+        error_data = {"msg": "Failed to parse error response"}
+    
+    log_entry = {
+        "endpoint": endpoint,
+        "status_code": response.status_code,
+        "error_message": error_data.get("msg", "Unknown error"),
+        "error_data": error_data.get("data"),
+        "request_payload": payload,
+        "response_headers": dict(response.headers)
+    }
+    
+    logger.error(f"API Error: {json.dumps(log_entry, indent=2)}")
+    
+    return log_entry
+
+# Usage
+response = make_api_request(url, payload)
+if response.status_code >= 400:
+    log_api_error(response, endpoint, payload)
+```
+
+```javascript Node.js
+function logAPIError(response, endpoint, payload = null) {
+    const logEntry = {
+        endpoint,
+        status: response.status,
+        statusText: response.statusText,
+        requestPayload: payload,
+        timestamp: new Date().toISOString()
+    };
+    
+    response.json().then(errorData => {
+        logEntry.errorMessage = errorData.msg || 'Unknown error';
+        logEntry.errorData = errorData.data;
+        
+        console.error('API Error:', JSON.stringify(logEntry, null, 2));
+        
+        // Send to your logging service
+        // sendToLoggingService(logEntry);
+    }).catch(() => {
+        logEntry.errorMessage = 'Failed to parse error response';
+        console.error('API Error:', JSON.stringify(logEntry, null, 2));
+    });
+    
+    return logEntry;
+}
+```
+
+</CodeGroup>
+
+## Debugging Guide
+
+### Common Issues and Solutions
+
+<AccordionGroup>
+<Accordion title="API Key Not Working">
+**Symptoms:** Getting 401 Unauthorized errors
+
+**Debugging steps:**
+1. Verify API key is correct (no extra spaces)
+2. Check header format: `Authorization: Bearer your_key_here`
+3. Ensure key hasn't been revoked in dashboard
+4. Try generating a new API key
+
+```bash
+# Test API key
+curl -v -H "Authorization: Bearer your_api_key" https://api.hitl.sh/v1/loops
+```
+</Accordion>
+
+<Accordion title="Request Validation Failing">
+**Symptoms:** Getting 400 Bad Request with validation errors
+
+**Debugging steps:**
+1. Check required fields are present
+2. Verify enum values are correct
+3. Validate field types and formats
+4. Check field length constraints
+
+```python
+# Debug validation
+import json
+
+payload = {
+    "name": "Test Loop",
+    "icon": "test"
+}
+
+print("Payload:", json.dumps(payload, indent=2))
+
+# Check against API requirements
+required_fields = ["name", "icon"]
+for field in required_fields:
+    if field not in payload:
+        print(f"Missing required field: {field}")
+```
+</Accordion>
+
+<Accordion title="Rate Limit Issues">
+**Symptoms:** Getting 429 Too Many Requests
+
+**Debugging steps:**
+1. Check rate limit headers in response
+2. Implement exponential backoff
+3. Consider upgrading API tier
+4. Cache responses where possible
+
+```bash
+# Check rate limit status
+curl -I -H "Authorization: Bearer your_api_key" https://api.hitl.sh/v1/loops
+
+# Look for these headers:
+# X-RateLimit-Limit: 100
+# X-RateLimit-Remaining: 0
+# X-RateLimit-Reset: 1642237200
+```
+</Accordion>
+
+<Accordion title="Timeout Errors">
+**Symptoms:** Requests timing out or 504 errors
+
+**Debugging steps:**
+1. Check our status page: [status.hitl.sh](https://status.hitl.sh)
+2. Increase request timeout in your client
+3. Try the request again after a delay
+4. Contact support if issue persists
+
+```python
+# Increase timeout
+import requests
+
+response = requests.get(
+    url, 
+    headers=headers, 
+    timeout=30  # 30 second timeout
+)
+```
+</Accordion>
+</AccordionGroup>
+
+### Request/Response Debugging
+
+Enable verbose logging to see full HTTP requests and responses:
+
+<CodeGroup>
+
+```bash cURL
+# Use -v flag for verbose output
+curl -v -H "Authorization: Bearer your_api_key" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "Test Loop", "icon": "test"}' \
+     https://api.hitl.sh/v1/loops
+```
+
+```python Python
+import requests
+import logging
+
+# Enable debug logging
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger("requests.packages.urllib3").setLevel(logging.DEBUG)
+logging.getLogger("urllib3.connectionpool").setLevel(logging.DEBUG)
+
+response = requests.post(url, headers=headers, json=data)
+```
+
+```javascript Node.js
+// Use a library like axios-debug-log
+const axios = require('axios');
+
+// Create axios instance with logging
+const api = axios.create({
+    baseURL: 'https://api.hitl.sh/v1',
+    headers: {
+        'Authorization': 'Bearer your_api_key'
+    }
+});
+
+// Log requests and responses
+api.interceptors.request.use(request => {
+    console.log('Request:', request);
+    return request;
+});
+
+api.interceptors.response.use(
+    response => {
+        console.log('Response:', response);
+        return response;
+    },
+    error => {
+        console.log('Error:', error.response);
+        return Promise.reject(error);
+    }
+);
+```
+
+</CodeGroup>
+
+## Getting Help
+
+### Self-Service Resources
+
+<CardGroup cols={2}>
+<Card title="API Status" icon="activity" href="https://status.hitl.sh">
+  Check if there are any ongoing service issues.
+</Card>
+
+<Card title="Community Forum" icon="users" href="https://discord.gg/jYVrpmnMP9">
+  Ask questions and get help from the community.
+</Card>
+
+<Card title="Documentation" icon="book" href="/api-reference/introduction">
+  Review API documentation and examples.
+</Card>
+
+<Card title="GitHub Issues" icon="github" href="https://github.com/hitl-sh/feedback">
+  Report bugs or request new features.
+</Card>
+</CardGroup>
+
+### Contacting Support
+
+When contacting support, please include:
+
+1. **Request ID** (if available from response headers)
+2. **Timestamp** of when the error occurred
+3. **Full error response** including status code and message
+4. **Request details** (endpoint, method, payload)
+5. **Your API key ID** (not the actual key)
+
+<Card title="Contact Support" icon="life-ring" href="mailto:support@hitl.sh">
+  Email us at support@hitl.sh with your issue details.
+</Card>
+
+## Next Steps
+
+<Card title="Authentication Guide" icon="key" href="/api-reference/authentication">
+  Learn about API keys, JWT tokens, and security best practices.
+</Card>
+
+<Card title="Rate Limits" icon="clock" href="/api-reference/rate-limits">
+  Understand API rate limits and optimization strategies.
+</Card>
+
+<Card title="Webhooks" icon="webhook" href="/api-reference/webhooks/overview">
+  Set up webhooks to avoid polling and reduce API calls.
+</Card>

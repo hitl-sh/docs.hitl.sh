@@ -1,0 +1,589 @@
+---
+title: "Loop Members"
+api: "GET https://api.hitl.sh/v1/loops/{id}/members"
+description: "Retrieve detailed member information and manage loop membership. Includes member status, join dates, and activity metrics."
+---
+
+Get comprehensive information about all members in a loop, including their status, join dates, and activity metrics. This endpoint also provides member management capabilities.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the loop
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="members" type="array">
+      Array of member objects with detailed information
+      <Expandable title="member">
+        <ResponseField name="user_id" type="string">
+          Unique identifier of the member user
+        </ResponseField>
+        <ResponseField name="email" type="string">
+          Email address of the member
+        </ResponseField>
+        <ResponseField name="status" type="string">
+          Member status (pending, active)
+        </ResponseField>
+        <ResponseField name="joined_at" type="string">
+          ISO timestamp when member joined (null for pending members)
+        </ResponseField>
+        <ResponseField name="role" type="string">
+          Member role in the loop (member, admin) - for future use
+        </ResponseField>
+        <ResponseField name="last_active" type="string">
+          ISO timestamp of last activity (if available)
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="total_count" type="integer">
+      Total number of members (active + pending)
+    </ResponseField>
+    <ResponseField name="active_count" type="integer">
+      Number of active members
+    </ResponseField>
+    <ResponseField name="pending_count" type="integer">
+      Number of pending invitations
+    </ResponseField>
+    <ResponseField name="statistics" type="object">
+      Member activity statistics
+      <Expandable title="statistics">
+        <ResponseField name="avg_join_time_days" type="number">
+          Average time from invitation to join (in days)
+        </ResponseField>
+        <ResponseField name="newest_member_joined" type="string">
+          Timestamp when the newest member joined
+        </ResponseField>
+        <ResponseField name="oldest_member_joined" type="string">
+          Timestamp when the oldest member joined
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.hitl.sh/v1/loops/65f1234567890abcdef12345/members \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+```python Python
+import requests
+
+loop_id = "65f1234567890abcdef12345"
+url = f"https://api.hitl.sh/v1/loops/{loop_id}/members"
+headers = {
+    "Authorization": "Bearer your_api_key_here"
+}
+
+response = requests.get(url, headers=headers)
+members_data = response.json()
+
+print(f"Total members: {members_data['data']['total_count']}")
+print(f"Active members: {members_data['data']['active_count']}")
+print(f"Pending members: {members_data['data']['pending_count']}")
+
+for member in members_data['data']['members']:
+    status_indicator = "✅" if member['status'] == 'active' else "⏳"
+    print(f"{status_indicator} {member['email']} ({member['status']})")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+async function getLoopMembers(loopId) {
+    const response = await axios.get(
+        `https://api.hitl.sh/v1/loops/${loopId}/members`,
+        {
+            headers: {
+                'Authorization': 'Bearer your_api_key_here'
+            }
+        }
+    );
+    
+    const data = response.data.data;
+    
+    console.log(`Total members: ${data.total_count}`);
+    console.log(`Active: ${data.active_count}, Pending: ${data.pending_count}`);
+    
+    data.members.forEach(member => {
+        const statusIcon = member.status === 'active' ? '✅' : '⏳';
+        console.log(`${statusIcon} ${member.email} (${member.status})`);
+    });
+    
+    return data;
+}
+
+getLoopMembers('65f1234567890abcdef12345');
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "error": false,
+  "msg": "Loop members retrieved successfully",
+  "data": {
+    "members": [
+      {
+        "user_id": "65f1234567890abcdef12346",
+        "email": "creator@example.com",
+        "status": "active",
+        "joined_at": "2024-03-15T10:30:00Z",
+        "role": "admin",
+        "last_active": "2024-03-15T14:20:00Z"
+      },
+      {
+        "user_id": "65f1234567890abcdef12347",
+        "email": "reviewer1@example.com",
+        "status": "active",
+        "joined_at": "2024-03-15T11:45:00Z",
+        "role": "member",
+        "last_active": "2024-03-15T13:30:00Z"
+      },
+      {
+        "user_id": "65f1234567890abcdef12348",
+        "email": "reviewer2@example.com",
+        "status": "active",
+        "joined_at": "2024-03-15T12:15:00Z",
+        "role": "member",
+        "last_active": "2024-03-15T12:45:00Z"
+      },
+      {
+        "user_id": "65f1234567890abcdef12349",
+        "email": "pending@example.com",
+        "status": "pending",
+        "joined_at": null,
+        "role": "member",
+        "last_active": null
+      }
+    ],
+    "total_count": 4,
+    "active_count": 3,
+    "pending_count": 1,
+    "statistics": {
+      "avg_join_time_days": 0.5,
+      "newest_member_joined": "2024-03-15T12:15:00Z",
+      "oldest_member_joined": "2024-03-15T10:30:00Z"
+    }
+  }
+}
+```
+
+</ResponseExample>
+
+## Member Status Types
+
+<CardGroup cols={2}>
+<Card title="Active Members" icon="check-circle">
+**Status**: `active`
+- Have accepted the invitation
+- Can receive review requests
+- Can respond to requests
+- Counted in capacity planning
+</Card>
+
+<Card title="Pending Members" icon="clock">
+**Status**: `pending`
+- Invitation sent but not accepted
+- Cannot receive review requests
+- `joined_at` is null
+- Need follow-up for activation
+</Card>
+</CardGroup>
+
+## Member Analytics
+
+### Activity Tracking
+
+Monitor member engagement and performance:
+
+```python
+def analyze_member_activity(members_data):
+    """Analyze member activity patterns"""
+    members = members_data["data"]["members"]
+    active_members = [m for m in members if m["status"] == "active"]
+    pending_members = [m for m in members if m["status"] == "pending"]
+    
+    analysis = {
+        "total_members": len(members),
+        "activation_rate": (len(active_members) / len(members)) * 100 if members else 0,
+        "pending_followup_needed": len(pending_members),
+        "recently_active": []
+    }
+    
+    # Check recent activity (last 24 hours)
+    from datetime import datetime, timedelta
+    cutoff_time = datetime.now() - timedelta(hours=24)
+    
+    for member in active_members:
+        if member.get("last_active"):
+            last_active = datetime.fromisoformat(member["last_active"].replace("Z", "+00:00"))
+            if last_active > cutoff_time:
+                analysis["recently_active"].append(member["email"])
+    
+    return analysis
+```
+
+### Capacity Planning
+
+Determine if you have enough active reviewers:
+
+```javascript
+function assessLoopCapacity(membersData, minRequired = 3) {
+    const data = membersData.data;
+    const activeCount = data.active_count;
+    const pendingCount = data.pending_count;
+    
+    return {
+        currentCapacity: activeCount,
+        minimumRequired: minRequired,
+        isAdequate: activeCount >= minRequired,
+        potentialCapacity: activeCount + pendingCount,
+        recommendations: {
+            needMoreMembers: activeCount < minRequired,
+            followUpPending: pendingCount > 0,
+            optimalSize: activeCount >= minRequired && activeCount <= 8
+        }
+    };
+}
+
+// Usage
+const capacity = assessLoopCapacity(membersData, 3);
+if (!capacity.isAdequate) {
+    console.log(`⚠️ Need ${minRequired - capacity.currentCapacity} more active members`);
+}
+```
+
+## Remove Member
+
+Remove a member from the loop (only available to loop creators):
+
+---
+title: "Remove Loop Member"
+api: "DELETE https://api.hitl.sh/v1/loops/{id}/members/{userId}"
+description: "Remove a member from a loop. Only loop creators can remove members. The creator cannot be removed."
+---
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the loop
+</ParamField>
+
+<ParamField path="userId" type="string" required>
+  The unique identifier of the user to remove
+</ParamField>
+
+**Example Request:**
+```bash
+curl -X DELETE https://api.hitl.sh/v1/loops/65f1234567890abcdef12345/members/65f1234567890abcdef12347 \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+**Example Response:**
+```json
+{
+  "error": false,
+  "msg": "Member removed from loop successfully",
+  "data": {
+    "loop_id": "65f1234567890abcdef12345",
+    "user_id": "65f1234567890abcdef12347",
+    "removed_at": "2024-03-15T15:30:00Z"
+  }
+}
+```
+
+## Member Management Use Cases
+
+### Onboarding New Members
+
+Track and follow up on pending invitations:
+
+```python
+def follow_up_pending_members(loop_id, days_threshold=3):
+    """Find pending members who need follow-up"""
+    
+    response = requests.get(f"https://api.hitl.sh/v1/loops/{loop_id}/members", headers=headers)
+    members_data = response.json()["data"]["members"]
+    
+    pending_members = [m for m in members_data if m["status"] == "pending"]
+    
+    # In a real implementation, you'd check invitation timestamps
+    # For now, we'll assume all pending members need follow-up
+    
+    followup_actions = []
+    for member in pending_members:
+        followup_actions.append({
+            "email": member["email"],
+            "action": "send_reminder",
+            "days_pending": "unknown"  # Would calculate from invitation date
+        })
+    
+    return followup_actions
+
+# Usage
+followups = follow_up_pending_members("65f1234567890abcdef12345")
+for action in followups:
+    print(f"Send reminder to {action['email']}")
+```
+
+### Member Performance Monitoring
+
+Track member activity and engagement:
+
+```javascript
+async function getMemberPerformance(loopId) {
+    try {
+        // Get members
+        const membersResponse = await axios.get(
+            `https://api.hitl.sh/v1/loops/${loopId}/members`,
+            { headers: { 'Authorization': `Bearer ${apiKey}` } }
+        );
+        
+        // Get loop requests for performance analysis
+        const requestsResponse = await axios.get(
+            `https://api.hitl.sh/v1/loops/${loopId}/requests`,
+            { headers: { 'Authorization': `Bearer ${apiKey}` } }
+        );
+        
+        const members = membersResponse.data.data.members;
+        const requests = requestsResponse.data.data.requests;
+        
+        // Analyze performance
+        const performance = members.map(member => {
+            const memberRequests = requests.filter(r => 
+                r.response_by === member.user_id && r.status === 'completed'
+            );
+            
+            return {
+                email: member.email,
+                status: member.status,
+                responses_completed: memberRequests.length,
+                avg_response_time: calculateAverageResponseTime(memberRequests),
+                last_active: member.last_active
+            };
+        });
+        
+        return performance;
+        
+    } catch (error) {
+        console.error('Error getting member performance:', error);
+        return [];
+    }
+}
+
+function calculateAverageResponseTime(requests) {
+    if (requests.length === 0) return 0;
+    
+    const totalTime = requests.reduce((sum, request) => {
+        return sum + (request.response_time_seconds || 0);
+    }, 0);
+    
+    return Math.round(totalTime / requests.length);
+}
+```
+
+### Bulk Member Operations
+
+Manage multiple members efficiently:
+
+```python
+def audit_loop_membership(loop_ids):
+    """Audit membership across multiple loops"""
+    
+    audit_results = []
+    
+    for loop_id in loop_ids:
+        try:
+            # Get loop info
+            loop_response = requests.get(f"https://api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+            loop_data = loop_response.json()["data"]["loop"]
+            
+            # Get members
+            members_response = requests.get(f"https://api.hitl.sh/v1/loops/{loop_id}/members", headers=headers)
+            members_data = members_response.json()["data"]
+            
+            # Analyze membership health
+            health_score = calculate_membership_health(members_data)
+            
+            audit_results.append({
+                "loop_id": loop_id,
+                "loop_name": loop_data["name"],
+                "total_members": members_data["total_count"],
+                "active_members": members_data["active_count"],
+                "pending_members": members_data["pending_count"],
+                "health_score": health_score,
+                "recommendations": get_membership_recommendations(members_data)
+            })
+            
+        except Exception as e:
+            audit_results.append({
+                "loop_id": loop_id,
+                "error": str(e),
+                "status": "failed"
+            })
+    
+    return audit_results
+
+def calculate_membership_health(members_data):
+    """Calculate membership health score (0-100)"""
+    total = members_data["total_count"]
+    active = members_data["active_count"]
+    
+    if total == 0:
+        return 0
+    
+    # Base score on activation rate
+    activation_rate = (active / total) * 100
+    
+    # Adjust for absolute numbers
+    if active < 2:
+        activation_rate *= 0.5  # Penalize loops with too few active members
+    elif active > 8:
+        activation_rate = min(activation_rate, 85)  # Cap score for very large loops
+    
+    return round(activation_rate)
+
+def get_membership_recommendations(members_data):
+    """Get actionable recommendations for membership"""
+    recommendations = []
+    
+    if members_data["active_count"] < 2:
+        recommendations.append("Add more active members for redundancy")
+    
+    if members_data["pending_count"] > 0:
+        recommendations.append(f"Follow up on {members_data['pending_count']} pending invitations")
+    
+    if members_data["active_count"] == 0:
+        recommendations.append("URGENT: No active members - loop cannot process requests")
+    
+    activation_rate = (members_data["active_count"] / members_data["total_count"]) * 100
+    if activation_rate < 50:
+        recommendations.append("Low activation rate - review invitation process")
+    
+    return recommendations
+```
+
+## Access Control
+
+### Member Visibility
+
+<AccordionGroup>
+<Accordion title="Loop Creators">
+Can see all member details including email addresses, join dates, and activity information.
+</Accordion>
+
+<Accordion title="API Key Scope">
+API keys can only view members of loops created by the same user account.
+</Accordion>
+
+<Accordion title="Member Privacy">
+Sensitive member information is only visible to loop creators for privacy protection.
+</Accordion>
+</AccordionGroup>
+
+### Member Management Permissions
+
+<AccordionGroup>
+<Accordion title="Add Members">
+Currently done through invite codes and QR codes. Direct member addition via API may be added in future.
+</Accordion>
+
+<Accordion title="Remove Members">
+Only loop creators can remove members. The creator cannot be removed from their own loop.
+</Accordion>
+
+<Accordion title="Member Roles">
+Future feature: Different member roles (admin, reviewer, observer) with varying permissions.
+</Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+<AccordionGroup>
+<Accordion title="Loop Not Found">
+```json
+{
+  "error": true,
+  "msg": "Loop not found"
+}
+```
+</Accordion>
+
+<Accordion title="Access Denied">
+```json
+{
+  "error": true,
+  "msg": "Access denied to this loop"
+}
+```
+</Accordion>
+
+<Accordion title="Member Not Found (for removal)">
+```json
+{
+  "error": true,
+  "msg": "Member not found in this loop"
+}
+```
+</Accordion>
+
+<Accordion title="Cannot Remove Creator">
+```json
+{
+  "error": true,
+  "msg": "Loop creator cannot be removed"
+}
+```
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+### Member Onboarding
+
+1. **Clear Invitations**: Include context about the loop purpose in invitations
+2. **Follow-up Strategy**: Contact pending members after 2-3 days
+3. **Backup Reviewers**: Maintain at least 3 active members for redundancy
+4. **Performance Tracking**: Monitor response times and engagement
+
+### Capacity Management
+
+1. **Right-size Teams**: 3-8 active members for most use cases
+2. **Monitor Workload**: Ensure requests are distributed evenly
+3. **Plan for Growth**: Add members before hitting capacity limits
+4. **Regular Audits**: Review membership quarterly
+
+## Next Steps
+
+<Card title="Create Request" icon="plus" href="/api-reference/requests/create-request">
+  Now that you understand your team, create requests for them to review.
+</Card>
+
+<Card title="Loop Analytics" icon="chart-bar" href="/api-reference/loops/analytics">
+  Get deeper insights into loop performance and member activity.
+</Card>
+
+<Card title="Manage Invitations" icon="mail" href="/mobile/join-loop">
+  Learn how members join loops through mobile invitations.
+</Card>

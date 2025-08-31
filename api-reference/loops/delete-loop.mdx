@@ -1,0 +1,513 @@
+---
+title: "Delete Loop"
+api: "DELETE https://api.hitl.sh/v1/loops/{id}"
+description: "Permanently delete a loop and all associated data. Only the loop creator can delete loops. This action cannot be undone."
+---
+
+Permanently delete a loop and all its associated data including members, requests, and history. This is a destructive operation that cannot be undone.
+
+<Warning>
+This action permanently deletes the loop and all associated data including:
+- All loop members and their membership history
+- All requests created within the loop
+- All responses and feedback from reviewers
+- All analytics and performance data
+
+**This operation cannot be undone.**
+</Warning>
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Your API key for authentication
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  The unique identifier of the loop to delete
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+  Whether an error occurred
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+  Success message confirming deletion
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data">
+    <ResponseField name="loop_id" type="string">
+      ID of the deleted loop for confirmation
+    </ResponseField>
+    <ResponseField name="deleted_at" type="string">
+      ISO timestamp when the loop was deleted
+    </ResponseField>
+    <ResponseField name="deleted_data" type="object">
+      Summary of what was deleted
+      <Expandable title="deleted_data">
+        <ResponseField name="members_removed" type="integer">
+          Number of members removed
+        </ResponseField>
+        <ResponseField name="requests_deleted" type="integer">
+          Number of requests deleted
+        </ResponseField>
+        <ResponseField name="responses_deleted" type="integer">
+          Number of responses deleted
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE https://api.hitl.sh/v1/loops/65f1234567890abcdef12345 \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+```python Python
+import requests
+
+loop_id = "65f1234567890abcdef12345"
+url = f"https://api.hitl.sh/v1/loops/{loop_id}"
+headers = {
+    "Authorization": "Bearer your_api_key_here"
+}
+
+# Confirm deletion intent
+confirmation = input(f"Are you sure you want to delete loop {loop_id}? (yes/no): ")
+
+if confirmation.lower() == 'yes':
+    response = requests.delete(url, headers=headers)
+    print(response.json())
+else:
+    print("Deletion cancelled")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const loopId = '65f1234567890abcdef12345';
+
+// Confirm deletion intent
+const confirmed = confirm(`Are you sure you want to delete loop ${loopId}?`);
+
+if (confirmed) {
+    const response = await axios.delete(
+        `https://api.hitl.sh/v1/loops/${loopId}`,
+        {
+            headers: {
+                'Authorization': 'Bearer your_api_key_here'
+            }
+        }
+    );
+    
+    console.log(response.data);
+} else {
+    console.log('Deletion cancelled');
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Response
+{
+  "error": false,
+  "msg": "Loop deleted successfully",
+  "data": {
+    "loop_id": "65f1234567890abcdef12345",
+    "deleted_at": "2024-03-15T15:30:00Z",
+    "deleted_data": {
+      "members_removed": 5,
+      "requests_deleted": 23,
+      "responses_deleted": 18
+    }
+  }
+}
+```
+
+</ResponseExample>
+
+## Pre-Deletion Considerations
+
+### What Gets Deleted
+
+When you delete a loop, the following data is permanently removed:
+
+<AccordionGroup>
+<Accordion title="Loop Configuration">
+- Loop name, description, and icon
+- Creation and update timestamps
+- Loop creator information
+- All loop settings and metadata
+</Accordion>
+
+<Accordion title="Member Data">
+- All member relationships
+- Member join dates and status
+- Member activity history within the loop
+- Invitation records and pending invitations
+</Accordion>
+
+<Accordion title="Request Data">
+- All requests created within the loop
+- Request content, priority, and configuration
+- Request status and lifecycle information
+- Broadcast and notification history
+</Accordion>
+
+<Accordion title="Response Data">
+- All reviewer responses and decisions
+- Response timestamps and metadata
+- Feedback and rating information
+- Performance analytics and metrics
+</Accordion>
+</AccordionGroup>
+
+### Data That Survives Deletion
+
+<AccordionGroup>
+<Accordion title="User Accounts">
+User accounts of loop members remain intact. Only the membership relationship is removed.
+</Accordion>
+
+<Accordion title="API Usage Statistics">
+Your overall API usage statistics are preserved for billing and analytics.
+</Accordion>
+
+<Accordion title="Audit Logs">
+High-level audit logs may be retained for security and compliance purposes.
+</Accordion>
+</AccordionGroup>
+
+## Safety Checks
+
+### Before Deleting a Loop
+
+Implement these safety checks in your code:
+
+<CodeGroup>
+
+```python Python
+def safe_delete_loop(loop_id, require_confirmation=True):
+    """Safely delete a loop with pre-flight checks"""
+    
+    # Get loop information first
+    response = requests.get(f"https://api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+    if response.status_code != 200:
+        return {"error": True, "msg": "Loop not found or inaccessible"}
+    
+    loop_data = response.json()["data"]["loop"]
+    
+    # Check for active members
+    active_members = loop_data["member_count"] - loop_data["pending_count"]
+    if active_members > 1:  # More than just the creator
+        print(f"Warning: Loop has {active_members} active members")
+    
+    # Check for recent activity (optional: get requests)
+    requests_response = requests.get(f"https://api.hitl.sh/v1/loops/{loop_id}/requests", headers=headers)
+    if requests_response.status_code == 200:
+        requests_data = requests_response.json()["data"]["requests"]
+        recent_requests = [r for r in requests_data if r["status"] in ["pending", "claimed"]]
+        
+        if recent_requests:
+            print(f"Warning: Loop has {len(recent_requests)} active requests")
+    
+    # Confirmation
+    if require_confirmation:
+        confirmation = input(f"Delete loop '{loop_data['name']}'? This cannot be undone. (yes/no): ")
+        if confirmation.lower() != 'yes':
+            return {"error": False, "msg": "Deletion cancelled by user"}
+    
+    # Proceed with deletion
+    delete_response = requests.delete(f"https://api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+    return delete_response.json()
+```
+
+```javascript Node.js
+async function safeDeleteLoop(loopId, requireConfirmation = true) {
+    try {
+        // Get loop information first
+        const loopResponse = await axios.get(`https://api.hitl.sh/v1/loops/${loopId}`, {
+            headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        
+        const loopData = loopResponse.data.data.loop;
+        
+        // Check for active members
+        const activeMembers = loopData.member_count - loopData.pending_count;
+        if (activeMembers > 1) {
+            console.warn(`Loop has ${activeMembers} active members`);
+        }
+        
+        // Check for active requests
+        try {
+            const requestsResponse = await axios.get(`https://api.hitl.sh/v1/loops/${loopId}/requests`, {
+                headers: { 'Authorization': `Bearer ${apiKey}` }
+            });
+            
+            const requests = requestsResponse.data.data.requests;
+            const activeRequests = requests.filter(r => ['pending', 'claimed'].includes(r.status));
+            
+            if (activeRequests.length > 0) {
+                console.warn(`Loop has ${activeRequests.length} active requests`);
+            }
+        } catch (error) {
+            console.log('Could not check requests (may not have access)');
+        }
+        
+        // Confirmation
+        if (requireConfirmation) {
+            const confirmed = confirm(`Delete loop '${loopData.name}'? This cannot be undone.`);
+            if (!confirmed) {
+                return { error: false, msg: 'Deletion cancelled by user' };
+            }
+        }
+        
+        // Proceed with deletion
+        const deleteResponse = await axios.delete(`https://api.hitl.sh/v1/loops/${loopId}`, {
+            headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        
+        return deleteResponse.data;
+        
+    } catch (error) {
+        return { 
+            error: true, 
+            msg: error.response?.data?.msg || 'Failed to delete loop' 
+        };
+    }
+}
+```
+
+</CodeGroup>
+
+## Bulk Operations
+
+### Delete Multiple Loops
+
+Handle multiple loop deletions with error handling:
+
+```python
+def bulk_delete_loops(loop_ids, dry_run=True):
+    """Delete multiple loops with safety checks"""
+    results = []
+    
+    for loop_id in loop_ids:
+        try:
+            if dry_run:
+                # Just check if we can access the loop
+                response = requests.get(f"https://api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+                if response.status_code == 200:
+                    loop_data = response.json()["data"]["loop"]
+                    results.append({
+                        "loop_id": loop_id,
+                        "name": loop_data["name"],
+                        "members": loop_data["member_count"],
+                        "status": "ready_to_delete" if dry_run else "deleted"
+                    })
+                else:
+                    results.append({
+                        "loop_id": loop_id,
+                        "error": response.json()["msg"],
+                        "status": "error"
+                    })
+            else:
+                # Actually delete the loop
+                response = requests.delete(f"https://api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+                if response.status_code == 200:
+                    results.append({
+                        "loop_id": loop_id,
+                        "status": "deleted",
+                        "deleted_at": response.json()["data"]["deleted_at"]
+                    })
+                else:
+                    results.append({
+                        "loop_id": loop_id,
+                        "error": response.json()["msg"],
+                        "status": "error"
+                    })
+        except Exception as e:
+            results.append({
+                "loop_id": loop_id,
+                "error": str(e),
+                "status": "exception"
+            })
+    
+    return results
+
+# Usage
+loop_ids = ["65f1234567890abcdef12345", "65f1234567890abcdef12346"]
+
+# Dry run first
+print("Dry run results:")
+dry_results = bulk_delete_loops(loop_ids, dry_run=True)
+for result in dry_results:
+    print(f"  {result}")
+
+# Actual deletion (uncomment to execute)
+# print("\nActual deletion:")
+# actual_results = bulk_delete_loops(loop_ids, dry_run=False)
+```
+
+## Access Control
+
+### Who Can Delete Loops
+
+<AccordionGroup>
+<Accordion title="Loop Creators Only">
+Only the user who created the loop can delete it. This is strictly enforced by checking the `creator_id`.
+</Accordion>
+
+<Accordion title="API Key Authorization">
+API keys can only delete loops created by the same user account that owns the API key.
+</Accordion>
+
+<Accordion title="No Member Deletion Rights">
+Loop members cannot delete loops, even if they are administrators in the mobile app.
+</Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+### Common Error Scenarios
+
+<AccordionGroup>
+<Accordion title="Loop Not Found">
+```json
+{
+  "error": true,
+  "msg": "Loop not found"
+}
+```
+
+**Causes:**
+- Invalid loop ID
+- Loop already deleted
+- User doesn't own the loop
+</Accordion>
+
+<Accordion title="Access Denied">
+```json
+{
+  "error": true,
+  "msg": "Access denied to this loop"
+}
+```
+
+**Cause:** Only loop creators can delete loops.
+</Accordion>
+
+<Accordion title="Loop Has Active Requests">
+```json
+{
+  "error": true,
+  "msg": "Cannot delete loop with active requests"
+}
+```
+
+**Cause:** Some implementations may prevent deletion of loops with pending or claimed requests.
+**Solution:** Cancel or complete all active requests first.
+</Accordion>
+</AccordionGroup>
+
+## Alternatives to Deletion
+
+### Archive Instead of Delete
+
+Consider these alternatives before permanent deletion:
+
+<CodeGroup>
+
+```python Python
+def archive_loop(loop_id):
+    """Archive a loop by updating its name instead of deleting"""
+    
+    # Get current loop data
+    response = requests.get(f"https://api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+    loop_data = response.json()["data"]["loop"]
+    
+    # Update with archived naming
+    archived_name = f"[ARCHIVED] {loop_data['name']}"
+    archived_description = f"ARCHIVED on {datetime.now().strftime('%Y-%m-%d')} - {loop_data.get('description', '')}"
+    
+    update_response = requests.put(
+        f"https://api.hitl.sh/v1/loops/{loop_id}",
+        headers=headers,
+        json={
+            "name": archived_name,
+            "description": archived_description
+        }
+    )
+    
+    return update_response.json()
+```
+
+```javascript Node.js
+async function archiveLoop(loopId) {
+    // Get current loop data
+    const response = await axios.get(`https://api.hitl.sh/v1/loops/${loopId}`, {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+    
+    const loopData = response.data.data.loop;
+    
+    // Update with archived naming
+    const archivedName = `[ARCHIVED] ${loopData.name}`;
+    const archivedDescription = `ARCHIVED on ${new Date().toISOString().split('T')[0]} - ${loopData.description || ''}`;
+    
+    const updateResponse = await axios.put(
+        `https://api.hitl.sh/v1/loops/${loopId}`,
+        {
+            name: archivedName,
+            description: archivedDescription
+        },
+        {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+    
+    return updateResponse.data;
+}
+```
+
+</CodeGroup>
+
+## Recovery Options
+
+### No Recovery Available
+
+<Warning>
+Once a loop is deleted, there is **no way to recover** the data. The deletion is immediate and permanent.
+</Warning>
+
+### Prevention Strategies
+
+1. **Export Data First**: Before deletion, export important data
+2. **Use Staging Loops**: Test with non-production loops
+3. **Archive Instead**: Consider archiving rather than deleting
+4. **Team Review**: Have deletions reviewed by team members
+
+## Next Steps
+
+<Card title="Create New Loop" icon="plus" href="/api-reference/loops/create-loop">
+  Create a new loop to replace the deleted one if needed.
+</Card>
+
+<Card title="Export Data" icon="download" href="/api-reference/requests/get-requests">
+  Learn how to export request and response data before deletion.
+</Card>
+
+<Card title="Loop Management" icon="cog" href="/api-reference/loops/get-loops">
+  Return to loop management and view your remaining loops.
+</Card>
