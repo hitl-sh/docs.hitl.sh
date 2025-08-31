@@ -1,13 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "maple",
   "name": "Human in the Loop",
   "colors": {
     "primary": "#2D3748",
     "light": "#4A5568",
     "dark": "#1A202C"
   },
-  "favicon": "/favicon-2.svg?v=4",
+  "favicon": "/favicon.svg?v=5",
   "navigation": {
     "tabs": [
       {
@@ -125,7 +125,7 @@
         {
           "anchor": "Install App",
           "href": "https://hitl.sh/download",
-          "icon": "smartphone"
+          "icon": "download"
         },
         {
           "anchor": "Community",
