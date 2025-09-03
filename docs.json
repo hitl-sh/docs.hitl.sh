@@ -7,7 +7,7 @@
     "light": "#4A5568",
     "dark": "#1A202C"
   },
-  "favicon": "/favicon.svg?v=5",
+  "favicon": "/favicon.svg?v=6",
   "navigation": {
     "tabs": [
       {
@@ -43,9 +43,7 @@
           },
           {
             "group": "Requests",
-            "pages": [
-              "requests/introduction"
-            ]
+            "pages": ["requests/introduction"]
           },
           {
             "group": "Responses",
@@ -69,10 +67,7 @@
           },
           {
             "group": "Webhooks",
-            "pages": [
-              "webhooks/global",
-              "webhooks/loop-based"
-            ]
+            "pages": ["webhooks/global", "webhooks/loop-based"]
           }
         ]
       },
@@ -154,17 +149,11 @@
     "primary": {
       "type": "button",
       "label": "Get Started",
-              "href": "https://my.hitl.sh"
+      "href": "https://my.hitl.sh"
     }
   },
   "contextual": {
-    "options": [
-     "copy",
-     "chatgpt",
-     "claude",
-     "cursor",
-     "vscode"
-   ]
+    "options": ["copy", "chatgpt", "claude", "cursor", "vscode"]
   },
   "footer": {
     "socials": {
