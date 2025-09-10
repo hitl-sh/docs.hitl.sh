@@ -24,6 +24,13 @@
             ]
           },
           {
+            "group": "Integration Guides",
+            "pages": [
+              "guides/simple-integration",
+              "guides/response-types"
+            ]
+          },
+          {
             "group": "Core Concepts",
             "pages": [
               "concepts/ai-agents",
@@ -53,8 +60,7 @@
               "responses/single-select",
               "responses/multi-select",
               "responses/rating",
-              "responses/number",
-              "responses/boolean"
+              "responses/number"
             ]
           },
           {

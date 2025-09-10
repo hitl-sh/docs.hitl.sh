@@ -1,6 +1,6 @@
 ---
 title: "Add Request Feedback"
-api: "POST https://api.hitl.sh/v1/requests/{id}/feedback"
+api: "POST https://dev.api.hitl.sh/v1/requests/{id}/feedback"
 description: "Provide feedback on completed requests to improve reviewer performance and system quality over time"
 ---
 
@@ -97,7 +97,7 @@ The feedback object can contain any combination of the following fields:
 <RequestExample>
 
 ```bash cURL
-curl -X POST https://api.hitl.sh/v1/requests/65f1234567890abcdef12348/feedback \
+curl -X POST https://dev.api.hitl.sh/v1/requests/65f1234567890abcdef12348/feedback \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -120,7 +120,7 @@ import requests
 def add_request_feedback(request_id, feedback_data):
     """Add comprehensive feedback to a completed request"""
     
-    url = f"https://api.hitl.sh/v1/requests/{request_id}/feedback"
+    url = f"https://dev.api.hitl.sh/v1/requests/{request_id}/feedback"
     headers = {
         "Authorization": "Bearer your_api_key_here",
         "Content-Type": "application/json"
@@ -170,7 +170,7 @@ const axios = require('axios');
 class FeedbackManager {
     constructor(apiKey) {
         this.apiKey = apiKey;
-        this.baseURL = 'https://api.hitl.sh/v1';
+        this.baseURL = 'https://dev.api.hitl.sh/v1';
     }
     
     async addFeedback(requestId, feedbackData) {
@@ -374,7 +374,7 @@ def analyze_feedback_patterns():
     
     # Get all completed requests
     response = requests.get(
-        "https://api.hitl.sh/v1/requests?status=completed&limit=100",
+        "https://dev.api.hitl.sh/v1/requests?status=completed&limit=100",
         headers={"Authorization": "Bearer your_api_key_here"}
     )
     
@@ -443,7 +443,7 @@ async function bulkFeedback(requestFeedbackPairs, options = {}) {
             if (validateFirst) {
                 // Get request details to ensure it's completed
                 const requestResponse = await axios.get(
-                    `https://api.hitl.sh/v1/requests/${requestId}`,
+                    `https://dev.api.hitl.sh/v1/requests/${requestId}`,
                     { headers: { 'Authorization': 'Bearer your_api_key_here' } }
                 );
                 
@@ -461,7 +461,7 @@ async function bulkFeedback(requestFeedbackPairs, options = {}) {
             
             // Submit feedback
             const feedbackResponse = await axios.post(
-                `https://api.hitl.sh/v1/requests/${requestId}/feedback`,
+                `https://dev.api.hitl.sh/v1/requests/${requestId}/feedback`,
                 { feedback },
                 { headers: { 'Authorization': 'Bearer your_api_key_here', 'Content-Type': 'application/json' } }
             );

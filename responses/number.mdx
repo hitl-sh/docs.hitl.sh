@@ -5,7 +5,7 @@ description: "Complete guide to implementing number responses for pricing, quant
 
 # Number Responses
 
-Number responses allow reviewers to input precise numeric values with customizable validation, formatting, and display options. They're perfect for collecting prices, quantities, measurements, scores, or any numeric data that requires accuracy and consistency.
+Number responses allow reviewers to input precise numeric values with customizable validation. They're perfect for collecting prices, quantities, measurements, scores, or any numeric data that requires accuracy and consistency.
 
 ## When to Use Number Responses
 
@@ -31,7 +31,7 @@ Custom scoring systems, weighted calculations, or complex numeric evaluations be
 
 ## Configuration Options
 
-Number responses support extensive validation and formatting options:
+Number responses support extensive validation options:
 
 ### Required Parameters
 
@@ -48,15 +48,6 @@ Minimum allowed value (inclusive, can be negative)
 <ParamField body="decimal_places" type="integer" optional default="2">
 Number of decimal places allowed (0-10)
 </ParamField>
-
-<ParamField body="prefix" type="string" optional>
-Text to display before the number (e.g., "$", "€", "#")
-</ParamField>
-
-<ParamField body="suffix" type="string" optional>
-Text to display after the number (e.g., " USD", " kg", " items")
-</ParamField>
-
 <ParamField body="allow_negative" type="boolean" optional default="false">
 Whether negative numbers are permitted
 </ParamField>
@@ -69,7 +60,7 @@ Whether a numeric value is mandatory for completion
 
 ### Product Pricing
 
-Currency-formatted price input with validation:
+Price input with validation:
 
 <CodeGroup>
 
@@ -84,8 +75,6 @@ request_data = {
         "min_value": 50.00,
         "max_value": 200.00,
         "decimal_places": 2,
-        "prefix": "$",
-        "suffix": " USD",
         "allow_negative": False,
         "required": True
     },
@@ -106,8 +95,6 @@ const requestData = {
         min_value: 50.00,
         max_value: 200.00,
         decimal_places: 2,
-        prefix: "$",
-        suffix: " USD", 
         allow_negative: false,
         required: true
     },
@@ -118,7 +105,7 @@ const requestData = {
 ```
 
 ```bash cURL
-curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -131,8 +118,6 @@ curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
         "min_value": 50.00,
         "max_value": 200.00,
         "decimal_places": 2,
-        "prefix": "$",
-        "suffix": " USD",
         "allow_negative": false,
         "required": true
     },
@@ -163,8 +148,6 @@ request_data = {
         "min_value": 0,
         "max_value": 200,
         "decimal_places": 0,  # Whole numbers only
-        "prefix": "",
-        "suffix": " units",
         "allow_negative": False,
         "required": True
     },
@@ -186,8 +169,6 @@ const requestData = {
         min_value: 20,
         max_value: 150, 
         decimal_places: 0,
-        prefix: "",
-        suffix: " units/day",
         allow_negative: false,
         required: true
     },
@@ -217,8 +198,6 @@ request_data = {
         "min_value": 0.0,
         "max_value": 14.0,
         "decimal_places": 2,
-        "prefix": "pH ",
-        "suffix": "",
         "allow_negative": False,
         "required": True
     },
@@ -248,8 +227,6 @@ request_data = {
         "min_value": -25000.00,
         "max_value": 25000.00,
         "decimal_places": 2,
-        "prefix": "$",
-        "suffix": " USD",
         "allow_negative": True,
         "required": True
     },
@@ -263,14 +240,11 @@ request_data = {
 
 ## Response Format
 
-When a reviewer enters a number, you'll receive both the raw value and formatted display:
+When a reviewer enters a number, you'll receive the numeric value:
 
 ```json
 {
-  "response_data": {
-    "number": 129.99,
-    "formatted_value": "$129.99 USD"
-  }
+  "response_data": 129.99
 }
 ```
 
@@ -287,8 +261,6 @@ pricing_config = {
         "min_value": 10.00,
         "max_value": 500.00,
         "decimal_places": 2,
-        "prefix": "$",
-        "suffix": " USD",
         "allow_negative": False,
         "required": True
     }
@@ -299,10 +271,7 @@ pricing_config = {
 <Tab title="Sample Response">
 ```json
 {
-  "response_data": {
-    "number": 149.99,
-    "formatted_value": "$149.99 USD"
-  }
+  "response_data": 149.99
 }
 ```
 </Tab>
@@ -310,8 +279,7 @@ pricing_config = {
 <Tab title="Processing">
 ```python
 def process_pricing_decision(response_data, product_id):
-    price = response_data["number"]
-    formatted_price = response_data["formatted_value"]
+    price = response_data
     
     # Get product cost data for margin calculation
     product_cost = get_product_cost(product_id)
@@ -335,7 +303,6 @@ def process_pricing_decision(response_data, product_id):
     log_pricing_decision({
         "product_id": product_id,
         "new_price": price,
-        "formatted_price": formatted_price,
         "margin_percentage": margin_percentage,
         "price_position": price_position,
         "decision_timestamp": datetime.utcnow()
@@ -388,8 +355,6 @@ inventory_config = {
         "min_value": 0,
         "max_value": 10000,
         "decimal_places": 0,
-        "prefix": "",
-        "suffix": " units",
         "allow_negative": False,
         "required": True
     }
@@ -400,10 +365,7 @@ inventory_config = {
 <Tab title="Sample Response">
 ```json
 {
-  "response_data": {
-    "number": 347,
-    "formatted_value": "347 units"
-  }
+  "response_data": 347
 }
 ```
 </Tab>
@@ -411,8 +373,7 @@ inventory_config = {
 <Tab title="Processing">
 ```python
 def process_inventory_count(response_data, sku, location):
-    actual_count = response_data["number"]
-    formatted_count = response_data["formatted_value"]
+    actual_count = response_data
     
     # Get expected count from system
     system_count = get_system_inventory_count(sku, location)
@@ -476,8 +437,6 @@ performance_config = {
         "min_value": 0.0,
         "max_value": 100.0,
         "decimal_places": 1,
-        "prefix": "",
-        "suffix": "%",
         "allow_negative": False,
         "required": True
     }
@@ -488,10 +447,7 @@ performance_config = {
 <Tab title="Sample Response">
 ```json
 {
-  "response_data": {
-    "number": 87.5,
-    "formatted_value": "87.5%"
-  }
+  "response_data": 87.5
 }
 ```
 </Tab>
@@ -499,8 +455,7 @@ performance_config = {
 <Tab title="Processing">
 ```python
 def process_performance_metric(response_data, employee_id, metric_type, review_period):
-    performance_score = response_data["number"]
-    formatted_score = response_data["formatted_value"]
+    performance_score = response_data
     
     # Store performance record
     performance_record = {
@@ -551,7 +506,6 @@ def process_performance_metric(response_data, employee_id, metric_type, review_p
         "performance_tier": performance_tier,
         "recommended_action": recommended_action,
         "trend": trend,
-        "formatted_display": formatted_score
     }
 
 def calculate_performance_trend(scores):
@@ -591,17 +545,13 @@ Your application should validate received numbers:
 def validate_number_response(response_data, response_config):
     """Validate number response against configuration"""
     
-    if not isinstance(response_data, dict):
-        return False, "Response must be an object"
+    if not isinstance(response_data, (int, float)):
+        return False, "Response must be a number"
     
-    if "number" not in response_data:
-        return False, "Missing number field"
+    number = response_data
     
-    number = response_data["number"]
-    
-    # Validate numeric type
-    if not isinstance(number, (int, float)):
-        return False, "Value must be a number"
+    # Validate numeric type (already done above)
+    # number = response_data (simplified format)
     
     # Check range bounds
     min_value = response_config.get("min_value", 0)
@@ -636,10 +586,7 @@ def validate_number_response(response_data, response_config):
 
 # Usage example
 is_valid, error_message = validate_number_response(
-    response_data={
-        "number": 149.99,
-        "formatted_value": "$149.99 USD"
-    },
+    response_data=149.99,
     response_config={
         "min_value": 50.00,
         "max_value": 500.00,
@@ -664,16 +611,15 @@ is_valid, error_message = validate_number_response(
 
 <Accordion title="Choose Appropriate Precision">
 - **0 decimals**: For counting, whole quantities, percentages as integers
-- **2 decimals**: For currency, most business metrics
+- **2 decimals**: For monetary values, most business metrics
 - **3+ decimals**: For scientific measurements, precise calculations
 - Match precision to the business need and reviewer capability
 </Accordion>
 
-<Accordion title="Use Clear Formatting">
-- Add currency symbols ($, €, £) for monetary values
-- Include units (kg, miles, %, units) to clarify what's being measured
-- Use familiar formatting conventions for your target audience
-- Keep prefixes and suffixes concise but descriptive
+<Accordion title="Consider Context">
+- Use descriptive request text to clarify what's being measured
+- Provide clear instructions about units or context in the request
+- Consider the context and units when appropriate
 </Accordion>
 
 <Accordion title="Handle Edge Cases">
@@ -724,7 +670,6 @@ def process_financial_number(number_response):
     
     return {
         "amount": float(rounded_amount),
-        "display": f"${rounded_amount:.2f}",
         "cents": int(rounded_amount * 100)  # For API integrations
     }
 ```
@@ -785,8 +730,6 @@ def get_dynamic_price_range(product_category, market_tier):
             "min_value": min_val,
             "max_value": max_val,
             "decimal_places": 2,
-            "prefix": "$",
-            "suffix": " USD"
         }
     
     # Default fallback
@@ -794,28 +737,8 @@ def get_dynamic_price_range(product_category, market_tier):
         "min_value": 1.00,
         "max_value": 1000.00,
         "decimal_places": 2,
-        "prefix": "$",
-        "suffix": " USD"
     }
 ```
-
-### Multi-Currency Support
-
-```python
-# Handle different currencies based on user location
-def get_currency_config(user_location):
-    """Generate number config for appropriate currency"""
-    
-    currency_configs = {
-        "US": {"prefix": "$", "suffix": " USD", "decimal_places": 2},
-        "EU": {"prefix": "€", "suffix": " EUR", "decimal_places": 2},
-        "UK": {"prefix": "£", "suffix": " GBP", "decimal_places": 2},
-        "JP": {"prefix": "¥", "suffix": " JPY", "decimal_places": 0}
-    }
-    
-    return currency_configs.get(user_location, currency_configs["US"])
-```
-
 ### Aggregate Calculations
 
 ```python

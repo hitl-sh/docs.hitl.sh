@@ -63,7 +63,7 @@ Secure your API calls with API keys:
 import requests
 
 class HITLClient:
-    def __init__(self, api_key, base_url="https://api.hitl.sh/v1"):
+    def __init__(self, api_key, base_url="https://dev.api.hitl.sh/v1"):
         self.api_key = api_key
         self.base_url = base_url
         self.headers = {
@@ -320,7 +320,7 @@ class HITLIntegration {
 }
 
 // Usage in your application
-const hitl = new HITLIntegration(API_KEY, 'https://api.hitl.sh/v1');
+const hitl = new HITLIntegration(API_KEY, 'https://dev.api.hitl.sh/v1');
 
 document.getElementById('submit-button').addEventListener('click', async () => {
     const content = document.getElementById('content-input').value;

@@ -5,7 +5,7 @@ description: "Complete guide to all response types supported by HITL.sh - from s
 
 # Response Types
 
-HITL.sh supports six different response types that allow reviewers to provide structured feedback. Each response type has its own configuration options and validation rules, giving you flexibility to design the perfect review experience for your use case.
+HITL.sh supports five different response types that allow reviewers to provide structured feedback. Each response type has its own configuration options and validation rules, giving you flexibility to design the perfect review experience for your use case.
 
 ## Overview
 
@@ -17,7 +17,7 @@ Free-form text responses with character limits and validation
 </Card>
 
 <Card title="Single Select" icon="circle-dot">
-Choose one option from a predefined list with labels and colors
+Choose one option from a predefined list with labels
 </Card>
 
 <Card title="Multi Select" icon="check-square">
@@ -30,10 +30,6 @@ Numeric ratings with custom scales, steps, and labeled endpoints
 
 <Card title="Number" icon="hashtag">
 Numeric input with ranges, decimal places, and formatting
-</Card>
-
-<Card title="Boolean" icon="toggle-on">
-Yes/No decisions with custom labels and visual styling
 </Card>
 </CardGroup>
 
@@ -84,7 +80,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -109,14 +105,14 @@ const requestData = {
 };
 
 const response = await axios.post(
-    `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
+    `https://dev.api.hitl.sh/v1/api/loops/${loopId}/requests`,
     requestData,
     { headers: { Authorization: `Bearer ${apiKey}` }}
 );
 ```
 
 ```bash cURL
-curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -164,16 +160,10 @@ Array of SelectOption objects (1-20 options max)
   <ParamField body="label" type="string" required>
     Display text for the option (max 200 chars)
   </ParamField>
-  <ParamField body="description" type="string" optional>
-    Additional context about the option
-  </ParamField>
-  <ParamField body="color" type="string" optional>
-    Color code for visual styling
-  </ParamField>
 </Expandable>
 </ParamField>
 
-<ParamField body="required" type="boolean" optional default="false">
+<ParamField body="required" type="boolean" required>
 Whether a selection is required
 </ParamField>
 
@@ -192,30 +182,22 @@ request_data = {
         "options": [
             {
                 "value": "approve",
-                "label": "✅ Approve",
-                "description": "Content follows all community guidelines",
-                "color": "#22c55e"
+                "label": "Approve"
             },
             {
                 "value": "approve_with_warning", 
-                "label": "⚠️ Approve with Warning",
-                "description": "Minor issues but acceptable",
-                "color": "#f59e0b"
+                "label": "Approve with Warning"
             },
             {
                 "value": "reject",
-                "label": "❌ Reject",
-                "description": "Violates community guidelines",
-                "color": "#ef4444"
+                "label": "Reject"
             },
             {
                 "value": "escalate",
-                "label": "🚨 Escalate",
-                "description": "Requires senior reviewer decision",
-                "color": "#8b5cf6"
+                "label": "Escalate"
             }
         ],
-        "required": True
+        "required": true
     },
     "default_response": "reject",
     "timeout_seconds": 1800,
@@ -231,30 +213,23 @@ const requestData = {
     request_text: "Please review this user comment for community guideline compliance:",
     response_type: "single_select",
     response_config: {
+        prompt: "",
         options: [
             {
                 value: "approve",
-                label: "✅ Approve",
-                description: "Content follows all community guidelines",
-                color: "#22c55e"
+                label: "Approve"
             },
             {
                 value: "approve_with_warning",
-                label: "⚠️ Approve with Warning", 
-                description: "Minor issues but acceptable",
-                color: "#f59e0b"
+                label: "Approve with Warning"
             },
             {
                 value: "reject",
-                label: "❌ Reject",
-                description: "Violates community guidelines", 
-                color: "#ef4444"
+                label: "Reject"
             },
             {
                 value: "escalate",
-                label: "🚨 Escalate",
-                description: "Requires senior reviewer decision",
-                color: "#8b5cf6"
+                label: "Escalate"
             }
         ],
         required: true
@@ -285,10 +260,10 @@ Allow reviewers to choose multiple options from a predefined list.
 ### Configuration  
 
 <ParamField body="options" type="array" required>
-Array of SelectOption objects (same format as single select)
+Array of SelectOption objects with value and label properties
 </ParamField>
 
-<ParamField body="min_selections" type="integer" optional default="0">
+<ParamField body="min_selections" type="integer" required>
 Minimum number of options that must be selected
 </ParamField>
 
@@ -296,7 +271,7 @@ Minimum number of options that must be selected
 Maximum number of options that can be selected
 </ParamField>
 
-<ParamField body="required" type="boolean" optional default="false">
+<ParamField body="required" type="boolean" required>
 Whether at least one selection is required
 </ParamField>
 
@@ -315,40 +290,34 @@ request_data = {
         "options": [
             {
                 "value": "incorrect_address",
-                "label": "📍 Incorrect Address",
-                "description": "Address doesn't match business location"
+                "label": "Incorrect Address"
             },
             {
                 "value": "wrong_phone",
-                "label": "📞 Wrong Phone Number", 
-                "description": "Phone number is disconnected or incorrect"
+                "label": "Wrong Phone Number"
             },
             {
                 "value": "outdated_hours",
-                "label": "🕒 Outdated Hours",
-                "description": "Operating hours are no longer accurate"
+                "label": "Outdated Hours"
             },
             {
                 "value": "poor_photos",
-                "label": "📸 Poor Quality Photos",
-                "description": "Images are blurry, outdated, or misleading"
+                "label": "Poor Quality Photos"
             },
             {
                 "value": "duplicate_listing",
-                "label": "👥 Duplicate Listing",
-                "description": "This business already has another listing"
+                "label": "Duplicate Listing"
             },
             {
                 "value": "no_issues",
-                "label": "✅ No Issues Found",
-                "description": "Listing appears accurate and complete"
+                "label": "No Issues Found"
             }
         ],
         "min_selections": 1,
         "max_selections": 5,
-        "required": True
+        "required": true
     },
-    "default_response": ["no_issues"],
+    "default_response": "no_issues",
     "timeout_seconds": 2400,
     "platform": "api"
 }
@@ -385,11 +354,7 @@ Maximum value of the rating scale (must be > scale_min)
 Step increment for the rating (e.g., 0.5 for half-point ratings)
 </ParamField>
 
-<ParamField body="labels" type="object" optional>
-Custom labels for scale endpoints and intermediate values
-</ParamField>
-
-<ParamField body="required" type="boolean" optional default="false">
+<ParamField body="required" type="boolean" required>
 Whether a rating is required
 </ParamField>
 
@@ -408,14 +373,7 @@ request_data = {
         "scale_min": 1,
         "scale_max": 10,
         "scale_step": 0.5,
-        "labels": {
-            "1": "Poor Quality",
-            "3": "Below Average", 
-            "5": "Average",
-            "7": "Good Quality",
-            "10": "Excellent"
-        },
-        "required": True
+        "required": true
     },
     "default_response": 5,
     "timeout_seconds": 1800,
@@ -434,13 +392,6 @@ const requestData = {
         scale_min: 1,
         scale_max: 10, 
         scale_step: 0.5,
-        labels: {
-            "1": "Poor Quality",
-            "3": "Below Average",
-            "5": "Average", 
-            "7": "Good Quality",
-            "10": "Excellent"
-        },
         required: true
     },
     default_response: 5,
@@ -455,10 +406,7 @@ const requestData = {
 
 ```json
 {
-  "response_data": {
-    "rating": 7.5,
-    "rating_label": "Good Quality"
-  }
+  "response_data": 7.5
 }
 ```
 
@@ -480,23 +428,11 @@ Maximum allowed value (must be > min_value)
 Number of decimal places allowed (0-10)
 </ParamField>
 
-<ParamField body="prefix" type="string" optional>
-Text to display before the number (e.g., "$", "€")
-</ParamField>
-
-<ParamField body="suffix" type="string" optional>
-Text to display after the number (e.g., "%", "kg")
-</ParamField>
-
-<ParamField body="placeholder" type="string" optional>
-Placeholder text for the input field
-</ParamField>
-
 <ParamField body="allow_negative" type="boolean" optional default="false">
 Whether negative numbers are allowed
 </ParamField>
 
-<ParamField body="required" type="boolean" optional default="false">
+<ParamField body="required" type="boolean" required>
 Whether a value is required
 </ParamField>
 
@@ -515,11 +451,8 @@ request_data = {
         "min_value": 0,
         "max_value": 10000,
         "decimal_places": 2,
-        "prefix": "$",
-        "suffix": " USD",
-        "placeholder": "Enter price",
-        "allow_negative": False,
-        "required": True
+        "allow_negative": false,
+        "required": true
     },
     "default_response": 0,
     "timeout_seconds": 2400,
@@ -538,9 +471,6 @@ const requestData = {
         min_value: 0,
         max_value: 10000,
         decimal_places: 2,
-        prefix: "$",
-        suffix: " USD", 
-        placeholder: "Enter price",
         allow_negative: false,
         required: true
     },
@@ -556,95 +486,10 @@ const requestData = {
 
 ```json
 {
-  "response_data": {
-    "number": 299.99,
-    "formatted_value": "$299.99 USD"
-  }
+  "response_data": 299.99
 }
 ```
 
-## Boolean Response
-
-Simple yes/no or true/false decisions with custom labels.
-
-### Configuration
-
-<ParamField body="true_label" type="string" required>
-Label for the true/yes option
-</ParamField>
-
-<ParamField body="false_label" type="string" required>
-Label for the false/no option  
-</ParamField>
-
-<ParamField body="true_color" type="string" optional>
-Color code for the true option
-</ParamField>
-
-<ParamField body="false_color" type="string" optional>
-Color code for the false option
-</ParamField>
-
-<ParamField body="required" type="boolean" optional default="false">
-Whether a selection is required
-</ParamField>
-
-### Example Request
-
-<CodeGroup>
-
-```python Python
-request_data = {
-    "processing_type": "time-sensitive",
-    "type": "markdown",
-    "priority": "high",
-    "request_text": "Does this financial transaction appear suspicious and require further investigation?",
-    "response_type": "boolean", 
-    "response_config": {
-        "true_label": "🚨 Suspicious - Investigate",
-        "false_label": "✅ Normal - Approve",
-        "true_color": "#dc2626",
-        "false_color": "#16a34a",
-        "required": True
-    },
-    "default_response": True,  # Default to suspicious for security
-    "timeout_seconds": 900,
-    "platform": "api"
-}
-```
-
-```javascript Node.js
-const requestData = {
-    processing_type: "time-sensitive",
-    type: "markdown",
-    priority: "high", 
-    request_text: "Does this financial transaction appear suspicious and require further investigation?",
-    response_type: "boolean",
-    response_config: {
-        true_label: "🚨 Suspicious - Investigate",
-        false_label: "✅ Normal - Approve",
-        true_color: "#dc2626",
-        false_color: "#16a34a",
-        required: true
-    },
-    default_response: true, // Default to suspicious for security
-    timeout_seconds: 900,
-    platform: "api"
-};
-```
-
-</CodeGroup>
-
-### Response Format
-
-```json
-{
-  "response_data": {
-    "boolean": false,
-    "boolean_label": "✅ Normal - Approve"
-  }
-}
-```
 
 ## Validation Rules
 
@@ -681,10 +526,6 @@ HITL.sh validates all responses against the configured rules:
 - Negative numbers only allowed if allow_negative is true
 </Accordion>
 
-<Accordion title="Boolean Validation">
-- Response must be exactly true or false
-- Required boolean responses cannot be null
-</Accordion>
 </AccordionGroup>
 
 ## Best Practices
@@ -712,9 +553,6 @@ Use ratings for quantitative assessments where you need to measure quality, sati
 Use number responses for pricing, quantities, measurements, or any numeric data that needs validation and formatting.
 </Step>
 
-<Step title="Boolean for Yes/No Decisions">
-Use boolean for simple binary decisions where you need clear true/false, approve/reject, or pass/fail responses.
-</Step>
 </Steps>
 
 ### Configuration Tips

@@ -1,0 +1,902 @@
+---
+title: "Simple Integration Guide"
+description: "Learn how to easily integrate HITL.sh into your application with practical examples for common scenarios"
+---
+
+# Simple Integration Guide
+
+This guide shows you how to integrate HITL.sh into your applications to get human input when your automated systems need help making decisions.
+
+<Info>
+Perfect for developers who want to add human oversight to AI systems, content moderation, quality checks, and approval workflows.
+</Info>
+
+## What You'll Learn
+
+<Steps>
+<Step title="Basic Setup">
+Get your API key and understand the core concepts
+</Step>
+
+<Step title="Common Patterns">  
+Learn the most useful integration patterns with copy-paste examples
+</Step>
+
+<Step title="Handle Responses">
+Process human responses in your application code
+</Step>
+
+<Step title="Best Practices">
+Tips for reliable production integration
+</Step>
+</Steps>
+
+## Prerequisites
+
+<AccordionGroup>
+<Accordion title="Get Your API Key" icon="key">
+1. Sign up at [app.hitl.sh](https://app.hitl.sh)
+2. Create a new API key in your dashboard
+3. Set up a loop with team members who will review requests
+
+```bash
+export HITL_API_KEY="your_api_key_here"
+export HITL_LOOP_ID="your_loop_id_here"  
+```
+</Accordion>
+
+<Accordion title="Install Required Libraries" icon="download">
+<CodeGroup>
+
+```bash Python
+pip install requests
+```
+
+```bash Node.js  
+npm install axios
+```
+
+```bash cURL
+# No installation needed - cURL comes with most systems
+```
+
+</CodeGroup>
+</Accordion>
+</AccordionGroup>
+
+## Integration Pattern #1: Content Moderation
+
+Perfect for reviewing user-generated content, AI outputs, or flagged posts.
+
+<CodeGroup>
+
+```python Python
+import requests
+import time
+
+def review_content(content, priority="medium"):
+    """Send content for human review and return the decision"""
+    
+    # Create the review request
+    response = requests.post(
+        f"https://dev.api.hitl.sh/v1/loops/{HITL_LOOP_ID}/requests",
+        headers={
+            "Authorization": f"Bearer {HITL_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "processing_type": "time-sensitive",
+            "type": "markdown",
+            "priority": priority,
+            "request_text": f"Please review this content for community guidelines compliance:\n\n{content}",
+            "timeout_seconds": 1800,  # 30 minutes
+            "response_type": "single_select",
+            "response_config": {
+                "options": [
+                    {"value": "approve", "label": "Approve - Safe to publish"},
+                    {"value": "reject", "label": "Reject - Violates guidelines"},
+                    {"value": "needs_review", "label": "Needs Review - Unclear content"}
+                ],
+                "required": true
+            },
+            "default_response": "reject",  # Safe default
+            "platform": "api"
+        }
+    )
+    
+    if response.status_code != 201:
+        return {"error": "Failed to create request"}
+    
+    request_data = response.json()
+    request_id = request_data["data"]["request_id"]
+    
+    # Poll for response (in production, use webhooks instead)
+    return wait_for_response(request_id)
+
+def wait_for_response(request_id, max_wait_minutes=30):
+    """Wait for human response (use webhooks in production)"""
+    
+    for _ in range(max_wait_minutes * 2):  # Check every 30 seconds
+        response = requests.get(
+            f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+            headers={"Authorization": f"Bearer {HITL_API_KEY}"}
+        )
+        
+        if response.status_code == 200:
+            data = response.json()["data"]["request"]
+            
+            if data["status"] == "completed":
+                return {
+                    "decision": data["response_data"],
+                    "reviewed_by": data.get("response_by_user", {}).get("name", "Unknown"),
+                    "response_time": data.get("response_time_seconds", 0)
+                }
+            elif data["status"] in ["timeout", "cancelled"]:
+                return {"decision": data["default_response"], "timeout": True}
+        
+        time.sleep(30)  # Wait 30 seconds before next check
+    
+    return {"error": "Timeout waiting for response"}
+
+# Usage example
+if __name__ == "__main__":
+    user_post = "Check out this amazing deal on cryptocurrency!"
+    
+    result = review_content(user_post, priority="high")
+    
+    if result.get("decision") == "approve":
+        print("✅ Content approved - publish it!")
+    elif result.get("decision") == "reject":
+        print("❌ Content rejected - don't publish")
+    else:
+        print(f"⚠️ Content needs review: {result}")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+async function reviewContent(content, priority = 'medium') {
+    try {
+        // Create the review request
+        const response = await axios.post(
+            `https://dev.api.hitl.sh/v1/loops/${process.env.HITL_LOOP_ID}/requests`,
+            {
+                processing_type: 'time-sensitive',
+                type: 'markdown', 
+                priority: priority,
+                request_text: `Please review this content:\n\n${content}`,
+                timeout_seconds: 1800, // 30 minutes
+                response_type: 'single_select',
+                response_config: {
+                    options: [
+                        {value: 'approve', label: 'Approve - Safe to publish'},
+                        {value: 'reject', label: 'Reject - Violates guidelines'},
+                        {value: 'needs_review', label: 'Needs Review - Unclear content'}
+                    ],
+                    required: true
+                },
+                default_response: 'reject', // Safe default
+                platform: 'api'
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${process.env.HITL_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        const requestId = response.data.data.request_id;
+        
+        // Poll for response (in production, use webhooks instead)
+        return await waitForResponse(requestId);
+        
+    } catch (error) {
+        return { error: 'Failed to create request', details: error.message };
+    }
+}
+
+async function waitForResponse(requestId, maxWaitMinutes = 30) {
+    for (let i = 0; i < maxWaitMinutes * 2; i++) {
+        try {
+            const response = await axios.get(
+                `https://dev.api.hitl.sh/v1/api/requests/${requestId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${process.env.HITL_API_KEY}`
+                    }
+                }
+            );
+            
+            const request = response.data.data.request;
+            
+            if (request.status === 'completed') {
+                return {
+                    decision: request.response_data,
+                    reviewed_by: request.response_by_user?.name || 'Unknown',
+                    response_time: request.response_time_seconds || 0
+                };
+            } else if (['timeout', 'cancelled'].includes(request.status)) {
+                return { decision: request.default_response, timeout: true };
+            }
+            
+        } catch (error) {
+            console.error('Error checking request status:', error.message);
+        }
+        
+        // Wait 30 seconds before next check
+        await new Promise(resolve => setTimeout(resolve, 30000));
+    }
+    
+    return { error: 'Timeout waiting for response' };
+}
+
+// Usage example
+async function main() {
+    const userPost = "Check out this amazing deal on cryptocurrency!";
+    
+    const result = await reviewContent(userPost, 'high');
+    
+    if (result.decision === 'approve') {
+        console.log('✅ Content approved - publish it!');
+    } else if (result.decision === 'reject') {
+        console.log('❌ Content rejected - don\'t publish');
+    } else {
+        console.log(`⚠️ Content needs review: ${JSON.stringify(result)}`);
+    }
+}
+
+// Uncomment to run
+// main();
+```
+
+```bash cURL
+#!/bin/bash
+
+# Set your credentials
+HITL_API_KEY="your_api_key_here"
+HITL_LOOP_ID="your_loop_id_here"
+
+# Content to review
+CONTENT="Check out this amazing deal on cryptocurrency!"
+
+echo "🔄 Sending content for human review..."
+
+# Create review request
+RESPONSE=$(curl -s -X POST "https://dev.api.hitl.sh/v1/loops/$HITL_LOOP_ID/requests" \
+  -H "Authorization: Bearer $HITL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"processing_type\": \"time-sensitive\",
+    \"type\": \"markdown\", 
+    \"priority\": \"high\",
+    \"request_text\": \"Please review this content for community guidelines compliance:\\n\\n$CONTENT\",
+    \"timeout_seconds\": 1800,
+    \"response_type\": \"single_select\",
+    \"response_config\": {
+      \"options\": [
+        {\"value\": \"approve\", \"label\": \"Approve - Safe to publish\"},
+        {\"value\": \"reject\", \"label\": \"Reject - Violates guidelines\"},
+        {\"value\": \"needs_review\", \"label\": \"Needs Review - Unclear content\"}
+      ],
+      \"required\": true
+    },
+    \"default_response\": \"reject\",
+    \"platform\": \"api\"
+  }")
+
+# Extract request ID
+REQUEST_ID=$(echo $RESPONSE | jq -r '.data.request_id')
+
+if [ "$REQUEST_ID" == "null" ]; then
+    echo "❌ Failed to create request"
+    echo $RESPONSE
+    exit 1
+fi
+
+echo "✅ Request created with ID: $REQUEST_ID"
+echo "⏳ Waiting for human reviewer response..."
+
+# Poll for response (check every 30 seconds for up to 30 minutes)
+for i in {1..60}; do
+    STATUS_RESPONSE=$(curl -s -X GET "https://dev.api.hitl.sh/v1/api/requests/$REQUEST_ID" \
+      -H "Authorization: Bearer $HITL_API_KEY")
+    
+    STATUS=$(echo $STATUS_RESPONSE | jq -r '.data.request.status')
+    
+    if [ "$STATUS" == "completed" ]; then
+        DECISION=$(echo $STATUS_RESPONSE | jq -r '.data.request.response_data')
+        REVIEWER=$(echo $STATUS_RESPONSE | jq -r '.data.request.response_by_user.name // "Unknown"')
+        
+        echo "🎉 Review completed by $REVIEWER"
+        echo "📋 Decision: $DECISION"
+        
+        if [ "$DECISION" == "approve" ]; then
+            echo "✅ Content approved - safe to publish!"
+        elif [ "$DECISION" == "reject" ]; then
+            echo "❌ Content rejected - do not publish"
+        else
+            echo "⚠️ Content needs review before publishing"
+        fi
+        
+        break
+    elif [ "$STATUS" == "timeout" ] || [ "$STATUS" == "cancelled" ]; then
+        echo "⏰ Request timed out or was cancelled"
+        echo "🛡️ Using safe default: Reject"
+        break
+    fi
+    
+    echo "⏳ Still waiting... (attempt $i/60)"
+    sleep 30
+done
+```
+
+</CodeGroup>
+
+## Integration Pattern #2: AI Output Quality Check
+
+Perfect for reviewing AI-generated content, translations, or automated responses before sending them to users.
+
+<CodeGroup>
+
+```python Python
+def review_ai_output(ai_response, context="", min_quality=3):
+    """Review AI output quality and get human feedback"""
+    
+    response = requests.post(
+        f"https://dev.api.hitl.sh/v1/loops/{HITL_LOOP_ID}/requests",
+        headers={
+            "Authorization": f"Bearer {HITL_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "processing_type": "time-sensitive",
+            "type": "markdown",
+            "priority": "medium",
+            "request_text": f"Rate this AI response quality (1-5 scale):\n\nContext: {context}\n\nAI Response: {ai_response}",
+            "timeout_seconds": 2400,  # 40 minutes  
+            "response_type": "rating",
+            "response_config": {
+                "min": 1,
+                "max": 5
+            },
+            "default_response": 2,  # Conservative default
+            "platform": "api"
+        }
+    )
+    
+    if response.status_code != 201:
+        return {"error": "Failed to create request"}
+    
+    request_data = response.json()
+    request_id = request_data["data"]["request_id"]
+    result = wait_for_response(request_id)
+    
+    if isinstance(result.get("decision"), (int, float)):
+        return {
+            "quality_score": result["decision"],
+            "approved": result["decision"] >= min_quality,
+            "reviewer": result.get("reviewed_by"),
+            "recommendation": "approve" if result["decision"] >= min_quality else "revise"
+        }
+    
+    return result
+
+# Usage
+ai_content = "The weather today is quite pleasant with sunny skies."
+context = "Customer asked about today's weather"
+
+quality_check = review_ai_output(ai_content, context, min_quality=3)
+
+if quality_check.get("approved"):
+    print(f"✅ AI response approved (score: {quality_check['quality_score']}/5)")
+    # Send AI response to customer
+else:
+    print(f"❌ AI response needs improvement (score: {quality_check['quality_score']}/5)")
+    # Generate new AI response or escalate to human agent
+```
+
+```javascript Node.js  
+async function reviewAiOutput(aiResponse, context = '', minQuality = 3) {
+    try {
+        const response = await axios.post(
+            `https://dev.api.hitl.sh/v1/loops/${process.env.HITL_LOOP_ID}/requests`,
+            {
+                processing_type: 'time-sensitive',
+                type: 'markdown',
+                priority: 'medium',
+                request_text: `Rate this AI response quality (1-5 scale):\n\nContext: ${context}\n\nAI Response: ${aiResponse}`,
+                timeout_seconds: 2400, // 40 minutes
+                response_type: 'rating',
+                response_config: {
+                    min: 1,
+                    max: 5
+                },
+                default_response: 2, // Conservative default
+                platform: 'api'
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${process.env.HITL_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        const requestId = response.data.data.request_id;
+        const result = await waitForResponse(requestId);
+        
+        if (typeof result.decision === 'number') {
+            return {
+                quality_score: result.decision,
+                approved: result.decision >= minQuality,
+                reviewer: result.reviewed_by,
+                recommendation: result.decision >= minQuality ? 'approve' : 'revise'
+            };
+        }
+        
+        return result;
+        
+    } catch (error) {
+        return { error: 'Failed to create request', details: error.message };
+    }
+}
+
+// Usage
+async function checkAiQuality() {
+    const aiContent = "The weather today is quite pleasant with sunny skies.";
+    const context = "Customer asked about today's weather";
+    
+    const qualityCheck = await reviewAiOutput(aiContent, context, 3);
+    
+    if (qualityCheck.approved) {
+        console.log(`✅ AI response approved (score: ${qualityCheck.quality_score}/5)`);
+        // Send AI response to customer
+    } else {
+        console.log(`❌ AI response needs improvement (score: ${qualityCheck.quality_score}/5)`);
+        // Generate new AI response or escalate to human agent
+    }
+}
+```
+
+</CodeGroup>
+
+## Integration Pattern #3: Document Approval Workflow  
+
+Great for reviewing contracts, proposals, marketing materials, or any documents that need human approval.
+
+<CodeGroup>
+
+```python Python
+def approve_document(document_title, document_content, urgency="medium"):
+    """Send document for approval with detailed feedback"""
+    
+    response = requests.post(
+        f"https://dev.api.hitl.sh/v1/loops/{HITL_LOOP_ID}/requests",
+        headers={
+            "Authorization": f"Bearer {HITL_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "processing_type": "time-sensitive" if urgency == "high" else "deferred",
+            "type": "markdown",
+            "priority": urgency,
+            "request_text": f"Please review this document for approval:\n\n**Title:** {document_title}\n\n**Content:**\n{document_content}",
+            "timeout_seconds": 3600 if urgency == "high" else 86400,  # 1 hour vs 24 hours
+            "response_type": "multi_select",
+            "response_config": {
+                "options": [
+                    {"value": "approve_as_is", "label": "Approve as-is"},
+                    {"value": "approve_minor_changes", "label": "Approve with minor changes"},
+                    {"value": "needs_major_revisions", "label": "Needs major revisions"},
+                    {"value": "legal_review_required", "label": "Legal review required"},
+                    {"value": "reject_start_over", "label": "Reject - start over"}
+                ],
+                "min_selections": 1,
+                "max_selections": 5,
+                "required": true
+            },
+            "default_response": "needs_major_revisions",  # Conservative default
+            "platform": "api"
+        }
+    )
+    
+    if response.status_code != 201:
+        return {"error": "Failed to create request"}
+    
+    request_data = response.json()
+    request_id = request_data["data"]["request_id"] 
+    
+    return wait_for_response(request_id)
+
+# Usage
+doc_title = "Q4 Marketing Proposal"
+doc_content = """
+## Objective
+Increase brand awareness by 25% through targeted social media campaigns.
+
+## Budget
+$50,000 for Q4 campaigns
+
+## Timeline  
+October 1 - December 31, 2024
+"""
+
+approval = approve_document(doc_title, doc_content, urgency="high")
+
+if isinstance(approval.get("decision"), list):
+    decisions = approval["decision"]
+    
+    if "approve_as_is" in decisions:
+        print("✅ Document fully approved - proceed with implementation")
+    elif "approve_minor_changes" in decisions:
+        print("⚠️ Document approved with minor changes needed")
+    elif "legal_review_required" in decisions:
+        print("⚖️ Document needs legal review before approval")  
+    else:
+        print(f"❌ Document needs work: {', '.join(decisions)}")
+```
+
+```javascript Node.js
+async function approveDocument(documentTitle, documentContent, urgency = 'medium') {
+    try {
+        const response = await axios.post(
+            `https://dev.api.hitl.sh/v1/loops/${process.env.HITL_LOOP_ID}/requests`,
+            {
+                processing_type: urgency === 'high' ? 'time-sensitive' : 'deferred',
+                type: 'markdown',
+                priority: urgency,
+                request_text: `Please review this document for approval:\n\n**Title:** ${documentTitle}\n\n**Content:**\n${documentContent}`,
+                timeout_seconds: urgency === 'high' ? 3600 : 86400, // 1 hour vs 24 hours
+                response_type: 'multi_select',
+                response_config: {
+                    options: [
+                        {value: 'approve_as_is', label: 'Approve as-is'},
+                        {value: 'approve_minor_changes', label: 'Approve with minor changes'},
+                        {value: 'needs_major_revisions', label: 'Needs major revisions'},
+                        {value: 'legal_review_required', label: 'Legal review required'},
+                        {value: 'reject_start_over', label: 'Reject - start over'}
+                    ],
+                    min_selections: 1,
+                    max_selections: 5,
+                    required: true
+                },
+                default_response: ['needs_major_revisions'], // Conservative default
+                platform: 'api'
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${process.env.HITL_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        const requestId = response.data.data.request_id;
+        return await waitForResponse(requestId);
+        
+    } catch (error) {
+        return { error: 'Failed to create request', details: error.message };
+    }
+}
+
+// Usage  
+async function reviewDocument() {
+    const docTitle = "Q4 Marketing Proposal";
+    const docContent = `
+## Objective
+Increase brand awareness by 25% through targeted social media campaigns.
+
+## Budget  
+$50,000 for Q4 campaigns
+
+## Timeline
+October 1 - December 31, 2024
+    `;
+    
+    const approval = await approveDocument(docTitle, docContent, 'high');
+    
+    if (Array.isArray(approval.decision)) {
+        const decisions = approval.decision;
+        
+        if (decisions.includes('approve_as_is')) {
+            console.log('✅ Document fully approved - proceed with implementation');
+        } else if (decisions.includes('approve_minor_changes')) {
+            console.log('⚠️ Document approved with minor changes needed');
+        } else if (decisions.includes('legal_review_required')) {
+            console.log('⚖️ Document needs legal review before approval');
+        } else {
+            console.log(`❌ Document needs work: ${decisions.join(', ')}`);
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+## Using Webhooks (Recommended for Production)
+
+Instead of polling for responses, set up webhooks to get notified instantly when reviews complete:
+
+<CodeGroup>
+
+```python Flask
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/hitl-webhook', methods=['POST'])
+def handle_hitl_response():
+    """Handle webhook notifications from HITL.sh"""
+    
+    webhook_data = request.json
+    
+    if webhook_data.get('event') == 'request.completed':
+        request_id = webhook_data['data']['request_id']
+        decision = webhook_data['data']['response_data']
+        reviewer = webhook_data['data']['response_by_user']['name']
+        
+        # Process the decision in your application
+        process_human_decision(request_id, decision, reviewer)
+        
+        return jsonify({"status": "success"})
+    
+    return jsonify({"status": "ignored"})
+
+def process_human_decision(request_id, decision, reviewer):
+    """Process the human decision in your application"""
+    print(f"Request {request_id} completed by {reviewer}: {decision}")
+    
+    # Add your business logic here:
+    # - Update database
+    # - Send notifications  
+    # - Trigger next steps in workflow
+    # - Log the decision
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=3000)
+```
+
+```javascript Express
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.post('/hitl-webhook', (req, res) => {
+    const webhookData = req.body;
+    
+    if (webhookData.event === 'request.completed') {
+        const requestId = webhookData.data.request_id;
+        const decision = webhookData.data.response_data;
+        const reviewer = webhookData.data.response_by_user.name;
+        
+        // Process the decision in your application
+        processHumanDecision(requestId, decision, reviewer);
+        
+        res.json({ status: 'success' });
+    } else {
+        res.json({ status: 'ignored' });
+    }
+});
+
+function processHumanDecision(requestId, decision, reviewer) {
+    console.log(`Request ${requestId} completed by ${reviewer}:`, decision);
+    
+    // Add your business logic here:
+    // - Update database
+    // - Send notifications
+    // - Trigger next steps in workflow
+    // - Log the decision
+}
+
+app.listen(3000, () => {
+    console.log('Webhook server running on port 3000');
+});
+```
+
+</CodeGroup>
+
+## Production Best Practices
+
+<AccordionGroup>
+<Accordion title="🔒 Security & Authentication" icon="shield">
+- Store your API key securely (environment variables, secret managers)
+- Use HTTPS for all webhook endpoints
+- Validate webhook signatures if available
+- Implement rate limiting on your webhook endpoints
+
+```python
+import os
+from cryptography.fernet import Fernet
+
+# Secure API key storage
+HITL_API_KEY = os.environ.get('HITL_API_KEY')
+if not HITL_API_KEY:
+    raise ValueError("HITL_API_KEY environment variable is required")
+```
+</Accordion>
+
+<Accordion title="⚡ Performance & Reliability" icon="bolt">
+- Use webhooks instead of polling in production
+- Implement retry logic with exponential backoff
+- Set appropriate timeouts for different request types
+- Cache frequently used loop IDs and configurations
+
+```python
+import time
+import random
+
+def create_request_with_retry(request_data, max_retries=3):
+    """Create request with retry logic"""
+    
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(
+                f"https://dev.api.hitl.sh/v1/loops/{HITL_LOOP_ID}/requests",
+                headers={"Authorization": f"Bearer {HITL_API_KEY}"},
+                json=request_data,
+                timeout=30
+            )
+            
+            if response.status_code == 201:
+                return response.json()
+                
+        except requests.exceptions.RequestException as e:
+            if attempt == max_retries - 1:
+                raise e
+            
+            # Exponential backoff with jitter
+            wait_time = (2 ** attempt) + random.uniform(0, 1)
+            time.sleep(wait_time)
+    
+    raise Exception("Max retries exceeded")
+```
+</Accordion>
+
+<Accordion title="📊 Monitoring & Logging" icon="chart-bar">
+- Log all HITL requests with unique identifiers
+- Monitor response times and success rates
+- Set up alerts for timeout rates above acceptable thresholds
+- Track reviewer performance and availability
+
+```python
+import logging
+from datetime import datetime
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def log_hitl_request(request_type, content_summary, request_id=None):
+    """Log HITL request for monitoring"""
+    
+    log_data = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "request_type": request_type,
+        "content_summary": content_summary[:100] + "..." if len(content_summary) > 100 else content_summary,
+        "request_id": request_id,
+        "status": "created" if request_id else "failed"
+    }
+    
+    logger.info(f"HITL Request: {log_data}")
+```
+</Accordion>
+
+<Accordion title="🎯 Response Quality" icon="bullseye">
+- Provide clear, specific instructions to reviewers
+- Use appropriate default responses for timeout scenarios
+- Test different response types to find what works best
+- Regularly review and update your request templates
+
+```python
+def create_clear_request(content, request_type="approval"):
+    """Create clear, actionable requests for better response quality"""
+    
+    templates = {
+        "approval": {
+            "instructions": "Please review this content and decide if it's safe to publish:",
+            "options": ["✅ Approve - Safe to publish", "❌ Reject - Do not publish", "⚠️ Needs changes - Specify in comments"]
+        },
+        "quality": {
+            "instructions": "Rate the quality of this content (1=Poor, 5=Excellent):",
+            "context": "Consider accuracy, clarity, usefulness, and engagement"
+        }
+    }
+    
+    template = templates.get(request_type, templates["approval"])
+    
+    return {
+        "request_text": f"{template['instructions']}\n\n{content}",
+        "response_config": template.get("options", {}),
+        "context": {"template_used": request_type}
+    }
+```
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Set Up Webhooks" icon="webhook" href="/webhooks/global">
+  Configure real-time notifications for production use
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/requests/create-request">
+  Explore all available options and configurations  
+</Card>
+
+<Card title="Response Types Guide" icon="list" href="/responses/types">
+  Learn about advanced response configurations
+</Card>
+
+<Card title="Best Practices" icon="star" href="/guides/best-practices">  
+  Advanced tips for optimizing your integration
+</Card>
+</CardGroup>
+
+## Common Issues & Solutions
+
+<AccordionGroup>
+<Accordion title="❌ Request Creation Fails" icon="x-circle">
+**Common causes:**
+- Invalid API key or loop ID
+- Missing required fields
+- Invalid response configuration
+
+**Solution:**
+```python
+# Validate configuration before sending
+def validate_request_config(config):
+    required_fields = ["processing_type", "type", "priority", "request_text", "response_type", "platform"]
+    
+    for field in required_fields:
+        if field not in config:
+            raise ValueError(f"Missing required field: {field}")
+    
+    if config["response_type"] == "single_select" and not config.get("response_config", {}).get("options"):
+        raise ValueError("Single select requires options array")
+    
+    return True
+```
+</Accordion>
+
+<Accordion title="⏰ High Timeout Rates" icon="clock">
+**Common causes:**
+- Timeout too short for request complexity
+- Reviewers not available or not notified
+- Unclear instructions leading to hesitation
+
+**Solution:**
+```python
+# Adjust timeouts based on request complexity
+def calculate_timeout(request_type, content_length):
+    base_timeout = {
+        "simple_approval": 1800,    # 30 minutes
+        "detailed_review": 3600,    # 1 hour  
+        "complex_analysis": 7200    # 2 hours
+    }
+    
+    timeout = base_timeout.get(request_type, 1800)
+    
+    # Add extra time for longer content
+    if content_length > 1000:
+        timeout += 1800  # Add 30 minutes
+    
+    return min(timeout, 86400)  # Max 24 hours
+```
+</Accordion>
+
+<Accordion title="📱 Mobile App Not Receiving Notifications" icon="mobile">
+**Common causes:**
+- Loop members haven't installed the mobile app
+- Notification permissions disabled
+- Device tokens expired
+
+**Solution:**
+- Ensure all reviewers have installed the HITL mobile app
+- Test notifications in your loop settings
+- Verify reviewers have enabled push notifications
+- Consider SMS or email fallback notifications
+</Accordion>
+</AccordionGroup>

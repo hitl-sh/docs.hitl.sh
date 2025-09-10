@@ -7,21 +7,13 @@ description: "Complete API documentation for HITL.sh. Integrate human oversight 
 
 The HITL.sh API provides a RESTful interface for integrating human supervision into your AI workflows. Create loops, manage requests, and route decisions to human reviewers with our comprehensive API.
 
-## Base URLs
+## Base URL
 
-**Public API (API Key Authentication):**
 ```
-https://api.hitl.sh/v1
-```
-
-**Private API (JWT Authentication):**
-```
-https://api.my.hitl.sh/v1
+https://dev.api.hitl.sh/v1
 ```
 
 ## Authentication
-
-### Public API - API Key
 
 Use API keys for machine-to-machine integration. Include your API key in the header:
 
@@ -37,14 +29,6 @@ Authorization: Bearer your_api_key_here
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 99
 X-RateLimit-Reset: 1642233600
-```
-
-### Private API - JWT Token
-
-Use JWT tokens for user-authenticated requests:
-
-```bash
-Authorization: Bearer your_jwt_token
 ```
 
 ## Response Format
@@ -114,7 +98,7 @@ Requests are human review tasks sent to loop members:
 ### 1. Create a Loop
 
 ```bash
-curl -X POST https://api.hitl.sh/v1/loops \
+curl -X POST https://dev.api.hitl.sh/v1/loops \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -127,7 +111,7 @@ curl -X POST https://api.hitl.sh/v1/loops \
 ### 2. Create a Request
 
 ```bash
-curl -X POST https://api.hitl.sh/v1/loops/LOOP_ID/requests \
+curl -X POST https://dev.api.hitl.sh/v1/loops/LOOP_ID/requests \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -148,7 +132,7 @@ curl -X POST https://api.hitl.sh/v1/loops/LOOP_ID/requests \
 ### 3. Poll for Response
 
 ```bash
-curl -X GET https://api.hitl.sh/v1/requests/REQUEST_ID \
+curl -X GET https://dev.api.hitl.sh/v1/requests/REQUEST_ID \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -293,7 +277,7 @@ Set up webhooks to receive real-time notifications when requests are completed:
 ## Next Steps
 
 <Card title="Authentication Guide" icon="key" href="/api-reference/authentication">
-  Learn about API keys, JWT tokens, and security best practices.
+  Learn about API keys and security best practices.
 </Card>
 
 <Card title="Create Your First Loop" icon="plus" href="/api-reference/loops/create-loop">
