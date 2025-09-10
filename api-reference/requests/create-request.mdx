@@ -1,10 +1,111 @@
 ---
 title: "Create Request"
-api: "POST https://api.hitl.sh/v1/loops/{loopId}/requests"
+api: "POST https://dev.api.hitl.sh/v1/loops/{loopId}/requests"
 description: "Create a new human review request within a loop and broadcast it to active members with push notifications"
 ---
 
 Create a new request that will be sent to all active members of a loop for human review. The request supports multiple content types, response configurations, and notification systems.
+
+## Quick Start for Common Use Cases
+
+<AccordionGroup>
+<Accordion title="✅ Simple Approval Workflow" icon="check">
+Perfect for content moderation, document approval, or basic yes/no decisions.
+
+```json
+{
+  "processing_type": "time-sensitive",
+  "type": "markdown",
+  "priority": "medium",
+  "request_text": "Please review this content for approval",
+  "timeout_seconds": 1800,
+  "response_type": "single_select",
+  "response_config": {
+    "options": [
+      {"value": "approve", "label": "Approve"},
+      {"value": "reject", "label": "Reject"}
+    ],
+    "required": true
+  },
+  "default_response": "reject",
+  "platform": "api"
+}
+```
+</Accordion>
+
+<Accordion title="⭐ Quality Rating" icon="star">
+Rate content quality, AI outputs, or customer service interactions.
+
+```json
+{
+  "processing_type": "time-sensitive", 
+  "type": "markdown",
+  "priority": "low",
+  "request_text": "Rate the quality of this AI response on a scale of 1-5",
+  "timeout_seconds": 3600,
+  "response_type": "rating",
+  "response_config": {
+    "scale_min": 1,
+    "scale_max": 5,
+    "scale_step": 1,
+    "required": true
+  },
+  "default_response": 3,
+  "platform": "api"
+}
+```
+</Accordion>
+
+<Accordion title="💬 Detailed Feedback" icon="comment">
+Get written feedback, suggestions, or explanations from reviewers.
+
+```json
+{
+  "processing_type": "deferred",
+  "type": "markdown", 
+  "priority": "low",
+  "request_text": "Provide feedback on this article draft",
+  "response_type": "text",
+  "response_config": {
+    "placeholder": "Provide your detailed feedback here...",
+    "min_length": 50,
+    "max_length": 1000,
+    "required": true
+  },
+  "default_response": "No feedback provided",
+  "platform": "api"
+}
+```
+</Accordion>
+
+<Accordion title="🏷️ Multi-Category Tagging" icon="tags">
+Identify multiple issues, features, or categories in content.
+
+```json
+{
+  "processing_type": "time-sensitive",
+  "type": "markdown",
+  "priority": "medium", 
+  "request_text": "What issues do you see in this content? Select all that apply:",
+  "timeout_seconds": 2400,
+  "response_type": "multi_select",
+  "response_config": {
+    "options": [
+      {"value": "grammar", "label": "Grammar Issues"},
+      {"value": "factual", "label": "Factual Errors"},
+      {"value": "structure", "label": "Poor Structure"},
+      {"value": "none", "label": "No Issues Found"}
+    ],
+    "min_selections": 1,
+    "max_selections": 4,
+    "required": true
+  },
+  "default_response": "none",
+  "platform": "api"
+}
+```
+</Accordion>
+</AccordionGroup>
 
 ## Authentication
 
@@ -24,9 +125,11 @@ Create a new request that will be sent to all active members of a loop for human
   Processing urgency type
   <br />
   <strong>Options:</strong> `time-sensitive`, `deferred`
-  <br />
-  <strong>Note:</strong> `timeout_seconds` is required for `time-sensitive` requests
 </ParamField>
+
+<Warning>
+When `processing_type` is set to `"time-sensitive"`, the `timeout_seconds` parameter becomes **required**. Time-sensitive requests must specify an explicit timeout.
+</Warning>
 
 <ParamField body="type" type="string" required>
   Content type of the request
@@ -55,7 +158,7 @@ Create a new request that will be sent to all active members of a loop for human
 <ParamField body="timeout_seconds" type="integer">
   Timeout in seconds (60-86400)
   <br />
-  <strong>Required for:</strong> `time-sensitive` requests
+  <strong>⚠️ REQUIRED when processing_type is "time-sensitive"</strong>
   <br />
   <strong>Optional for:</strong> `deferred` requests (default: 30 days)
 </ParamField>
@@ -63,15 +166,17 @@ Create a new request that will be sent to all active members of a loop for human
 <ParamField body="response_type" type="string" required>
   Type of response expected from reviewers
   <br />
-  <strong>Options:</strong> `text`, `single_select`, `multi_select`, `rating`, `number`, `boolean`
+  <strong>Options:</strong> `text`, `single_select`, `multi_select`, `rating`, `number`
 </ParamField>
 
 <ParamField body="response_config" type="object" required>
   Configuration for the response type (varies by response_type)
+  <br />
+  <strong>📖 See examples:</strong> <a href="/responses/types">Response Types Guide</a>
 </ParamField>
 
-<ParamField body="default_response" type="object" required>
-  Default response if timeout occurs
+<ParamField body="default_response" required>
+  Default response value if timeout occurs
 </ParamField>
 
 <ParamField body="platform" type="string" required>
@@ -130,59 +235,73 @@ Create a new request that will be sent to all active members of a loop for human
   </Expandable>
 </ResponseField>
 
-## Response Type Configurations
+## Response Type Quick Reference
 
-### Single Select
+<Info>
+For complete configuration options and advanced examples, visit the [Response Types Guide](/responses/types).
+</Info>
+
+### Single Select - Choose One Option
 ```json
 {
   "response_config": {
-    "options": ["Approve", "Reject", "Needs Changes"]
+    "options": [
+      {"value": "approve", "label": "Approve"},
+      {"value": "reject", "label": "Reject"},
+      {"value": "needs_changes", "label": "Needs Changes"}
+    ],
+    "required": true
   },
-  "default_response": "Approve"
+  "default_response": "reject"
 }
 ```
 
-### Multi Select
+### Multi Select - Choose Multiple Options
 ```json
 {
   "response_config": {
-    "options": ["Policy Violation", "Spam", "Inappropriate Content", "Copyright"]
+    "options": [
+      {"value": "policy_violation", "label": "Policy Violation"},
+      {"value": "spam", "label": "Spam Content"},
+      {"value": "inappropriate", "label": "Inappropriate Content"}
+    ],
+    "min_selections": 1,
+    "max_selections": 3,
+    "required": true
   },
-  "default_response": ["Policy Violation"]
+  "default_response": "policy_violation"
 }
 ```
 
-### Rating
+### Rating - Numeric Scale
 ```json
 {
   "response_config": {
-    "min": 1,
-    "max": 5
+    "scale_min": 1,
+    "scale_max": 5,
+    "scale_step": 1,
+    "required": true
   },
   "default_response": 3
 }
 ```
 
-### Number
+### Number - Numeric Input
 ```json
 {
   "response_config": {
-    "min": 0,
-    "max": 100
+    "min_value": 0,
+    "max_value": 100,
+    "decimal_places": 0,
+    "allow_negative": false,
+    "required": true
   },
   "default_response": 50
 }
 ```
 
-### Boolean
-```json
-{
-  "response_config": {},
-  "default_response": true
-}
-```
 
-### Text
+### Text - Free Form Input
 ```json
 {
   "response_config": {},
@@ -190,92 +309,104 @@ Create a new request that will be sent to all active members of a loop for human
 }
 ```
 
+<Card title="Need More Details?" icon="book-open" href="/responses/types">
+  Visit our complete Response Types Guide for advanced configurations, validation rules, and best practices.
+</Card>
+
+<Note>
+**Ready to test?** 
+1. Get your API key from [app.hitl.sh](https://app.hitl.sh)
+2. Create a loop and copy the Loop ID
+3. Replace `YOUR_API_KEY` and `YOUR_LOOP_ID` in the examples below
+4. The request will be sent to all active members in your loop for review
+</Note>
+
 <RequestExample>
 
 ```bash cURL
-curl -X POST https://api.hitl.sh/v1/loops/65f1234567890abcdef12345/requests \
-  -H "Authorization: Bearer your_api_key_here" \
+curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "processing_type": "time-sensitive",
     "type": "markdown",
-    "priority": "high",
-    "request_text": "Please review this user-generated content for community guidelines compliance. The content has been flagged by our automated system.",
-    "context": {
-      "user_id": "user123",
-      "post_id": "post456",
-      "automated_flags": ["potential_spam"]
-    },
-    "timeout_seconds": 3600,
+    "priority": "medium",
+    "request_text": "Please review this content",
+    "timeout_seconds": 1800,
     "response_type": "single_select",
     "response_config": {
-      "options": ["Approve", "Reject", "Needs Changes"]
+      "options": [
+        {"value": "approve", "label": "Approve"},
+        {"value": "reject", "label": "Reject"}
+      ],
+      "required": true
     },
-    "default_response": "Approve",
-    "platform": "api",
-    "platform_version": "1.0.0",
-    "callback_url": "https://example.com/webhook/response"
+    "default_response": "reject",
+    "platform": "api"
   }'
 ```
 
 ```python Python
 import requests
 
-url = "https://api.hitl.sh/v1/loops/65f1234567890abcdef12345/requests"
-headers = {
-    "Authorization": "Bearer your_api_key_here",
-    "Content-Type": "application/json"
-}
-data = {
-    "processing_type": "time-sensitive",
-    "type": "markdown", 
-    "priority": "high",
-    "request_text": "Please review this user-generated content for compliance.",
-    "context": {
-        "user_id": "user123",
-        "post_id": "post456"
-    },
-    "timeout_seconds": 3600,
-    "response_type": "single_select",
-    "response_config": {
-        "options": ["Approve", "Reject", "Needs Changes"]
-    },
-    "default_response": "Approve",
-    "platform": "api",
-    "callback_url": "https://example.com/webhook/response"
-}
+# Replace with your actual values
+API_KEY = "YOUR_API_KEY"
+LOOP_ID = "YOUR_LOOP_ID"
 
-response = requests.post(url, headers=headers, json=data)
+response = requests.post(
+    f"https://dev.api.hitl.sh/v1/loops/{LOOP_ID}/requests",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={
+        "processing_type": "time-sensitive",
+        "type": "markdown",
+        "priority": "medium",
+        "request_text": "Please review this content",
+        "timeout_seconds": 1800,
+        "response_type": "single_select",
+        "response_config": {
+            "options": [
+                {"value": "approve", "label": "Approve"},
+                {"value": "reject", "label": "Reject"}
+            ],
+            "required": true
+        },
+        "default_response": "reject",
+        "platform": "api"
+    }
+)
+
 print(response.json())
 ```
 
 ```javascript Node.js
 const axios = require('axios');
 
+// Replace with your actual values
+const API_KEY = 'YOUR_API_KEY';
+const LOOP_ID = 'YOUR_LOOP_ID';
+
 const response = await axios.post(
-  'https://api.hitl.sh/v1/loops/65f1234567890abcdef12345/requests',
+  `https://dev.api.hitl.sh/v1/loops/${LOOP_ID}/requests`,
   {
     processing_type: 'time-sensitive',
     type: 'markdown',
-    priority: 'high',
-    request_text: 'Please review this user-generated content for compliance.',
-    context: {
-      user_id: 'user123',
-      post_id: 'post456'
-    },
-    timeout_seconds: 3600,
+    priority: 'medium',
+    request_text: 'Please review this content',
+    timeout_seconds: 1800,
     response_type: 'single_select',
     response_config: {
-      options: ['Approve', 'Reject', 'Needs Changes']
+      options: [
+        {value: 'approve', label: 'Approve'},
+        {value: 'reject', label: 'Reject'}
+      ],
+      required: true
     },
-    default_response: 'Approve',
-    platform: 'api',
-    callback_url: 'https://example.com/webhook/response'
+    default_response: 'reject',
+    platform: 'api'
   },
   {
     headers: {
-      'Authorization': 'Bearer your_api_key_here',
-      'Content-Type': 'application/json'
+      'Authorization': `Bearer ${API_KEY}`
     }
   }
 );
@@ -306,6 +437,144 @@ console.log(response.data);
 ```
 
 </ResponseExample>
+
+## Quick Test Examples
+
+Copy any of these examples to test different response types:
+
+<AccordionGroup>
+<Accordion title="✅ Single Select (Choose One)" icon="check-circle">
+Perfect for yes/no decisions or selecting one option.
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium", 
+    "request_text": "Should we approve this content?",
+    "timeout_seconds": 1800,
+    "response_type": "single_select",
+    "response_config": {
+      "options": [
+        {"value": "yes", "label": "Yes, approve it"},
+        {"value": "no", "label": "No, reject it"}
+      ],
+      "required": true
+    },
+    "default_response": "no",
+    "platform": "api"
+  }'
+```
+</Accordion>
+
+<Accordion title="🏷️ Multi Select (Choose Multiple)" icon="list-check">
+For selecting multiple issues or features.
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "What issues do you see? Select all that apply:",
+    "timeout_seconds": 1800,
+    "response_type": "multi_select",
+    "response_config": {
+      "options": [
+        {"value": "grammar", "label": "Grammar issues"},
+        {"value": "tone", "label": "Wrong tone"},
+        {"value": "factual", "label": "Factual errors"},
+        {"value": "none", "label": "No issues"}
+      ],
+      "min_selections": 1,
+      "max_selections": 4,
+      "required": true
+    },
+    "default_response": "none",
+    "platform": "api"
+  }'
+```
+</Accordion>
+
+<Accordion title="⭐ Rating Scale" icon="star">
+For quality ratings and scores.
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Rate this content quality (1-5 scale):",
+    "timeout_seconds": 1800,
+    "response_type": "rating",
+    "response_config": {
+      "scale_min": 1,
+      "scale_max": 5,
+      "scale_step": 1,
+      "required": true
+    },
+    "default_response": 3,
+    "platform": "api"
+  }'
+```
+</Accordion>
+
+<Accordion title="🔢 Number Input" icon="hashtag">
+For quantities, counts, or measurements.
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "How many errors do you count?",
+    "timeout_seconds": 1800,
+    "response_type": "number",
+    "response_config": {
+      "min_value": 0,
+      "max_value": 100,
+      "decimal_places": 0,
+      "allow_negative": false,
+      "required": true
+    },
+    "default_response": 0,
+    "platform": "api"
+  }'
+```
+</Accordion>
+
+<Accordion title="✍️ Text Response" icon="pen">
+For detailed feedback and explanations.
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "low",
+    "request_text": "Please provide detailed feedback:",
+    "response_type": "text",
+    "response_config": {},
+    "default_response": "No feedback provided",
+    "platform": "api"
+  }'
+```
+</Accordion>
+
+</AccordionGroup>
 
 ## Use Cases
 
@@ -357,8 +626,10 @@ Rate AI-generated content quality:
   "request_text": "Rate the quality of this AI-generated response",
   "response_type": "rating",
   "response_config": {
-    "min": 1,
-    "max": 5
+    "scale_min": 1,
+    "scale_max": 5,
+    "scale_step": 1,
+    "required": true
   },
   "default_response": 3,
   "platform": "api"

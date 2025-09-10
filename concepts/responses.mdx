@@ -61,12 +61,6 @@ HITL.sh supports six distinct response types, each optimized for different decis
 - Range validation and decimal control
 </Card>
 
-<Card title="Boolean Response" icon="toggle-on">
-**True/false decisions** with custom labels
-- Simple binary choices
-- Customizable yes/no labeling
-- Fast decision-making workflows
-</Card>
 </CardGroup>
 
 ## Response Configuration
@@ -212,30 +206,6 @@ For quantitative input with validation:
 }
 ```
 
-### Boolean Responses
-
-For simple yes/no decisions:
-
-```python
-"response_type": "boolean",
-"response_config": {
-    "true_label": "🚨 Suspicious Transaction",
-    "false_label": "✅ Normal Transaction",
-    "true_color": "#dc2626",
-    "false_color": "#16a34a",
-    "required": True
-}
-```
-
-**Response Format:**
-```json
-{
-  "response_data": {
-    "boolean": false,
-    "boolean_label": "✅ Normal Transaction"
-  }
-}
-```
 
 ## Response Processing
 
@@ -248,7 +218,7 @@ import requests
 
 # Get completed request with response
 response = requests.get(
-    f"https://api.hitl.sh/v1/api/requests/{request_id}",
+    f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -313,13 +283,6 @@ def process_response(response_type, response_data):
         value = response_data["number"]
         update_pricing_model(value)
         
-    elif response_type == "boolean":
-        # Handle binary decision
-        decision = response_data["boolean"]
-        if decision:
-            trigger_security_review()
-        else:
-            approve_transaction()
 ```
 
 ## Response Validation
@@ -354,10 +317,6 @@ HITL.sh automatically validates responses against the configured rules:
 - Negative numbers only allowed if allow_negative is true
 </Accordion>
 
-<Accordion title="Boolean Validation">
-- Must be exactly true or false (not null or undefined)
-- Required boolean responses cannot be skipped
-</Accordion>
 </AccordionGroup>
 
 ### Handling Validation Errors
@@ -408,7 +367,7 @@ def analyze_response_patterns(loop_id, days=30):
     
     # Get recent requests for this loop
     response = requests.get(
-        f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     
@@ -477,7 +436,7 @@ def analyze_response_quality(requests_data):
 
 <Steps>
 <Step title="Match Complexity to Need">
-Use simple response types (boolean, single select) for straightforward decisions. Reserve complex types (multi select, text) for situations requiring nuanced evaluation.
+Use simple response types (single select) for straightforward decisions. Reserve complex types (multi select, text) for situations requiring nuanced evaluation.
 </Step>
 
 <Step title="Consider Reviewer Experience">
