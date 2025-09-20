@@ -1,6 +1,6 @@
 ---
 title: "Get User Loops"
-api: "GET https://dev.api.hitl.sh/v1/loops"
+api: "GET https://dev.api.hitl.sh/v1/api/loops"
 description: "Retrieve all loops created by the authenticated user with member counts and status information"
 ---
 
@@ -68,14 +68,14 @@ Get a list of all loops you have created. This endpoint returns comprehensive in
 <RequestExample>
 
 ```bash cURL
-curl -X GET https://dev.api.hitl.sh/v1/loops \
+curl -X GET https://dev.api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
 ```python Python
 import requests
 
-url = "https://dev.api.hitl.sh/v1/loops"
+url = "https://dev.api.hitl.sh/v1/api/loops"
 headers = {
     "Authorization": "Bearer your_api_key_here"
 }
@@ -87,7 +87,7 @@ print(response.json())
 ```javascript Node.js
 const axios = require('axios');
 
-const response = await axios.get('https://dev.api.hitl.sh/v1/loops', {
+const response = await axios.get('https://dev.api.hitl.sh/v1/api/loops', {
   headers: {
     'Authorization': 'Bearer your_api_key_here'
   }

@@ -26,7 +26,7 @@ Include your API key in the `Authorization` header with the `Bearer` prefix:
 ```bash
 curl -H "Authorization: Bearer your_api_key_here" \
      -H "Content-Type: application/json" \
-     https://dev.api.hitl.sh/v1/loops
+     https://dev.api.hitl.sh/v1/api/loops
 ```
 
 <CodeGroup>
@@ -39,7 +39,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://dev.api.hitl.sh/v1/loops', headers=headers)
+response = requests.get('https://dev.api.hitl.sh/v1/api/loops', headers=headers)
 ```
 
 ```javascript Node.js
@@ -50,7 +50,7 @@ const headers = {
     'Content-Type': 'application/json'
 };
 
-const response = await axios.get('https://dev.api.hitl.sh/v1/loops', { headers });
+const response = await axios.get('https://dev.api.hitl.sh/v1/api/loops', { headers });
 ```
 
 ```go Go
@@ -61,7 +61,7 @@ import (
 )
 
 func main() {
-    req, _ := http.NewRequest("GET", "https://dev.api.hitl.sh/v1/loops", nil)
+    req, _ := http.NewRequest("GET", "https://dev.api.hitl.sh/v1/api/loops", nil)
     req.Header.Set("Authorization", "Bearer your_api_key_here")
     req.Header.Set("Content-Type", "application/json")
     
@@ -75,7 +75,7 @@ func main() {
 $curl = curl_init();
 
 curl_setopt_array($curl, [
-    CURLOPT_URL => "https://dev.api.hitl.sh/v1/loops",
+    CURLOPT_URL => "https://dev.api.hitl.sh/v1/api/loops",
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER => [
         "Authorization: Bearer your_api_key_here",
@@ -187,7 +187,7 @@ headers = {
 }
 
 # Always use HTTPS
-response = requests.get('https://dev.api.hitl.sh/v1/loops', headers=headers)
+response = requests.get('https://dev.api.hitl.sh/v1/api/loops', headers=headers)
 ```
 
 ## Error Handling
@@ -375,13 +375,13 @@ Use verbose curl to debug authentication problems:
 # Verbose request to see headers and response
 curl -v -H "Authorization: Bearer your_api_key_here" \
      -H "Content-Type: application/json" \
-     https://dev.api.hitl.sh/v1/loops
+     https://dev.api.hitl.sh/v1/api/loops
 
 # Check if your header is being sent correctly
 curl -H "Authorization: Bearer your_api_key_here" \
      -H "Content-Type: application/json" \
      -w "HTTP Status: %{http_code}\n" \
-     https://dev.api.hitl.sh/v1/loops
+     https://dev.api.hitl.sh/v1/api/loops
 ```
 
 ### Environment-Specific Testing
@@ -412,7 +412,7 @@ def test_authentication():
         'Content-Type': 'application/json'
     }
     
-    response = requests.get('https://dev.api.hitl.sh/v1/loops', headers=headers)
+    response = requests.get('https://dev.api.hitl.sh/v1/api/loops', headers=headers)
     
     if response.status_code == 200:
         print("✅ Authentication successful")

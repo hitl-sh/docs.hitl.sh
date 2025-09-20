@@ -122,7 +122,7 @@ createLoop();
 <Tab title="cURL">
 ```bash
 # Create content moderation loop
-curl -X POST https://dev.api.hitl.sh/v1/loops \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -289,7 +289,7 @@ async function createModerationRequest(loopId) {
 <Tab title="cURL">
 ```bash
 # Create content moderation request
-curl -X POST https://dev.api.hitl.sh/v1/requests \
+curl -X POST https://dev.api.hitl.sh/v1/api/requests \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{

@@ -626,7 +626,7 @@ function logAPIError(response, endpoint, payload = null) {
 
 ```bash
 # Test API key
-curl -v -H "Authorization: Bearer your_api_key" https://dev.api.hitl.sh/v1/loops
+curl -v -H "Authorization: Bearer your_api_key" https://dev.api.hitl.sh/v1/api/loops
 ```
 </Accordion>
 
@@ -669,7 +669,7 @@ for field in required_fields:
 
 ```bash
 # Check rate limit status
-curl -I -H "Authorization: Bearer your_api_key" https://dev.api.hitl.sh/v1/loops
+curl -I -H "Authorization: Bearer your_api_key" https://dev.api.hitl.sh/v1/api/loops
 
 # Look for these headers:
 # X-RateLimit-Limit: 100
@@ -711,7 +711,7 @@ Enable verbose logging to see full HTTP requests and responses:
 curl -v -H "Authorization: Bearer your_api_key" \
      -H "Content-Type: application/json" \
      -d '{"name": "Test Loop", "icon": "test"}' \
-     https://dev.api.hitl.sh/v1/loops
+     https://dev.api.hitl.sh/v1/api/loops
 ```
 
 ```python Python

@@ -124,7 +124,7 @@ def create_global_webhook(webhook_url, events=None):
     }
     
     response = requests.post(
-        "https://dev.api.hitl.sh/v1/webhooks",
+        "https://dev.api.hitl.sh/v1/api/webhooks",
         headers={
             "Authorization": f"Bearer {API_KEY}",
             "Content-Type": "application/json"
@@ -143,7 +143,7 @@ Verify your webhook is working correctly:
 def test_webhook(webhook_id):
     # Send a test event to verify webhook delivery
     response = requests.post(
-        f"https://dev.api.hitl.sh/v1/webhooks/{webhook_id}/test",
+        f"https://dev.api.hitl.sh/v1/api/webhooks/{webhook_id}/test",
         headers={"Authorization": f"Bearer {API_KEY}"}
     )
     
@@ -357,7 +357,7 @@ def create_filtered_webhook(webhook_url):
     }
     
     response = requests.post(
-        "https://dev.api.hitl.sh/v1/webhooks",
+        "https://dev.api.hitl.sh/v1/api/webhooks",
         headers={
             "Authorization": f"Bearer {API_KEY}",
             "Content-Type": "application/json"
