@@ -74,24 +74,24 @@ All API responses follow a consistent JSON format:
 
 Loops are human review workflows that route requests to team members:
 
-- **POST** `/loops` - Create a new loop
-- **GET** `/loops` - Get your loops
-- **GET** `/loops/{id}` - Get specific loop
-- **PUT** `/loops/{id}` - Update loop
-- **DELETE** `/loops/{id}` - Delete loop
-- **GET** `/loops/{id}/members` - Get loop members
-- **DELETE** `/loops/{id}/members/{userId}` - Remove member
+- **POST** `/api/loops` - Create a new loop
+- **GET** `/api/loops` - Get your loops
+- **GET** `/api/loops/{id}` - Get specific loop
+- **PUT** `/api/loops/{id}` - Update loop
+- **DELETE** `/api/loops/{id}` - Delete loop
+- **GET** `/api/loops/{id}/members` - Get loop members
+- **DELETE** `/api/loops/{id}/members/{userId}` - Remove member
 
 ### Requests
 
 Requests are human review tasks sent to loop members:
 
-- **POST** `/loops/{loopId}/requests` - Create request in loop
-- **GET** `/requests` - Get your requests
-- **GET** `/requests/{id}` - Get specific request
-- **DELETE** `/requests/{id}` - Cancel request
-- **POST** `/requests/{id}/feedback` - Add feedback
-- **GET** `/loops/{loopId}/requests` - Get loop requests
+- **POST** `/api/loops/{loopId}/requests` - Create request in loop
+- **GET** `/api/requests` - Get your requests
+- **GET** `/api/requests/{id}` - Get specific request
+- **DELETE** `/api/requests/{id}` - Cancel request
+- **POST** `/api/requests/{id}/feedback` - Add feedback
+- **GET** `/api/loops/{loopId}/requests` - Get loop requests
 
 ## Quick Start Example
 
