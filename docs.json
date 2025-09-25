@@ -7,7 +7,7 @@
     "light": "#4A5568",
     "dark": "#1A202C"
   },
-  "favicon": "/favicon.svg?v=5",
+  "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
@@ -21,6 +21,13 @@
               "dashboard",
               "api-keys",
               "first-loop"
+            ]
+          },
+          {
+            "group": "Integration Guides",
+            "pages": [
+              "guides/simple-integration",
+              "guides/response-types"
             ]
           },
           {
@@ -43,9 +50,7 @@
           },
           {
             "group": "Requests",
-            "pages": [
-              "requests/introduction"
-            ]
+            "pages": ["requests/introduction"]
           },
           {
             "group": "Responses",
@@ -55,8 +60,7 @@
               "responses/single-select",
               "responses/multi-select",
               "responses/rating",
-              "responses/number",
-              "responses/boolean"
+              "responses/number"
             ]
           },
           {
@@ -69,10 +73,7 @@
           },
           {
             "group": "Webhooks",
-            "pages": [
-              "webhooks/global",
-              "webhooks/loop-based"
-            ]
+            "pages": ["webhooks/global", "webhooks/loop-based"]
           }
         ]
       },
@@ -158,13 +159,7 @@
     }
   },
   "contextual": {
-    "options": [
-     "copy",
-     "chatgpt",
-     "claude",
-     "cursor",
-     "vscode"
-   ]
+    "options": ["copy", "chatgpt", "claude", "cursor", "vscode"]
   },
   "footer": {
     "socials": {

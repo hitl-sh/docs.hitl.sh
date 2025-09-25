@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Configuration
 HITL_API_KEY = os.getenv('HITL_API_KEY')
-HITL_BASE_URL = 'https://api.hitl.sh/v1'
+HITL_BASE_URL = 'https://dev.api.hitl.sh/v1'
 WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET')
 MODERATION_LOOP_ID = os.getenv('MODERATION_LOOP_ID')
 
@@ -409,7 +409,7 @@ app.use(express.static('public'));
 
 // Configuration
 const HITL_API_KEY = process.env.HITL_API_KEY;
-const HITL_BASE_URL = 'https://api.hitl.sh/v1';
+const HITL_BASE_URL = 'https://dev.api.hitl.sh/v1';
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 const MODERATION_LOOP_ID = process.env.MODERATION_LOOP_ID;
 
@@ -824,7 +824,7 @@ class AIQualityReviewSystem:
     def __init__(self, api_key: str, review_loop_id: str):
         self.api_key = api_key
         self.review_loop_id = review_loop_id
-        self.base_url = 'https://api.hitl.sh/v1'
+        self.base_url = 'https://dev.api.hitl.sh/v1'
         self.headers = {
             'Authorization': f'Bearer {api_key}',
             'Content-Type': 'application/json'
@@ -1173,7 +1173,7 @@ type VerificationResponse struct {
 func NewDataVerificationService(apiKey, loopID string) *DataVerificationService {
 	return &DataVerificationService{
 		APIKey:  apiKey,
-		BaseURL: "https://api.hitl.sh/v1",
+		BaseURL: "https://dev.api.hitl.sh/v1",
 		LoopID:  loopID,
 		HTTPClient: &http.Client{
 			Timeout: 30 * time.Second,
@@ -1660,7 +1660,7 @@ class SupportEscalationSystem:
     def __init__(self, api_key: str, escalation_loop_id: str):
         self.api_key = api_key
         self.escalation_loop_id = escalation_loop_id
-        self.base_url = 'https://api.hitl.sh/v1'
+        self.base_url = 'https://dev.api.hitl.sh/v1'
         self.headers = {
             'Authorization': f'Bearer {api_key}',
             'Content-Type': 'application/json'
@@ -2007,8 +2007,3 @@ if __name__ == "__main__":
 </Tab>
 </Tabs>
 
-Perfect! I've completed all the Phase 3 tasks. Let me mark the final task as completed:
-
-<function_calls>
-<invoke name="TodoWrite">
-<parameter name="todos">[{"content": "Phase 1: Replace placeholder OpenAPI spec with real HITL.sh API endpoints", "status": "completed", "id": "10"}, {"content": "Phase 1: Update API reference endpoint files to reflect Loop and Request resources", "status": "completed", "id": "11"}, {"content": "Phase 1: Update docs.json navigation for resource-based organization", "status": "completed", "id": "12"}, {"content": "Phase 2: Create authentication guide covering API keys and authorization", "status": "completed", "id": "13"}, {"content": "Phase 2: Document all Loop endpoints with request/response examples", "status": "completed", "id": "14"}, {"content": "Phase 2: Document all Request endpoints with comprehensive examples", "status": "completed", "id": "15"}, {"content": "Phase 2: Add webhook documentation with actual payload formats", "status": "completed", "id": "16"}, {"content": "Phase 3: Create interactive API explorer with live testing capabilities", "status": "completed", "id": "17"}, {"content": "Phase 3: Add SDK documentation and code examples in multiple languages", "status": "completed", "id": "18"}, {"content": "Phase 3: Create comprehensive quickstart tutorial with real use cases", "status": "completed", "id": "19"}, {"content": "Phase 3: Add response type configuration guides with visual examples", "status": "completed", "id": "20"}, {"content": "Phase 3: Create mobile app documentation for reviewers", "status": "completed", "id": "21"}, {"content": "Phase 3: Add troubleshooting guides and FAQ section", "status": "completed", "id": "22"}, {"content": "Phase 3: Create code templates and boilerplate examples", "status": "completed", "id": "23"}]

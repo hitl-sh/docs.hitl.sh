@@ -51,7 +51,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -85,7 +85,6 @@ Reviewers interact with the configured response type in a mobile-optimized inter
 - **Rating**: Drag a slider or tap star ratings
 - **Text**: Type detailed feedback with character count
 - **Number**: Enter numeric values with formatting
-- **Boolean**: Toggle between custom-labeled true/false options
 
 ### 5. Completion
 
@@ -259,19 +258,6 @@ Numeric input with validation and formatting:
 }
 ```
 
-### Boolean Response
-True/false decisions with custom labels:
-
-```python
-"response_type": "boolean",
-"response_config": {
-    "true_label": "🚨 Flag for Review",
-    "false_label": "✅ Safe to Proceed",
-    "true_color": "#dc2626",
-    "false_color": "#16a34a",
-    "required": True
-}
-```
 
 ## Request Status Flow
 
@@ -335,7 +321,7 @@ Check request status programmatically:
 ```python
 # Get specific request
 response = requests.get(
-    f"https://api.hitl.sh/v1/api/requests/{request_id}",
+    f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -358,7 +344,7 @@ Get all your requests:
 ```python
 # Get all requests for this API key
 response = requests.get(
-    "https://api.hitl.sh/v1/api/requests",
+    "https://dev.api.hitl.sh/v1/api/requests",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 

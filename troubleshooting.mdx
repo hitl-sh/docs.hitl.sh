@@ -21,7 +21,7 @@ Find solutions to common problems and answers to frequently asked questions abou
 **Solutions**:
 ```bash
 # Test your API key
-curl -X GET https://api.hitl.sh/v1/loops \
+curl -X GET https://dev.api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key_here" \
   -v
 
@@ -199,7 +199,7 @@ request_data = {
 ```python
 # Verify loop exists and get correct ID
 response = requests.get(
-    "https://api.hitl.sh/v1/loops",
+    "https://dev.api.hitl.sh/v1/api/loops",
     headers={"Authorization": "Bearer your_api_key_here"}
 )
 
@@ -999,7 +999,7 @@ def collect_debug_info():
     
     # Test basic connectivity
     try:
-        response = requests.get("https://api.hitl.sh/v1/health", timeout=10)
+        response = requests.get("https://dev.api.hitl.sh/v1/api/health", timeout=10)
         debug_info["api_status"] = response.status_code
         debug_info["api_response_time_ms"] = response.elapsed.total_seconds() * 1000
     except Exception as e:
@@ -1008,7 +1008,7 @@ def collect_debug_info():
     # Test authentication (don't include actual API key in debug info)
     try:
         response = requests.get(
-            "https://api.hitl.sh/v1/loops",
+            "https://dev.api.hitl.sh/v1/api/loops",
             headers={"Authorization": "Bearer your_api_key_here"},
             timeout=10
         )

@@ -33,7 +33,7 @@ Configure webhook endpoints in your API settings or through the dashboard:
 
 ```bash
 # Configure webhook endpoint (future API endpoint)
-curl -X POST https://api.hitl.sh/v1/webhooks \
+curl -X POST https://dev.api.hitl.sh/v1/api/webhooks \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -855,7 +855,7 @@ Periodically rotate your webhook secrets and update the configuration:
 
 ```bash
 # Update webhook secret (future API)
-curl -X PATCH https://api.hitl.sh/v1/webhooks/webhook_id \
+curl -X PATCH https://dev.api.hitl.sh/v1/api/webhooks/webhook_id \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{"secret": "new_secret_key"}'

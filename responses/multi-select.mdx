@@ -44,12 +44,6 @@ Array of SelectOption objects (1-20 options maximum)
   <ParamField body="label" type="string" required>
     Display text shown to reviewers (max 200 characters)
   </ParamField>
-  <ParamField body="description" type="string" optional>
-    Additional context or explanation for the option
-  </ParamField>
-  <ParamField body="color" type="string" optional>
-    Hex color code for visual styling (e.g., "#ef4444")
-  </ParamField>
 </Expandable>
 </ParamField>
 
@@ -86,46 +80,34 @@ request_data = {
         "options": [
             {
                 "value": "spam",
-                "label": "🚫 Spam Content",
-                "description": "Unsolicited promotional or repetitive content",
-                "color": "#dc2626"
+                "label": "🚫 Spam Content"
             },
             {
                 "value": "misleading_claims",
-                "label": "⚠️ Misleading Claims",
-                "description": "False or exaggerated promises",
-                "color": "#f59e0b"
+                "label": "⚠️ Misleading Claims"
             },
             {
                 "value": "financial_scam",
-                "label": "💸 Potential Financial Scam",
-                "description": "Get-rich-quick schemes or fraudulent investment advice",
-                "color": "#7c2d12"
+                "label": "💸 Potential Financial Scam"
             },
             {
                 "value": "suspicious_links",
-                "label": "🔗 Suspicious Links",
-                "description": "Shortened URLs or potentially malicious links",
-                "color": "#b91c1c"
+                "label": "🔗 Suspicious Links"
             },
             {
                 "value": "pressure_tactics",
-                "label": "⏰ High-Pressure Tactics",
-                "description": "Artificial urgency or scarcity claims",
-                "color": "#ea580c"
+                "label": "⏰ High-Pressure Tactics"
             },
             {
                 "value": "no_violations",
-                "label": "✅ No Policy Violations",
-                "description": "Content appears to comply with all policies",
-                "color": "#16a34a"
+                "label": "✅ No Policy Violations"
             }
         ],
         "min_selections": 1,
         "max_selections": 5,
         "required": True
     },
-    "default_response": ["spam", "misleading_claims"],  # Conservative default
+    "default_response": "spam,misleading_claims",  # Conservative default
     "timeout_seconds": 1800,
     "platform": "api"
 }
@@ -142,46 +124,34 @@ const requestData = {
         options: [
             {
                 value: "spam",
-                label: "🚫 Spam Content",
-                description: "Unsolicited promotional or repetitive content",
-                color: "#dc2626"
+                label: "🚫 Spam Content"
             },
             {
                 value: "misleading_claims",
-                label: "⚠️ Misleading Claims", 
-                description: "False or exaggerated promises",
-                color: "#f59e0b"
+                label: "⚠️ Misleading Claims"
             },
             {
                 value: "financial_scam",
-                label: "💸 Potential Financial Scam",
-                description: "Get-rich-quick schemes or fraudulent investment advice",
-                color: "#7c2d12"
+                label: "💸 Potential Financial Scam"
             },
             {
                 value: "suspicious_links",
-                label: "🔗 Suspicious Links",
-                description: "Shortened URLs or potentially malicious links", 
-                color: "#b91c1c"
+                label: "🔗 Suspicious Links"
             },
             {
                 value: "pressure_tactics",
-                label: "⏰ High-Pressure Tactics",
-                description: "Artificial urgency or scarcity claims",
-                color: "#ea580c"
+                label: "⏰ High-Pressure Tactics"
             },
             {
                 value: "no_violations",
-                label: "✅ No Policy Violations",
-                description: "Content appears to comply with all policies",
-                color: "#16a34a"
+                label: "✅ No Policy Violations"
             }
         ],
         min_selections: 1,
         max_selections: 5,
         required: true
     },
-    default_response: ["spam", "misleading_claims"],
+    default_response: "spam,misleading_claims",
     timeout_seconds: 1800,
     platform: "api"
 };
@@ -207,52 +177,38 @@ request_data = {
         "options": [
             {
                 "value": "title_quality",
-                "label": "📝 Title Quality Good",
-                "description": "Title is descriptive and follows naming conventions",
-                "color": "#059669"
+                "label": "📝 Title Quality Good"
             },
             {
                 "value": "description_complete",
-                "label": "📄 Description Complete",
-                "description": "Product description covers key features and benefits",
-                "color": "#0891b2"
+                "label": "📄 Description Complete"
             },
             {
                 "value": "images_high_quality",
-                "label": "📸 High-Quality Images",
-                "description": "Product images are clear and professionally shot",
-                "color": "#7c3aed"
+                "label": "📸 High-Quality Images"
             },
             {
                 "value": "pricing_competitive",
-                "label": "💰 Competitive Pricing",
-                "description": "Price aligns with similar products in category",
-                "color": "#dc2626"
+                "label": "💰 Competitive Pricing"
             },
             {
                 "value": "specifications_detailed",
-                "label": "⚙️ Detailed Specifications",
-                "description": "Technical specs are comprehensive and accurate",
-                "color": "#ea580c"
+                "label": "⚙️ Detailed Specifications"
             },
             {
                 "value": "category_correct",
-                "label": "🏷️ Correct Category",
-                "description": "Product is placed in the appropriate category",
-                "color": "#16a34a"
+                "label": "🏷️ Correct Category"
             },
             {
                 "value": "seo_optimized",
-                "label": "🔍 SEO Optimized",
-                "description": "Title and description use relevant keywords",
-                "color": "#2563eb"
+                "label": "🔍 SEO Optimized"
             }
         ],
         "min_selections": 1,
         "max_selections": 7,
         "required": True
     },
-    "default_response": [],
+    "default_response": "",
     "timeout_seconds": 86400,  # 24 hours
     "platform": "api"
 }
@@ -278,52 +234,38 @@ request_data = {
         "options": [
             {
                 "value": "billing_issue",
-                "label": "💳 Billing & Payment",
-                "description": "Related to charges, subscriptions, or payments",
-                "color": "#dc2626"
+                "label": "💳 Billing & Payment"
             },
             {
                 "value": "account_access",
-                "label": "🔐 Account Access",
-                "description": "Login problems, password issues, or account lockouts",
-                "color": "#f59e0b"
+                "label": "🔐 Account Access"
             },
             {
                 "value": "technical_issue",
-                "label": "⚙️ Technical Problem",
-                "description": "System bugs, feature malfunctions, or technical errors",
-                "color": "#3b82f6"
+                "label": "⚙️ Technical Problem"
             },
             {
                 "value": "urgent_priority",
-                "label": "🚨 Urgent Priority",
-                "description": "Customer indicates time-sensitive business need",
-                "color": "#dc2626"
+                "label": "🚨 Urgent Priority"
             },
             {
                 "value": "email_delivery",
-                "label": "📧 Email Delivery Issue",
-                "description": "Problems receiving system emails or notifications",
-                "color": "#8b5cf6"
+                "label": "📧 Email Delivery Issue"
             },
             {
                 "value": "loyal_customer",
-                "label": "⭐ Loyal Customer",
-                "description": "Long-term customer requiring special attention",
-                "color": "#059669"
+                "label": "⭐ Loyal Customer"
             },
             {
                 "value": "escalation_needed",
-                "label": "📞 Needs Escalation",
-                "description": "Complex issue requiring senior support attention",
-                "color": "#ea580c"
+                "label": "📞 Needs Escalation"
             }
         ],
         "min_selections": 2,
         "max_selections": 6,
         "required": True
     },
-    "default_response": ["billing_issue", "account_access"],
+    "default_response": "billing_issue,account_access",
     "timeout_seconds": 3600,
     "platform": "api"
 }
@@ -579,51 +521,35 @@ feature_analysis_config = {
         "options": [
             {
                 "value": "high_user_demand",
-                "label": "📈 High User Demand",
-                "description": "Feature is frequently requested by users",
-                "color": "#dc2626"
+                "label": "📈 High User Demand"
             },
             {
                 "value": "strategic_value",
-                "label": "🎯 Strategic Business Value", 
-                "description": "Aligns with key business objectives",
-                "color": "#059669"
+                "label": "🎯 Strategic Business Value"
             },
             {
                 "value": "technical_feasible",
-                "label": "⚙️ Technically Feasible",
-                "description": "Can be implemented with current technology",
-                "color": "#3b82f6"
+                "label": "⚙️ Technically Feasible"
             },
             {
                 "value": "resource_available",
-                "label": "👥 Resources Available",
-                "description": "Team has capacity to implement",
-                "color": "#f59e0b"
+                "label": "👥 Resources Available"
             },
             {
                 "value": "competitive_advantage",
-                "label": "🚀 Competitive Advantage",
-                "description": "Would differentiate us from competitors",
-                "color": "#8b5cf6"
+                "label": "🚀 Competitive Advantage"
             },
             {
                 "value": "low_maintenance",
-                "label": "🔧 Low Maintenance",
-                "description": "Won't require significant ongoing maintenance",
-                "color": "#16a34a"
+                "label": "🔧 Low Maintenance"
             },
             {
                 "value": "security_compliant",
-                "label": "🔒 Security Compliant",
-                "description": "Meets security and compliance requirements",
-                "color": "#ea580c"
+                "label": "🔒 Security Compliant"
             },
             {
                 "value": "scalability_ready",
-                "label": "📊 Scalability Ready",
-                "description": "Can handle expected growth and usage",
-                "color": "#0891b2"
+                "label": "📊 Scalability Ready"
             }
         ],
         "min_selections": 1,

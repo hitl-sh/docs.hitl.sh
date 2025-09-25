@@ -40,7 +40,7 @@ Create your loop using the HITL.sh API. When you create a loop, you automaticall
 
 <CodeGroup>
 ```bash cURL
-curl -X POST 'https://api.hitl.sh/v1/loops' \
+curl -X POST 'https://dev.api.hitl.sh/v1/api/loops' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -53,7 +53,7 @@ curl -X POST 'https://api.hitl.sh/v1/loops' \
 ```python Python
 import requests
 
-url = "https://api.hitl.sh/v1/loops"
+url = "https://dev.api.hitl.sh/v1/api/loops"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY",
     "Content-Type": "application/json"
@@ -75,7 +75,7 @@ print(f"🔗 Join URL: {loop_data['data']['join_url']}")
 ```javascript Node.js
 const axios = require('axios');
 
-const response = await axios.post('https://api.hitl.sh/v1/loops', {
+const response = await axios.post('https://dev.api.hitl.sh/v1/api/loops', {
   name: 'Content Moderation Review',
   description: 'Review user-generated content for community guidelines compliance',
   icon: 'shield-check'
@@ -237,7 +237,7 @@ Create a test request to verify your loop is working properly. Use the loop ID f
 
 <CodeGroup>
 ```bash cURL
-curl -X POST 'https://api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests' \
+curl -X POST 'https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -264,7 +264,7 @@ curl -X POST 'https://api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests' \
 ```python Python
 import requests
 
-url = f"https://api.hitl.sh/v1/loops/{LOOP_ID}/requests"
+url = f"https://dev.api.hitl.sh/v1/api/loops/{LOOP_ID}/requests"
 headers = {
     "Authorization": f"Bearer {YOUR_API_KEY}",
     "Content-Type": "application/json"
@@ -299,7 +299,7 @@ print(f"🔔 Notifications sent: {request_data['data']['notifications_sent']}")
 const axios = require('axios');
 
 const response = await axios.post(
-  `https://api.hitl.sh/v1/loops/${loopId}/requests`,
+  `https://dev.api.hitl.sh/v1/api/loops/${loopId}/requests`,
   {
     processing_type: 'time-sensitive',
     type: 'markdown',
@@ -367,7 +367,7 @@ import time
 
 def wait_for_response(request_id, api_key, max_wait=300):
     """Poll for request completion"""
-    url = f"https://api.hitl.sh/v1/api/requests/{request_id}"
+    url = f"https://dev.api.hitl.sh/v1/api/requests/{request_id}"
     headers = {"Authorization": f"Bearer {api_key}"}
     
     start_time = time.time()
@@ -462,7 +462,7 @@ async function pollForResponse(requestId) {
     for (let i = 0; i < maxAttempts; i++) {
         try {
             const response = await axios.get(
-                `https://api.hitl.sh/v1/api/requests/${requestId}`,
+                `https://dev.api.hitl.sh/v1/api/requests/${requestId}`,
                 { headers: { 'Authorization': `Bearer ${apiKey}` }}
             );
             

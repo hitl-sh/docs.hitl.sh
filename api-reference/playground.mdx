@@ -72,7 +72,7 @@ If you prefer to test manually, here are some quick examples:
 
 ```bash cURL
 # Test your API key with a simple request
-curl -X GET https://api.hitl.sh/v1/loops \
+curl -X GET https://dev.api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -81,7 +81,7 @@ import requests
 
 # Test API connection
 response = requests.get(
-    "https://api.hitl.sh/v1/loops",
+    "https://dev.api.hitl.sh/v1/api/loops",
     headers={"Authorization": "Bearer your_api_key_here"}
 )
 
@@ -90,7 +90,7 @@ print(f"Response: {response.json()}")
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://api.hitl.sh/v1/loops', {
+const response = await fetch('https://dev.api.hitl.sh/v1/api/loops', {
   headers: {
     'Authorization': 'Bearer your_api_key_here'
   }
@@ -109,7 +109,7 @@ console.log('Response:', data);
 
 ```bash cURL
 # Create a test loop
-curl -X POST https://api.hitl.sh/v1/loops \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -124,7 +124,7 @@ import requests
 
 # Create test loop
 response = requests.post(
-    "https://api.hitl.sh/v1/loops",
+    "https://dev.api.hitl.sh/v1/api/loops",
     headers={
         "Authorization": "Bearer your_api_key_here",
         "Content-Type": "application/json"
@@ -140,7 +140,7 @@ print(f"Loop created: {response.json()}")
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://api.hitl.sh/v1/loops', {
+const response = await fetch('https://dev.api.hitl.sh/v1/api/loops', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer your_api_key_here',
@@ -165,7 +165,7 @@ console.log('Loop created:', loop);
 
 ```bash cURL
 # Create a test request (replace loop_id with actual ID)
-curl -X POST https://api.hitl.sh/v1/requests \
+curl -X POST https://dev.api.hitl.sh/v1/api/requests \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -183,7 +183,7 @@ curl -X POST https://api.hitl.sh/v1/requests \
 ```python Python
 # Create test request
 response = requests.post(
-    "https://api.hitl.sh/v1/requests",
+    "https://dev.api.hitl.sh/v1/api/requests",
     headers={
         "Authorization": "Bearer your_api_key_here",
         "Content-Type": "application/json"
@@ -204,7 +204,7 @@ print(f"Request created: {response.json()}")
 ```
 
 ```javascript JavaScript
-const response = await fetch('https://api.hitl.sh/v1/requests', {
+const response = await fetch('https://dev.api.hitl.sh/v1/api/requests', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer your_api_key_here',
@@ -242,7 +242,7 @@ class HITLIntegrationTest:
     def __init__(self, api_key):
         self.api_key = api_key
         self.headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-        self.base_url = "https://api.hitl.sh/v1"
+        self.base_url = "https://dev.api.hitl.sh/v1"
         
     def run_complete_test(self):
         """Run complete integration test"""
@@ -349,7 +349,7 @@ class HITLIntegrationTest:
 <Tab title="Development">
 ```python
 # Development environment testing
-HITL_API_BASE = "https://api.hitl.sh/v1"  # Development server
+HITL_API_BASE = "https://dev.api.hitl.sh/v1"  # Development server
 API_KEY = "dev_your_api_key_here"
 
 # Use smaller timeouts and test data
@@ -364,7 +364,7 @@ TEST_CONFIG = {
 <Tab title="Production">
 ```python
 # Production environment testing
-HITL_API_BASE = "https://api.hitl.sh/v1"  # Production server
+HITL_API_BASE = "https://dev.api.hitl.sh/v1"  # Production server
 API_KEY = "prod_your_api_key_here"
 
 # Use production timeouts and real data
@@ -388,7 +388,7 @@ def test_rate_limits(api_key):
     
     # Make rapid requests to trigger rate limiting
     for i in range(105):  # Exceed 100/hour limit
-        response = requests.get("https://api.hitl.sh/v1/loops", headers=headers)
+        response = requests.get("https://dev.api.hitl.sh/v1/api/loops", headers=headers)
         
         if response.status_code == 429:
             print(f"🚫 Rate limit hit after {i+1} requests")
@@ -478,7 +478,7 @@ def load_test_api(api_key, num_requests=50, max_workers=10):
         start_time = time.time()
         
         try:
-            response = requests.get("https://api.hitl.sh/v1/loops", headers=headers)
+            response = requests.get("https://dev.api.hitl.sh/v1/api/loops", headers=headers)
             end_time = time.time()
             
             return {

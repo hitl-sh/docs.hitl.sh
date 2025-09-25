@@ -1,6 +1,6 @@
 ---
 title: "Get Loop by ID"
-api: "GET https://api.hitl.sh/v1/loops/{id}"
+api: "GET https://dev.api.hitl.sh/v1/api/loops/{id}"
 description: "Retrieve detailed information about a specific loop including members, statistics, and current status"
 ---
 
@@ -85,7 +85,7 @@ Get comprehensive details about a specific loop by its ID. This endpoint provide
 <RequestExample>
 
 ```bash cURL
-curl -X GET https://api.hitl.sh/v1/loops/65f1234567890abcdef12345 \
+curl -X GET https://dev.api.hitl.sh/v1/api/loops/65f1234567890abcdef12345 \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -93,7 +93,7 @@ curl -X GET https://api.hitl.sh/v1/loops/65f1234567890abcdef12345 \
 import requests
 
 loop_id = "65f1234567890abcdef12345"
-url = f"https://api.hitl.sh/v1/loops/{loop_id}"
+url = f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}"
 headers = {
     "Authorization": "Bearer your_api_key_here"
 }
@@ -106,7 +106,7 @@ print(response.json())
 const axios = require('axios');
 
 const loopId = '65f1234567890abcdef12345';
-const response = await axios.get(`https://api.hitl.sh/v1/loops/${loopId}`, {
+const response = await axios.get(`https://dev.api.hitl.sh/v1/api/loops/${loopId}`, {
   headers: {
     'Authorization': 'Bearer your_api_key_here'
   }
@@ -210,7 +210,7 @@ Check if your loop has enough active members:
 
 ```python
 def check_loop_health(loop_id, min_active_members=2):
-    response = requests.get(f"https://api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+    response = requests.get(f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
     loop_data = response.json()["data"]["loop"]
     
     active_members = loop_data["member_count"] - loop_data["pending_count"]
@@ -320,13 +320,13 @@ Build a dashboard to monitor all your loops:
 ```python
 def get_loop_dashboard():
     # Get all loops
-    loops_response = requests.get("https://api.hitl.sh/v1/loops", headers=headers)
+    loops_response = requests.get("https://dev.api.hitl.sh/v1/api/loops", headers=headers)
     loops = loops_response.json()["data"]["loops"]
     
     dashboard = []
     for loop in loops:
         # Get detailed info for each loop
-        detail_response = requests.get(f"https://api.hitl.sh/v1/loops/{loop['id']}", headers=headers)
+        detail_response = requests.get(f"https://dev.api.hitl.sh/v1/api/loops/{loop['id']}", headers=headers)
         loop_detail = detail_response.json()["data"]["loop"]
         
         dashboard.append({
@@ -347,7 +347,7 @@ Send reminders to pending members:
 
 ```javascript
 async function followUpPendingMembers(loopId) {
-    const response = await fetch(`https://api.hitl.sh/v1/loops/${loopId}`, {
+    const response = await fetch(`https://dev.api.hitl.sh/v1/api/loops/${loopId}`, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
     });
     

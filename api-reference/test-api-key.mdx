@@ -1,6 +1,6 @@
 ---
 title: "Test API Key"
-api: "GET https://api.hitl.sh/v1/test"
+api: "GET https://dev.api.hitl.sh/v1/test"
 description: "Verify that your API key is valid and working correctly. Returns account information and API key status."
 ---
 
@@ -71,7 +71,7 @@ This endpoint is perfect for debugging authentication issues and monitoring your
 <RequestExample>
 
 ```bash cURL
-curl -X GET https://api.hitl.sh/v1/test \
+curl -X GET https://dev.api.hitl.sh/v1/test \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -83,7 +83,7 @@ headers = {
     "Authorization": f"Bearer {api_key}"
 }
 
-response = requests.get("https://api.hitl.sh/v1/test", headers=headers)
+response = requests.get("https://dev.api.hitl.sh/v1/test", headers=headers)
 data = response.json()
 
 if data["error"] == False:
@@ -105,7 +105,7 @@ const headers = {
 
 async function testApiKey() {
     try {
-        const response = await axios.get('https://api.hitl.sh/v1/test', { headers });
+        const response = await axios.get('https://dev.api.hitl.sh/v1/test', { headers });
         const data = response.data;
         
         if (!data.error) {
@@ -149,7 +149,7 @@ type TestResponse struct {
 }
 
 func testAPIKey(apiKey string) error {
-    req, err := http.NewRequest("GET", "https://api.hitl.sh/v1/test", nil)
+    req, err := http.NewRequest("GET", "https://dev.api.hitl.sh/v1/test", nil)
     if err != nil {
         return err
     }
@@ -245,7 +245,7 @@ Use this endpoint in your CI/CD pipeline to verify API key setup:
 def test_api_key_setup():
     """Test that API key is properly configured"""
     response = requests.get(
-        "https://api.hitl.sh/v1/test", 
+        "https://dev.api.hitl.sh/v1/test", 
         headers={"Authorization": f"Bearer {os.environ['HITL_API_KEY']}"}
     )
     
@@ -263,7 +263,7 @@ Check your rate limit status before making batch requests:
 
 ```javascript
 async function checkRateLimits() {
-    const response = await axios.get('https://api.hitl.sh/v1/test', { headers });
+    const response = await axios.get('https://dev.api.hitl.sh/v1/test', { headers });
     const rateLimit = response.data.data.rate_limit;
     
     if (rateLimit.remaining < 10) {
@@ -284,7 +284,7 @@ def health_check():
     """Application health check including HITL.sh API"""
     try:
         response = requests.get(
-            "https://api.hitl.sh/v1/test",
+            "https://dev.api.hitl.sh/v1/test",
             headers={"Authorization": f"Bearer {HITL_API_KEY}"},
             timeout=5
         )
@@ -306,7 +306,7 @@ When experiencing authentication problems, this endpoint provides detailed infor
 def debug_auth_issues():
     """Debug authentication problems"""
     try:
-        response = requests.get("https://api.hitl.sh/v1/test", headers=headers)
+        response = requests.get("https://dev.api.hitl.sh/v1/test", headers=headers)
         
         if response.status_code == 200:
             data = response.json()["data"]

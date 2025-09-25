@@ -7,21 +7,13 @@ description: "Complete API documentation for HITL.sh. Integrate human oversight 
 
 The HITL.sh API provides a RESTful interface for integrating human supervision into your AI workflows. Create loops, manage requests, and route decisions to human reviewers with our comprehensive API.
 
-## Base URLs
+## Base URL
 
-**Public API (API Key Authentication):**
 ```
-https://api.hitl.sh/v1
-```
-
-**Private API (JWT Authentication):**
-```
-https://api.my.hitl.sh/v1
+https://dev.api.hitl.sh/v1
 ```
 
 ## Authentication
-
-### Public API - API Key
 
 Use API keys for machine-to-machine integration. Include your API key in the header:
 
@@ -37,14 +29,6 @@ Authorization: Bearer your_api_key_here
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 99
 X-RateLimit-Reset: 1642233600
-```
-
-### Private API - JWT Token
-
-Use JWT tokens for user-authenticated requests:
-
-```bash
-Authorization: Bearer your_jwt_token
 ```
 
 ## Response Format
@@ -90,31 +74,31 @@ All API responses follow a consistent JSON format:
 
 Loops are human review workflows that route requests to team members:
 
-- **POST** `/loops` - Create a new loop
-- **GET** `/loops` - Get your loops
-- **GET** `/loops/{id}` - Get specific loop
-- **PUT** `/loops/{id}` - Update loop
-- **DELETE** `/loops/{id}` - Delete loop
-- **GET** `/loops/{id}/members` - Get loop members
-- **DELETE** `/loops/{id}/members/{userId}` - Remove member
+- **POST** `/api/loops` - Create a new loop
+- **GET** `/api/loops` - Get your loops
+- **GET** `/api/loops/{id}` - Get specific loop
+- **PUT** `/api/loops/{id}` - Update loop
+- **DELETE** `/api/loops/{id}` - Delete loop
+- **GET** `/api/loops/{id}/members` - Get loop members
+- **DELETE** `/api/loops/{id}/members/{userId}` - Remove member
 
 ### Requests
 
 Requests are human review tasks sent to loop members:
 
-- **POST** `/loops/{loopId}/requests` - Create request in loop
-- **GET** `/requests` - Get your requests
-- **GET** `/requests/{id}` - Get specific request
-- **DELETE** `/requests/{id}` - Cancel request
-- **POST** `/requests/{id}/feedback` - Add feedback
-- **GET** `/loops/{loopId}/requests` - Get loop requests
+- **POST** `/api/loops/{loopId}/requests` - Create request in loop
+- **GET** `/api/requests` - Get your requests
+- **GET** `/api/requests/{id}` - Get specific request
+- **DELETE** `/api/requests/{id}` - Cancel request
+- **POST** `/api/requests/{id}/feedback` - Add feedback
+- **GET** `/api/loops/{loopId}/requests` - Get loop requests
 
 ## Quick Start Example
 
 ### 1. Create a Loop
 
 ```bash
-curl -X POST https://api.hitl.sh/v1/loops \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -127,20 +111,34 @@ curl -X POST https://api.hitl.sh/v1/loops \
 ### 2. Create a Request
 
 ```bash
-curl -X POST https://api.hitl.sh/v1/loops/LOOP_ID/requests \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/LOOP_ID/requests \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
     "processing_type": "time-sensitive",
     "type": "markdown",
     "priority": "high",
-    "request_text": "Review this content for policy violations",
-    "timeout_seconds": 3600,
+    "request_text": "Please review this user comment for community guideline compliance",
     "response_type": "single_select",
     "response_config": {
-      "options": ["Approve", "Reject", "Needs Changes"]
+      "options": [
+        {
+          "value": "approve",
+          "label": "✅ Approve Content"
+        },
+        {
+          "value": "reject",
+          "label": "❌ Reject Content"
+        },
+        {
+          "value": "escalate",
+          "label": "🚨 Escalate for Review"
+        }
+      ],
+      "required": true
     },
-    "default_response": "Approve",
+    "default_response": "reject",
+    "timeout_seconds": 1800,
     "platform": "api"
   }'
 ```
@@ -148,7 +146,7 @@ curl -X POST https://api.hitl.sh/v1/loops/LOOP_ID/requests \
 ### 3. Poll for Response
 
 ```bash
-curl -X GET https://api.hitl.sh/v1/requests/REQUEST_ID \
+curl -X GET https://dev.api.hitl.sh/v1/api/requests/REQUEST_ID \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -157,28 +155,24 @@ curl -X GET https://api.hitl.sh/v1/requests/REQUEST_ID \
 ### Response Types
 
 <CardGroup cols={2}>
-<Card title="Single Select" icon="list">
+<Card title="Single Select" icon="list" href="/responses/single-select">
 User chooses one option from a list.
 </Card>
 
-<Card title="Multi Select" icon="check-square">
+<Card title="Multi Select" icon="check-square" href="/responses/multi-select">
 User chooses multiple options from a list.
 </Card>
 
-<Card title="Rating" icon="star">
+<Card title="Rating" icon="star" href="/responses/rating">
 User provides a numerical rating within a range.
 </Card>
 
-<Card title="Text" icon="type">
+<Card title="Text" icon="type" href="/responses/text">
 User provides free-form text response.
 </Card>
 
-<Card title="Number" icon="hash">
+<Card title="Number" icon="hash" href="/responses/number">
 User provides a numerical value.
-</Card>
-
-<Card title="Boolean" icon="toggle-on">
-User provides a true/false response.
 </Card>
 </CardGroup>
 
@@ -293,7 +287,7 @@ Set up webhooks to receive real-time notifications when requests are completed:
 ## Next Steps
 
 <Card title="Authentication Guide" icon="key" href="/api-reference/authentication">
-  Learn about API keys, JWT tokens, and security best practices.
+  Learn about API keys and security best practices.
 </Card>
 
 <Card title="Create Your First Loop" icon="plus" href="/api-reference/loops/create-loop">

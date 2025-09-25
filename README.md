@@ -156,7 +156,7 @@ This documentation is licensed under the MIT License. See the [LICENSE](LICENSE)
 
 ## About HITL.sh
 
-HITL.sh is built by humans in Berlin who believe that AI should work with humans, not replace them. Our platform enables organizations to harness the power of AI while maintaining human oversight and control.
+HITL.sh is built by humans who believe that AI should work with humans, not replace them. Our platform enables organizations to harness the power of AI while maintaining human oversight and control.
 
 - **Website**: [hitl.sh](https://hitl.sh)
 - **Twitter**: [@hitlsh](https://twitter.com/hitlsh)

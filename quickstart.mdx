@@ -36,7 +36,7 @@ Go to your dashboard and create a new API key. Copy and save it securely.
 Verify your API key works using the dedicated test endpoint:
 
 ```bash
-curl -X GET https://api.hitl.sh/v1/test \
+curl -X GET https://dev.api.hitl.sh/v1/test \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -55,7 +55,7 @@ import requests
 
 # Your API credentials
 API_KEY = "your_api_key_here"
-BASE_URL = "https://api.hitl.sh/v1"
+BASE_URL = "https://dev.api.hitl.sh/v1"
 
 headers = {
     "Authorization": f"Bearer {API_KEY}",
@@ -87,7 +87,7 @@ const axios = require('axios');
 
 // Your API credentials
 const API_KEY = 'your_api_key_here';
-const BASE_URL = 'https://api.hitl.sh/v1';
+const BASE_URL = 'https://dev.api.hitl.sh/v1';
 
 const headers = {
   'Authorization': `Bearer ${API_KEY}`,
@@ -122,7 +122,7 @@ createLoop();
 <Tab title="cURL">
 ```bash
 # Create content moderation loop
-curl -X POST https://api.hitl.sh/v1/loops \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -289,7 +289,7 @@ async function createModerationRequest(loopId) {
 <Tab title="cURL">
 ```bash
 # Create content moderation request
-curl -X POST https://api.hitl.sh/v1/requests \
+curl -X POST https://dev.api.hitl.sh/v1/api/requests \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -597,7 +597,7 @@ class ContentModerationSystem:
     def __init__(self, api_key, loop_id):
         self.api_key = api_key
         self.loop_id = loop_id
-        self.base_url = "https://api.hitl.sh/v1"
+        self.base_url = "https://dev.api.hitl.sh/v1"
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
