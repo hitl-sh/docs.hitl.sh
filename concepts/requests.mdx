@@ -51,7 +51,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -321,7 +321,7 @@ Check request status programmatically:
 ```python
 # Get specific request
 response = requests.get(
-    f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+    f"https://api.hitl.sh/v1/api/requests/{request_id}",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -344,7 +344,7 @@ Get all your requests:
 ```python
 # Get all requests for this API key
 response = requests.get(
-    "https://dev.api.hitl.sh/v1/api/requests",
+    "https://api.hitl.sh/v1/api/requests",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 

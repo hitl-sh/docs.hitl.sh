@@ -387,7 +387,7 @@ import requests
 class HITLAPIClient:
     def __init__(self, api_key):
         self.api_key = api_key
-        self.base_url = "https://dev.api.hitl.sh/v1"
+        self.base_url = "https://api.hitl.sh/v1"
         
     def make_request(self, method, endpoint, data=None):
         url = f"{self.base_url}{endpoint}"
@@ -416,7 +416,7 @@ class HITLAPIClient:
 class HITLAPIClient {
     constructor(apiKey) {
         this.apiKey = apiKey;
-        this.baseUrl = 'https://dev.api.hitl.sh/v1';
+        this.baseUrl = 'https://api.hitl.sh/v1';
     }
     
     async makeRequest(method, endpoint, data = null) {
@@ -626,7 +626,7 @@ function logAPIError(response, endpoint, payload = null) {
 
 ```bash
 # Test API key
-curl -v -H "Authorization: Bearer your_api_key" https://dev.api.hitl.sh/v1/api/loops
+curl -v -H "Authorization: Bearer your_api_key" https://api.hitl.sh/v1/api/loops
 ```
 </Accordion>
 
@@ -669,7 +669,7 @@ for field in required_fields:
 
 ```bash
 # Check rate limit status
-curl -I -H "Authorization: Bearer your_api_key" https://dev.api.hitl.sh/v1/api/loops
+curl -I -H "Authorization: Bearer your_api_key" https://api.hitl.sh/v1/api/loops
 
 # Look for these headers:
 # X-RateLimit-Limit: 100
@@ -711,7 +711,7 @@ Enable verbose logging to see full HTTP requests and responses:
 curl -v -H "Authorization: Bearer your_api_key" \
      -H "Content-Type: application/json" \
      -d '{"name": "Test Loop", "icon": "test"}' \
-     https://dev.api.hitl.sh/v1/api/loops
+     https://api.hitl.sh/v1/api/loops
 ```
 
 ```python Python
@@ -732,7 +732,7 @@ const axios = require('axios');
 
 // Create axios instance with logging
 const api = axios.create({
-    baseURL: 'https://dev.api.hitl.sh/v1',
+    baseURL: 'https://api.hitl.sh/v1',
     headers: {
         'Authorization': 'Bearer your_api_key'
     }

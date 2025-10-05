@@ -1,6 +1,6 @@
 ---
 title: "Create Request"
-api: "POST https://dev.api.hitl.sh/v1/api/loops/{loopId}/requests"
+api: "POST https://api.hitl.sh/v1/api/loops/{loopId}/requests"
 description: "Create a new human review request within a loop and broadcast it to active members with push notifications"
 ---
 
@@ -324,7 +324,7 @@ For complete configuration options and advanced examples, visit the [Response Ty
 <RequestExample>
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -354,7 +354,7 @@ API_KEY = "YOUR_API_KEY"
 LOOP_ID = "YOUR_LOOP_ID"
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{LOOP_ID}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{LOOP_ID}/requests",
     headers={"Authorization": f"Bearer {API_KEY}"},
     json={
         "processing_type": "time-sensitive",
@@ -386,7 +386,7 @@ const API_KEY = 'YOUR_API_KEY';
 const LOOP_ID = 'YOUR_LOOP_ID';
 
 const response = await axios.post(
-  `https://dev.api.hitl.sh/v1/api/loops/${LOOP_ID}/requests`,
+  `https://api.hitl.sh/v1/api/loops/${LOOP_ID}/requests`,
   {
     processing_type: 'time-sensitive',
     type: 'markdown',
@@ -447,7 +447,7 @@ Copy any of these examples to test different response types:
 Perfect for yes/no decisions or selecting one option.
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -474,7 +474,7 @@ curl -X POST https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
 For selecting multiple issues or features.
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -505,7 +505,7 @@ curl -X POST https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
 For quality ratings and scores.
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -531,7 +531,7 @@ curl -X POST https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
 For quantities, counts, or measurements.
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -558,7 +558,7 @@ curl -X POST https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
 For detailed feedback and explanations.
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{

@@ -1,6 +1,6 @@
 ---
 title: "Get User Requests"
-api: "GET https://dev.api.hitl.sh/v1/api/requests"
+api: "GET https://api.hitl.sh/v1/api/requests"
 description: "Retrieve all requests created by your API key with status, response data, and performance metrics"
 ---
 
@@ -136,15 +136,15 @@ Get a comprehensive list of all requests you've created using your API key. This
 
 ```bash cURL
 # Get all requests
-curl -X GET https://dev.api.hitl.sh/v1/api/requests \
+curl -X GET https://api.hitl.sh/v1/api/requests \
   -H "Authorization: Bearer your_api_key_here"
 
 # Get pending requests only
-curl -X GET "https://dev.api.hitl.sh/v1/api/requests?status=pending" \
+curl -X GET "https://api.hitl.sh/v1/api/requests?status=pending" \
   -H "Authorization: Bearer your_api_key_here"
 
 # Get high priority requests with pagination
-curl -X GET "https://dev.api.hitl.sh/v1/api/requests?priority=high&limit=20&offset=0" \
+curl -X GET "https://api.hitl.sh/v1/api/requests?priority=high&limit=20&offset=0" \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -153,7 +153,7 @@ import requests
 
 def get_requests(status=None, priority=None, loop_id=None, limit=50, offset=0):
     """Get requests with optional filtering"""
-    url = "https://dev.api.hitl.sh/v1/api/requests"
+    url = "https://api.hitl.sh/v1/api/requests"
     headers = {"Authorization": "Bearer your_api_key_here"}
     
     params = {"limit": limit, "offset": offset}
@@ -186,7 +186,7 @@ const axios = require('axios');
 class RequestsAPI {
     constructor(apiKey) {
         this.apiKey = apiKey;
-        this.baseURL = 'https://dev.api.hitl.sh/v1';
+        this.baseURL = 'https://api.hitl.sh/v1';
     }
     
     async getRequests(filters = {}) {
@@ -345,7 +345,7 @@ def get_requests_dashboard():
     """Get comprehensive request dashboard data"""
     api_key = "your_api_key_here"
     headers = {"Authorization": f"Bearer {api_key}"}
-    base_url = "https://dev.api.hitl.sh/v1/api/requests"
+    base_url = "https://api.hitl.sh/v1/api/requests"
     
     dashboard_data = {}
     
@@ -380,7 +380,7 @@ def get_requests_dashboard():
 async function getRequestAnalytics() {
     const apiKey = 'your_api_key_here';
     const headers = { 'Authorization': `Bearer ${apiKey}` };
-    const baseURL = 'https://dev.api.hitl.sh/v1/api/requests';
+    const baseURL = 'https://api.hitl.sh/v1/api/requests';
     
     try {
         // Parallel requests for different metrics
@@ -439,7 +439,7 @@ Handle large datasets efficiently:
 def paginate_all_requests(api_key, batch_size=100):
     """Generator that yields all requests in batches"""
     headers = {"Authorization": f"Bearer {api_key}"}
-    url = "https://dev.api.hitl.sh/v1/api/requests"
+    url = "https://api.hitl.sh/v1/api/requests"
     offset = 0
     
     while True:
@@ -497,7 +497,7 @@ class RequestsPaginator {
         }
         
         const response = await axios.get(
-            `https://dev.api.hitl.sh/v1/api/requests?${params}`,
+            `https://api.hitl.sh/v1/api/requests?${params}`,
             { headers: { 'Authorization': `Bearer ${this.apiKey}` } }
         );
         
@@ -618,7 +618,7 @@ def export_requests_to_csv(filename="requests_export.csv"):
     
     while True:
         response = requests.get(
-            "https://dev.api.hitl.sh/v1/api/requests",
+            "https://api.hitl.sh/v1/api/requests",
             headers={"Authorization": "Bearer your_api_key_here"},
             params={"limit": limit, "offset": offset}
         )
