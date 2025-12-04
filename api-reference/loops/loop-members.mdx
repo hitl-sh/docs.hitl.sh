@@ -1,7 +1,6 @@
 ---
 title: "Loop Members"
 api: "GET https://api.hitl.sh/v1/api/loops/{id}/members"
-api: "GET https://api.hitl.sh/v1/api/loops/{id}/members"
 description: "Retrieve detailed member information and manage loop membership. Includes member status, join dates, and activity metrics."
 ---
 
@@ -61,7 +60,6 @@ Get comprehensive information about all members in a loop, including their statu
 
 ```bash cURL
 curl -X GET https://api.hitl.sh/v1/api/loops/65f1234567890abcdef12345/members \
-curl -X GET https://api.hitl.sh/v1/api/loops/65f1234567890abcdef12345/members \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -69,7 +67,6 @@ curl -X GET https://api.hitl.sh/v1/api/loops/65f1234567890abcdef12345/members \
 import requests
 
 loop_id = "65f1234567890abcdef12345"
-url = f"https://api.hitl.sh/v1/api/loops/{loop_id}/members"
 url = f"https://api.hitl.sh/v1/api/loops/{loop_id}/members"
 headers = {
     "Authorization": "Bearer your_api_key_here"
@@ -97,7 +94,6 @@ const axios = require('axios');
 
 async function getLoopMembers(loopId) {
     const response = await axios.get(
-        `https://api.hitl.sh/v1/api/loops/${loopId}/members`,
         `https://api.hitl.sh/v1/api/loops/${loopId}/members`,
         {
             headers: {
@@ -348,8 +344,7 @@ Track and follow up on pending invitations:
 ```python
 def follow_up_pending_members(loop_id, days_threshold=3):
     """Find pending members who need follow-up"""
-    
-    response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}/members", headers=headers)
+
     response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}/members", headers=headers)
     members_data = response.json()["data"]["members"]
     
@@ -384,13 +379,11 @@ async function getMemberPerformance(loopId) {
         // Get members
         const membersResponse = await axios.get(
             `https://api.hitl.sh/v1/api/loops/${loopId}/members`,
-            `https://api.hitl.sh/v1/api/loops/${loopId}/members`,
             { headers: { 'Authorization': `Bearer ${apiKey}` } }
         );
-        
+
         // Get loop requests for performance analysis
         const requestsResponse = await axios.get(
-            `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
             `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
             { headers: { 'Authorization': `Bearer ${apiKey}` } }
         );
@@ -446,11 +439,9 @@ def audit_loop_membership(loop_ids):
         try:
             # Get loop info
             loop_response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
-            loop_response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
             loop_data = loop_response.json()["data"]["loop"]
-            
+
             # Get members
-            members_response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}/members", headers=headers)
             members_response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}/members", headers=headers)
             members_data = members_response.json()["data"]
             

@@ -8,6 +8,13 @@
     "dark": "#1A202C"
   },
   "favicon": "/favicon.svg",
+  "api": {
+    "baseUrl": "https://api.hitl.sh/v1",
+    "auth": {
+      "method": "bearer",
+      "name": "Authorization"
+    }
+  },
   "navigation": {
     "tabs": [
       {

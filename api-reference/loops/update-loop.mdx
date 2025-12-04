@@ -304,7 +304,7 @@ async function improveLoopDescription(loopId, newDescription) {
         const response = await axios.put(
             `https://api.hitl.sh/v1/api/loops/${loopId}`,
             { description: newDescription },
-            { headers: { 'Authorization': `Bearer ${apiKey, 'Content-Type': 'application/json'}` } }
+            { headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' } }
         );
         
         console.log('Description updated successfully');
