@@ -149,8 +149,8 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Get Started",
-      "href": "https://my.hitl.sh"
+      "label": "Dashboard",
+              "href": "https://my.hitl.sh"
     }
   },
   "contextual": {
