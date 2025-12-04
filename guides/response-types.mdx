@@ -9,6 +9,60 @@ Choose the right response type to collect exactly the information you need from 
 Response types determine how reviewers interact with your requests in the mobile app and what format the response data takes when returned to your application.
 </Info>
 
+## Simple vs Complex Configuration Formats
+
+For `single_select` and `multi_select` response types, you can use **two different formats** for the `options` array:
+
+<Tabs>
+<Tab title="Simple Format (Recommended)">
+**Use string arrays** - Easiest approach for most use cases:
+
+```json
+{
+  "response_type": "single_select",
+  "response_config": {
+    "options": ["Approve", "Reject", "Needs Review"]
+  }
+}
+```
+
+**What happens:**
+- API automatically generates clean values: `"approve"`, `"reject"`, `"needs_review"`
+- These generated values are returned in `response_data`
+- Labels display to reviewers in the mobile app
+
+**Best for:** Quick setup, when you don't need custom value formats
+</Tab>
+
+<Tab title="Complex Format (Advanced)">
+**Use objects with value/label** - Full control over returned values:
+
+```json
+{
+  "response_type": "single_select",
+  "response_config": {
+    "options": [
+      {"value": "approved", "label": "✅ Approve - Safe to publish"},
+      {"value": "rejected", "label": "❌ Reject - Violates guidelines"},
+      {"value": "review", "label": "⚠️ Needs Review - Unclear content"}
+    ]
+  }
+}
+```
+
+**What happens:**
+- You specify exact values to be returned: `"approved"`, `"rejected"`, `"review"`
+- Labels with emojis/descriptions display to reviewers
+- Full control over response data format
+
+**Best for:** Custom values, database keys, when you want rich labels with emojis
+</Tab>
+</Tabs>
+
+<Note>
+**Both formats work identically** - choose based on your preference. Examples below show both formats.
+</Note>
+
 ## Response Type Overview
 
 <CardGroup cols={2}>
@@ -40,12 +94,6 @@ Response types determine how reviewers interact with your requests in the mobile
 **Best for**: Quantities, measurements, counting tasks
 <br />
 **Returns**: Number value with optional validation
-</Card>
-
-<Card title="Boolean" icon="toggle">
-**Best for**: Simple true/false decisions, feature flags
-<br />
-**Returns**: Boolean true or false value
 </Card>
 </CardGroup>
 
@@ -167,29 +215,36 @@ Ideal for binary decisions or choosing one option from multiple choices.
 
 <CodeGroup>
 
-```json Basic Single Select
+```json Simple Format (String Array)
 {
   "response_type": "single_select",
   "response_config": {
     "options": ["Approve", "Reject", "Needs Review"],
     "required": true
-  }
+  },
+  "default_response": "reject"
 }
+
+// Response data will be: "approve", "reject", or "needs_review"
+// (auto-generated: lowercase, spaces -> underscores)
 ```
 
-```json Single Select with Descriptions
+```json Complex Format (Value/Label Objects)
 {
-  "response_type": "single_select", 
+  "response_type": "single_select",
   "response_config": {
     "options": [
-      "High Priority - Requires immediate attention",
-      "Medium Priority - Address within 24 hours", 
-      "Low Priority - Can wait for next batch"
+      {"value": "high_priority", "label": "🔴 High Priority - Immediate attention"},
+      {"value": "medium_priority", "label": "🟡 Medium - Address within 24 hours"},
+      {"value": "low_priority", "label": "🟢 Low - Can wait for next batch"}
     ],
-    "allow_other": false,
     "required": true
-  }
+  },
+  "default_response": "low_priority"
 }
+
+// Response data will be: "high_priority", "medium_priority", or "low_priority"
+// (exact values you specified)
 ```
 
 </CodeGroup>
@@ -285,7 +340,7 @@ Perfect when reviewers need to select multiple items or identify several feature
 
 <CodeGroup>
 
-```json Basic Multi Select
+```json Simple Format (String Array)
 {
   "response_type": "multi_select",
   "response_config": {
@@ -293,26 +348,33 @@ Perfect when reviewers need to select multiple items or identify several feature
     "min_selections": 0,
     "max_selections": 4,
     "required": false
-  }
+  },
+  "default_response": []
 }
+
+// Response data will be array like: ["grammar_issues", "tone_problems"]
+// (auto-generated: lowercase, spaces -> underscores)
 ```
 
-```json Feature Detection
+```json Complex Format (Value/Label Objects)
 {
   "response_type": "multi_select",
   "response_config": {
     "options": [
-      "Contains Personal Information",
-      "Includes External Links", 
-      "Has Promotional Content",
-      "Contains Sensitive Topics",
-      "Includes Code/Technical Content"
+      {"value": "pii", "label": "🔒 Contains Personal Information"},
+      {"value": "external_links", "label": "🔗 Includes External Links"},
+      {"value": "promo", "label": "📢 Has Promotional Content"},
+      {"value": "sensitive", "label": "⚠️ Contains Sensitive Topics"},
+      {"value": "code", "label": "💻 Includes Code/Technical Content"}
     ],
     "min_selections": 1,
-    "max_selections": 3,
-    "allow_other": true
-  }
+    "max_selections": 3
+  },
+  "default_response": []
 }
+
+// Response data will be array like: ["pii", "external_links", "sensitive"]
+// (exact values you specified)
 ```
 
 </CodeGroup>
@@ -426,31 +488,20 @@ Collect numerical ratings and scores from reviewers for quantitative assessment.
 {
   "response_type": "rating",
   "response_config": {
-    "min_value": 1,
-    "max_value": 5,
-    "labels": {
-      "1": "Poor",
-      "3": "Average", 
-      "5": "Excellent"
-    },
-    "required": true
+    "scale_max": 5
   }
 }
 ```
 
-```json 10-Point Scale
+**Note:** Only `scale_max` is required. Defaults: `scale_min: 1`, `scale_step: 1`, `required: false`
+
+```json 10-Point Scale  
 {
   "response_type": "rating",
   "response_config": {
-    "min_value": 0,
-    "max_value": 10,
-    "step": 1,
-    "labels": {
-      "0": "Completely Unacceptable",
-      "5": "Meets Minimum Standards",
-      "10": "Exceeds All Expectations"
-    },
-    "show_numeric_labels": true
+    "scale_min": 0,
+    "scale_max": 10,
+    "scale_step": 1
   }
 }
 ```
@@ -459,28 +510,20 @@ Collect numerical ratings and scores from reviewers for quantitative assessment.
 
 ### Configuration Options
 
-<ParamField body="min_value" type="number" required>
-  Minimum rating value (typically 0 or 1)
-</ParamField>
-
-<ParamField body="max_value" type="number" required>
+<ParamField body="scale_max" type="number" required>
   Maximum rating value (typically 5 or 10)
 </ParamField>
 
-<ParamField body="step" type="number">
+<ParamField body="scale_min" type="number" optional default="1">
+  Minimum rating value (typically 0 or 1)
+</ParamField>
+
+<ParamField body="scale_step" type="number" optional default="1">
   Rating increment (default: 1, can use 0.5 for half-stars)
 </ParamField>
 
-<ParamField body="labels" type="object">
-  Text labels for specific rating values
-</ParamField>
-
-<ParamField body="show_numeric_labels" type="boolean">
-  Show numeric values alongside labels (default: false)
-</ParamField>
-
-<ParamField body="required" type="boolean">
-  Whether a rating is required (default: true)
+<ParamField body="required" type="boolean" optional default="false">
+  Whether a rating is required
 </ParamField>
 
 ### Use Cases & Examples
@@ -492,15 +535,9 @@ Collect numerical ratings and scores from reviewers for quantitative assessment.
 quality_rating = {
     "response_type": "rating",
     "response_config": {
-        "min_value": 1,
-        "max_value": 5,
-        "labels": {
-            "1": "Poor - Major issues",
-            "2": "Below Average - Multiple problems", 
-            "3": "Average - Acceptable quality",
-            "4": "Good - Minor improvements needed",
-            "5": "Excellent - Publication ready"
-        }
+        "scale_max": 5
+        # scale_min defaults to 1
+        # scale_step defaults to 1
     }
 }
 
@@ -514,15 +551,9 @@ quality_rating = {
 service_rating = {
     "response_type": "rating",
     "response_config": {
-        "min_value": 1,
-        "max_value": 10,
-        "step": 1,
-        "labels": {
-            "1": "Unacceptable",
-            "5": "Meets Standards", 
-            "10": "Exceptional"
-        },
-        "show_numeric_labels": true
+        "scale_max": 10,
+        "scale_step": 1
+        # scale_min defaults to 1
     }
 }
 
@@ -536,14 +567,9 @@ service_rating = {
 translation_rating = {
     "response_type": "rating", 
     "response_config": {
-        "min_value": 1,
-        "max_value": 5,
-        "step": 0.5,  # Allow half-star ratings
-        "labels": {
-            "1": "Completely Incorrect",
-            "2.5": "Partially Accurate",
-            "5": "Perfect Translation"
-        }
+        "scale_max": 5,
+        "scale_step": 0.5  # Allow half-star ratings
+        # scale_min defaults to 1
     }
 }
 
@@ -564,13 +590,12 @@ Collect specific numerical values like counts, measurements, or quantities.
 {
   "response_type": "number",
   "response_config": {
-    "min_value": 0,
-    "max_value": 1000,
-    "placeholder": "Enter count...",
-    "required": true
+    "max_value": 1000
   }
 }
 ```
+
+**Note:** Only `max_value` is required. Defaults: `min_value: 1`, `decimal_places: 2`, `allow_negative: false`, `required: false`
 
 ```json Decimal Numbers
 {
@@ -578,10 +603,8 @@ Collect specific numerical values like counts, measurements, or quantities.
   "response_config": {
     "min_value": 0,
     "max_value": 100,
-    "step": 0.1,
-    "unit": "percentage",
-    "placeholder": "e.g., 85.5",
-    "validation_message": "Enter percentage between 0 and 100"
+    "decimal_places": 1,
+    "allow_negative": false
   }
 }
 ```
@@ -590,28 +613,24 @@ Collect specific numerical values like counts, measurements, or quantities.
 
 ### Configuration Options
 
-<ParamField body="min_value" type="number">
-  Minimum allowed value (optional)
+<ParamField body="max_value" type="number" required>
+  Maximum allowed value
 </ParamField>
 
-<ParamField body="max_value" type="number">
-  Maximum allowed value (optional)
+<ParamField body="min_value" type="number" optional default="1">
+  Minimum allowed value
 </ParamField>
 
-<ParamField body="step" type="number">
-  Number increment/precision (default: 1)
+<ParamField body="decimal_places" type="integer" optional default="2">
+  Number of decimal places allowed (0-10)
 </ParamField>
 
-<ParamField body="unit" type="string">
-  Unit label displayed with input (e.g., "items", "percentage", "$")
+<ParamField body="allow_negative" type="boolean" optional default="false">
+  Whether negative numbers are allowed
 </ParamField>
 
-<ParamField body="placeholder" type="string">
-  Hint text shown in input field
-</ParamField>
-
-<ParamField body="required" type="boolean">
-  Whether input is required (default: true)
+<ParamField body="required" type="boolean" optional default="false">
+  Whether input is required
 </ParamField>
 
 ### Use Cases & Examples
@@ -625,9 +644,7 @@ counting_config = {
     "response_config": {
         "min_value": 0,
         "max_value": 50,
-        "unit": "instances",
-        "placeholder": "Count occurrences...",
-        "validation_message": "Enter number between 0 and 50"
+        "decimal_places": 0  # Whole numbers only
     }
 }
 
@@ -643,9 +660,7 @@ performance_config = {
     "response_config": {
         "min_value": 0,
         "max_value": 60,
-        "step": 0.1,
-        "unit": "seconds",
-        "placeholder": "e.g., 2.5"
+        "decimal_places": 1
     }
 }
 
@@ -660,116 +675,12 @@ price_config = {
     "response_type": "number",
     "response_config": {
         "min_value": 0,
-        "max_value": 10000,
-        "step": 0.01,
-        "unit": "USD",
-        "placeholder": "e.g., 29.99"
+        "max_value": 10000
+        # decimal_places defaults to 2 (perfect for currency)
     }
 }
 
 # Example response: 49.99
-```
-</Accordion>
-</AccordionGroup>
-
-## Boolean Response
-
-Simple true/false responses for binary decisions and feature flags.
-
-### Configuration
-
-<CodeGroup>
-
-```json Basic Boolean
-{
-  "response_type": "boolean",
-  "response_config": {
-    "true_label": "Yes",
-    "false_label": "No",
-    "required": true
-  }
-}
-```
-
-```json Custom Labels
-{
-  "response_type": "boolean", 
-  "response_config": {
-    "true_label": "Contains Sensitive Information",
-    "false_label": "Safe for Public Use",
-    "default_value": false,
-    "required": true
-  }
-}
-```
-
-</CodeGroup>
-
-### Configuration Options
-
-<ParamField body="true_label" type="string">
-  Label for true/yes option (default: "Yes")
-</ParamField>
-
-<ParamField body="false_label" type="string">
-  Label for false/no option (default: "No")
-</ParamField>
-
-<ParamField body="default_value" type="boolean">
-  Pre-selected value (optional)
-</ParamField>
-
-<ParamField body="required" type="boolean">
-  Whether selection is required (default: true)
-</ParamField>
-
-### Use Cases & Examples
-
-<AccordionGroup>
-<Accordion title="Content Safety Check">
-```python
-# Check if content is safe for publication
-safety_check = {
-    "response_type": "boolean",
-    "response_config": {
-        "true_label": "Safe to Publish",
-        "false_label": "Requires Review",
-        "default_value": false  # Conservative default
-    }
-}
-
-# Example response: true
-```
-</Accordion>
-
-<Accordion title="Feature Presence">
-```python
-# Check if specific feature is mentioned
-feature_check = {
-    "response_type": "boolean",
-    "response_config": {
-        "true_label": "Free Trial Mentioned",
-        "false_label": "No Free Trial Mentioned"
-    }
-}
-
-# Example response: false
-```
-</Accordion>
-
-<Accordion title="Compliance Verification">
-```python
-# GDPR compliance check
-compliance_check = {
-    "response_type": "boolean",
-    "response_config": {
-        "true_label": "GDPR Compliant",
-        "false_label": "GDPR Issues Found", 
-        "required": true
-    }
-}
-
-# Example response: true
 ```
 </Accordion>
 </AccordionGroup>
@@ -789,9 +700,8 @@ def comprehensive_content_review(content, loop_id):
         "request_text": f"Rate the overall quality of this content:\n\n{content}",
         "response_type": "rating",
         "response_config": {
-            "min_value": 1,
-            "max_value": 5,
-            "labels": {"1": "Poor", "5": "Excellent"}
+            "scale_max": 5
+            # scale_min defaults to 1
         },
         "metadata": {"stage": "quality_rating"}
     })
@@ -868,8 +778,8 @@ def validate_response_data(response_type, response_data, config):
     """Validate response data meets requirements"""
     
     if response_type == "rating":
-        min_val = config.get("min_value", 1)
-        max_val = config.get("max_value", 5)
+        min_val = config.get("scale_min", 1)
+        max_val = config.get("scale_max", 5)
         if not (min_val <= response_data <= max_val):
             raise ValueError(f"Rating must be between {min_val} and {max_val}")
     
@@ -895,11 +805,14 @@ def validate_response_data(response_type, response_data, config):
 <AccordionGroup>
 <Accordion title="Choose Based on Use Case">
 **Text**: Use for subjective feedback, explanations, or when you need qualitative insights
-**Single Select**: Perfect for binary decisions or when one clear choice is needed  
+
+**Single Select**: Perfect for binary decisions or when one clear choice is needed
+
 **Multi Select**: When multiple aspects need to be identified or tagged
+
 **Rating**: For quantitative assessment or when you need to compare/rank items
+
 **Number**: When you need specific measurements, counts, or calculations
-**Boolean**: For simple yes/no questions or feature detection
 </Accordion>
 
 <Accordion title="Optimize for Mobile Experience">
@@ -942,8 +855,8 @@ class ResponseProcessor:
     
     def process_rating(self, rating, config):
         """Convert rating to actionable insights"""
-        min_val = config.get('min_value', 1)
-        max_val = config.get('max_value', 5)
+        min_val = config.get('scale_min', 1)
+        max_val = config.get('scale_max', 5)
         
         # Normalize to 0-1 scale
         normalized = (rating - min_val) / (max_val - min_val)
@@ -998,15 +911,15 @@ class ResponseProcessor:
   Try different response types in our step-by-step tutorial.
 </Card>
 
-<Card title="API Playground" icon="play" href="/api-reference/playground">
-  Test response configurations interactively before implementing.
+<Card title="API Reference" icon="code" href="/api-reference/requests/create-request">
+  See all available options for creating requests with different response types.
 </Card>
 
-<Card title="Mobile App Preview" icon="mobile" href="/mobile/overview">
-  See how different response types appear to reviewers in the mobile app.
+<Card title="Simple Integration" icon="puzzle" href="/guides/simple-integration">
+  Learn how to integrate HITL.sh into your application with practical examples.
 </Card>
 
-<Card title="Best Practices" icon="star" href="/guides/best-practices">
-  Learn advanced techniques for optimizing reviewer experience and data quality.
+<Card title="First Loop" icon="circle-play" href="/first-loop">
+  Step-by-step guide to creating your first loop and sending requests.
 </Card>
 </CardGroup>

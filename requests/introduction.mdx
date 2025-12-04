@@ -56,7 +56,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -70,17 +70,13 @@ The API immediately sends push notifications to all active members of the target
 
 ### 3. Pending
 
-The request waits in the queue for a reviewer to claim it. Requests are ordered by priority (critical → high → medium → low) and creation time.
+The request waits in the queue for a reviewer to respond. Requests are ordered by priority (critical → high → medium → low) and creation time.
 
-### 4. Claimed
-
-When a reviewer opens the request in their mobile app, it's marked as "claimed" and removed from other reviewers' queues to prevent duplicate work.
-
-### 5. Completed
+### 4. Completed
 
 The reviewer submits their response using the configured response type. The request status changes to "completed" and the response data becomes available via the API.
 
-### 6. Webhook (Optional)
+### 5. Webhook (Optional)
 
 If you configured a `callback_url`, HITL.sh sends a webhook notification with the response data to your endpoint.
 
@@ -90,7 +86,7 @@ If you configured a `callback_url`, HITL.sh sends a webhook notification with th
 # Poll for the completed response
 def get_response(request_id):
     response = requests.get(
-        f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+        f"https://api.hitl.sh/v1/api/requests/{request_id}",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     
@@ -156,14 +152,17 @@ Use `type: "image"` for visual content review:
 
 ```python
 request_data = {
-    "type": "image", 
+    "type": "image",
     "request_text": "Review this uploaded profile photo for appropriateness",
     "image_url": "https://example.com/uploads/profile_123.jpg",
-    "response_type": "boolean",
+    "response_type": "single_select",
     "response_config": {
-        "true_label": "✅ Appropriate",
-        "false_label": "❌ Inappropriate"
-    }
+        "options": [
+            {"value": "approve", "label": "✅ Appropriate"},
+            {"value": "reject", "label": "❌ Inappropriate"}
+        ]
+    },
+    "default_response": "reject"
 }
 ```
 
@@ -179,9 +178,10 @@ Every request must include these essential elements:
   "type": "markdown|image",
   "priority": "low|medium|high|critical",
   "request_text": "string",
-  "response_type": "text|single_select|multi_select|rating|number|boolean",
+  "response_type": "text|single_select|multi_select|rating|number",
   "response_config": "object",
-  "default_response": "varies by response_type"
+  "default_response": "varies by response_type",
+  "platform": "api"
 }
 ```
 
@@ -245,27 +245,19 @@ Track the progress of requests through their lifecycle:
 
 <CardGroup cols={2}>
 <Card title="Pending" icon="clock">
-Request is waiting to be assigned to a reviewer.
-</Card>
-
-<Card title="Assigned" icon="user">
-Request has been assigned to a specific reviewer.
-</Card>
-
-<Card title="In Review" icon="eye">
-Reviewer is actively examining the request.
+Request is waiting for a reviewer to respond.
 </Card>
 
 <Card title="Completed" icon="check">
 Human decision has been made and returned.
 </Card>
 
-<Card title="Escalated" icon="arrow-up">
-Request has been escalated to a senior reviewer.
+<Card title="Timeout" icon="alert">
+Request exceeded response time and default response was used.
 </Card>
 
-<Card title="Timed Out" icon="alert">
-Request exceeded response time and was auto-processed.
+<Card title="Cancelled" icon="x">
+Request was cancelled before completion by the creator.
 </Card>
 </CardGroup>
 
@@ -424,7 +416,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -439,7 +431,7 @@ Review visual content for appropriateness:
 request_data = {
     "processing_type": "time-sensitive",
     "type": "image",
-    "priority": "high", 
+    "priority": "high",
     "request_text": "Review this uploaded profile photo for appropriateness and compliance with our image guidelines.",
     "image_url": "https://cdn.example.com/uploads/profile_photos/user_12345.jpg",
     "context": {
@@ -448,20 +440,21 @@ request_data = {
         "file_size": "2.4MB"
     },
     "timeout_seconds": 900,
-    "response_type": "boolean",
+    "response_type": "single_select",
     "response_config": {
-        "true_label": "✅ Approve Image",
-        "false_label": "❌ Reject Image",
-        "true_color": "#22c55e",
-        "false_color": "#ef4444",
+        "options": [
+            {"value": "approve", "label": "✅ Approve Image", "color": "#22c55e"},
+            {"value": "reject", "label": "❌ Reject Image", "color": "#ef4444"},
+            {"value": "flag", "label": "🚩 Flag for Review", "color": "#f59e0b"}
+        ],
         "required": True
     },
-    "default_response": False,  # Conservative default
+    "default_response": "reject",  # Conservative default
     "platform": "api"
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests", 
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -472,7 +465,7 @@ response = requests.post(
 ```python
 def get_request_status(request_id):
     response = requests.get(
-        f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+        f"https://api.hitl.sh/v1/api/requests/{request_id}",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     
@@ -506,7 +499,7 @@ See the complete API documentation for creating requests with all parameters and
 </Card>
 
 <Card title="Response Types" icon="message-circle" href="/responses/types">
-Learn about the 6 response types you can use to collect structured feedback from reviewers.
+Learn about the 5 response types you can use to collect structured feedback from reviewers.
 </Card>
 
 <Card title="Create Your First Loop" icon="users" href="/first-loop">

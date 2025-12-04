@@ -1,6 +1,6 @@
 ---
 title: "Update Loop"
-api: "PUT https://dev.api.hitl.sh/v1/api/loops/{id}"
+api: "PUT https://api.hitl.sh/v1/api/loops/{id}"
 description: "Update an existing loop's name, description, or icon. Only the loop creator can make updates."
 ---
 
@@ -89,7 +89,7 @@ All body parameters are optional. Only provide the fields you want to update.
 <RequestExample>
 
 ```bash cURL
-curl -X PUT https://dev.api.hitl.sh/v1/api/loops/65f1234567890abcdef12345 \
+curl -X PUT https://api.hitl.sh/v1/api/loops/65f1234567890abcdef12345 \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -103,7 +103,7 @@ curl -X PUT https://dev.api.hitl.sh/v1/api/loops/65f1234567890abcdef12345 \
 import requests
 
 loop_id = "65f1234567890abcdef12345"
-url = f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}"
+url = f"https://api.hitl.sh/v1/api/loops/{loop_id}"
 headers = {
     "Authorization": "Bearer your_api_key_here",
     "Content-Type": "application/json"
@@ -123,7 +123,7 @@ const axios = require('axios');
 
 const loopId = '65f1234567890abcdef12345';
 const response = await axios.put(
-  `https://dev.api.hitl.sh/v1/api/loops/${loopId}`,
+  `https://api.hitl.sh/v1/api/loops/${loopId}`,
   {
     name: 'Enhanced Content Moderation',
     description: 'Advanced review system with improved guidelines',
@@ -277,7 +277,7 @@ Update loop name and icon for rebranding:
 
 ```python
 def rebrand_loop(loop_id, new_name, new_icon):
-    url = f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}"
+    url = f"https://api.hitl.sh/v1/api/loops/{loop_id}"
     data = {
         "name": new_name,
         "icon": new_icon
@@ -302,7 +302,7 @@ Add more detailed descriptions to existing loops:
 async function improveLoopDescription(loopId, newDescription) {
     try {
         const response = await axios.put(
-            `https://dev.api.hitl.sh/v1/api/loops/${loopId}`,
+            `https://api.hitl.sh/v1/api/loops/${loopId}`,
             { description: newDescription },
             { headers: { 'Authorization': `Bearer ${apiKey, 'Content-Type': 'application/json'}` } }
         );
@@ -329,7 +329,7 @@ Update multiple loops with a consistent naming scheme:
 ```python
 def standardize_loop_names(loop_prefix="Review"):
     # Get all loops
-    loops_response = requests.get("https://dev.api.hitl.sh/v1/api/loops", headers=headers)
+    loops_response = requests.get("https://api.hitl.sh/v1/api/loops", headers=headers)
     loops = loops_response.json()["data"]["loops"]
     
     updated_loops = []
@@ -341,7 +341,7 @@ def standardize_loop_names(loop_prefix="Review"):
         new_name = f"{loop_prefix} - {loop['name']}"
         
         update_response = requests.put(
-            f"https://dev.api.hitl.sh/v1/api/loops/{loop['id']}", 
+            f"https://api.hitl.sh/v1/api/loops/{loop['id']}", 
             headers=headers, 
             json={"name": new_name}
         )
@@ -441,7 +441,7 @@ def version_loop_update(loop_id, updates, version=None):
             updates['name'] = f"{updates['name']} v{version}"
         updates['description'] = f"{updates.get('description', '')} (Updated to v{version})"
     
-    return requests.put(f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}", headers=headers, json=updates)
+    return requests.put(f"https://api.hitl.sh/v1/api/loops/{loop_id}", headers=headers, json=updates)
 ```
 
 ### Gradual Updates
@@ -455,7 +455,7 @@ async function updateLoopGradually(loopId, updates) {
     for (const field of updateOrder) {
         if (updates[field]) {
             await axios.put(
-                `https://dev.api.hitl.sh/v1/api/loops/${loopId}`,
+                `https://api.hitl.sh/v1/api/loops/${loopId}`,
                 { [field]: updates[field] },
                 { headers: { 'Authorization': `Bearer ${apiKey}` } }
             );
@@ -474,12 +474,12 @@ Keep a record of previous state:
 ```python
 def safe_loop_update(loop_id, updates):
     # Get current state
-    current_response = requests.get(f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
+    current_response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
     backup = current_response.json()["data"]["loop"]
     
     # Perform update
     update_response = requests.put(
-        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}", 
+        f"https://api.hitl.sh/v1/api/loops/{loop_id}", 
         headers=headers, 
         json=updates
     )

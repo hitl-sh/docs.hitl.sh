@@ -1,6 +1,6 @@
 ---
 title: "Add Request Feedback"
-api: "POST https://dev.api.hitl.sh/v1/api/requests/{id}/feedback"
+api: "POST https://api.hitl.sh/v1/api/requests/{id}/feedback"
 description: "Provide feedback on completed requests to improve reviewer performance and system quality over time"
 ---
 
@@ -82,22 +82,13 @@ The feedback object can contain any combination of the following fields:
     <ResponseField name="feedback" type="object">
       The feedback object that was submitted
     </ResponseField>
-    <ResponseField name="feedback_id" type="string">
-      Unique identifier for this feedback entry
-    </ResponseField>
-    <ResponseField name="submitted_at" type="string">
-      ISO timestamp when feedback was submitted
-    </ResponseField>
-    <ResponseField name="reviewer_notified" type="boolean">
-      Whether the reviewer was notified about the feedback
-    </ResponseField>
   </Expandable>
 </ResponseField>
 
 <RequestExample>
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/requests/65f1234567890abcdef12348/feedback \
+curl -X POST https://api.hitl.sh/v1/api/requests/65f1234567890abcdef12348/feedback \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -120,7 +111,7 @@ import requests
 def add_request_feedback(request_id, feedback_data):
     """Add comprehensive feedback to a completed request"""
     
-    url = f"https://dev.api.hitl.sh/v1/api/requests/{request_id}/feedback"
+    url = f"https://api.hitl.sh/v1/api/requests/{request_id}/feedback"
     headers = {
         "Authorization": "Bearer your_api_key_here",
         "Content-Type": "application/json"
@@ -170,7 +161,7 @@ const axios = require('axios');
 class FeedbackManager {
     constructor(apiKey) {
         this.apiKey = apiKey;
-        this.baseURL = 'https://dev.api.hitl.sh/v1';
+        this.baseURL = 'https://api.hitl.sh/v1';
     }
     
     async addFeedback(requestId, feedbackData) {
@@ -286,10 +277,7 @@ await feedbackManager.addPositiveFeedback(
       "would_recommend": true,
       "tags": ["thorough", "quick", "professional"],
       "category": "positive"
-    },
-    "feedback_id": "65f1234567890abcdef12355",
-    "submitted_at": "2024-03-15T12:30:00Z",
-    "reviewer_notified": true
+    }
   }
 }
 ```
@@ -298,29 +286,19 @@ await feedbackManager.addPositiveFeedback(
 
 ## Feedback Categories
 
+Use the `category` field to classify your feedback:
+
 <CardGroup cols={3}>
 <Card title="Positive" icon="thumbs-up">
-**Category**: `positive`
-- High ratings (4-5)
-- Appreciation for good work
-- Reinforces desired behaviors
-- Builds reviewer confidence
+Use `positive` for high ratings (4-5) and appreciation. Reinforces desired behaviors and builds reviewer confidence.
 </Card>
 
 <Card title="Constructive" icon="lightbulb">
-**Category**: `constructive`  
-- Moderate ratings (2-4)
-- Specific improvement suggestions
-- Educational feedback
-- Growth-oriented
+Use `constructive` for moderate ratings (2-4) with specific improvement suggestions. Educational and growth-oriented feedback.
 </Card>
 
 <Card title="Issue" icon="exclamation-triangle">
-**Category**: `issue`
-- Low ratings (1-2)
-- Identifies problems
-- May require follow-up
-- Used sparingly for serious issues
+Use `issue` for low ratings (1-2) that identify problems. May require follow-up. Use sparingly for serious issues.
 </Card>
 </CardGroup>
 
@@ -374,7 +352,7 @@ def analyze_feedback_patterns():
     
     # Get all completed requests
     response = requests.get(
-        "https://dev.api.hitl.sh/v1/api/requests?status=completed&limit=100",
+        "https://api.hitl.sh/v1/api/requests?status=completed&limit=100",
         headers={"Authorization": "Bearer your_api_key_here"}
     )
     
@@ -443,7 +421,7 @@ async function bulkFeedback(requestFeedbackPairs, options = {}) {
             if (validateFirst) {
                 // Get request details to ensure it's completed
                 const requestResponse = await axios.get(
-                    `https://dev.api.hitl.sh/v1/api/requests/${requestId}`,
+                    `https://api.hitl.sh/v1/api/requests/${requestId}`,
                     { headers: { 'Authorization': 'Bearer your_api_key_here' } }
                 );
                 
@@ -461,7 +439,7 @@ async function bulkFeedback(requestFeedbackPairs, options = {}) {
             
             // Submit feedback
             const feedbackResponse = await axios.post(
-                `https://dev.api.hitl.sh/v1/api/requests/${requestId}/feedback`,
+                `https://api.hitl.sh/v1/api/requests/${requestId}/feedback`,
                 { feedback },
                 { headers: { 'Authorization': 'Bearer your_api_key_here', 'Content-Type': 'application/json' } }
             );
@@ -689,14 +667,12 @@ Feedback patterns help identify bottlenecks and optimization opportunities in th
 
 ## Next Steps
 
+<CardGroup cols={2}>
 <Card title="View Request History" icon="history" href="/api-reference/requests/get-requests">
   Review your request history and identify requests that could benefit from feedback.
-</Card>
-
-<Card title="Loop Analytics" icon="chart-line" href="/api-reference/loops/analytics">
-  See how feedback is improving your loop performance over time.
 </Card>
 
 <Card title="Reviewer Guidelines" icon="users" href="/mobile/responding">
   Learn how reviewers see and respond to feedback on the mobile app.
 </Card>
+</CardGroup>

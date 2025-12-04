@@ -80,7 +80,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -105,14 +105,14 @@ const requestData = {
 };
 
 const response = await axios.post(
-    `https://dev.api.hitl.sh/v1/api/loops/${loopId}/requests`,
+    `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
     requestData,
     { headers: { Authorization: `Bearer ${apiKey}` }}
 );
 ```
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -152,8 +152,14 @@ Allow reviewers to choose one option from a predefined list.
 ### Configuration
 
 <ParamField body="options" type="array" required>
-Array of SelectOption objects (1-20 options max)
-<Expandable title="SelectOption">
+Array of options (1-20 options max). Can be simple strings or SelectOption objects.
+<Expandable title="Simple Format">
+  ```json
+  ["Option 1", "Option 2", "Option 3"]
+  ```
+  Automatically converted to rich SelectOption objects for mobile app compatibility.
+</Expandable>
+<Expandable title="Rich Format (SelectOption)">
   <ParamField body="value" type="string" required>
     Internal value for the option (max 100 chars)
   </ParamField>
@@ -163,7 +169,7 @@ Array of SelectOption objects (1-20 options max)
 </Expandable>
 </ParamField>
 
-<ParamField body="required" type="boolean" required>
+<ParamField body="required" type="boolean" optional default="false">
 Whether a selection is required
 </ParamField>
 
@@ -180,24 +186,11 @@ request_data = {
     "response_type": "single_select",
     "response_config": {
         "options": [
-            {
-                "value": "approve",
-                "label": "Approve"
-            },
-            {
-                "value": "approve_with_warning", 
-                "label": "Approve with Warning"
-            },
-            {
-                "value": "reject",
-                "label": "Reject"
-            },
-            {
-                "value": "escalate",
-                "label": "Escalate"
-            }
-        ],
-        "required": true
+            "Approve",
+            "Approve with Warning",
+            "Reject",
+            "Escalate"
+        ]
     },
     "default_response": "reject",
     "timeout_seconds": 1800,
@@ -213,26 +206,12 @@ const requestData = {
     request_text: "Please review this user comment for community guideline compliance:",
     response_type: "single_select",
     response_config: {
-        prompt: "",
         options: [
-            {
-                value: "approve",
-                label: "Approve"
-            },
-            {
-                value: "approve_with_warning",
-                label: "Approve with Warning"
-            },
-            {
-                value: "reject",
-                label: "Reject"
-            },
-            {
-                value: "escalate",
-                label: "Escalate"
-            }
-        ],
-        required: true
+            "Approve",
+            "Approve with Warning",
+            "Reject",
+            "Escalate"
+        ]
     },
     default_response: "reject",
     timeout_seconds: 1800,
@@ -246,10 +225,7 @@ const requestData = {
 
 ```json
 {
-  "response_data": {
-    "selected_value": "approve_with_warning",
-    "selected_label": "⚠️ Approve with Warning"
-  }
+  "response_data": "approve_with_warning"
 }
 ```
 
@@ -260,18 +236,32 @@ Allow reviewers to choose multiple options from a predefined list.
 ### Configuration  
 
 <ParamField body="options" type="array" required>
-Array of SelectOption objects with value and label properties
-</ParamField>
-
-<ParamField body="min_selections" type="integer" required>
-Minimum number of options that must be selected
+Array of options (1-20 options max). Can be simple strings or SelectOption objects.
+<Expandable title="Simple Format">
+  ```json
+  ["Option 1", "Option 2", "Option 3"]
+  ```
+  Automatically converted to rich SelectOption objects for mobile app compatibility.
+</Expandable>
+<Expandable title="Rich Format (SelectOption)">
+  <ParamField body="value" type="string" required>
+    Internal value for the option (max 100 chars)
+  </ParamField>
+  <ParamField body="label" type="string" required>
+    Display text for the option (max 200 chars)
+  </ParamField>
+</Expandable>
 </ParamField>
 
 <ParamField body="max_selections" type="integer" required>
 Maximum number of options that can be selected
 </ParamField>
 
-<ParamField body="required" type="boolean" required>
+<ParamField body="min_selections" type="integer" optional default="1">
+Minimum number of options that must be selected (auto-added when max_selections is provided)
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
 Whether at least one selection is required
 </ParamField>
 
@@ -288,36 +278,16 @@ request_data = {
     "response_type": "multi_select",
     "response_config": {
         "options": [
-            {
-                "value": "incorrect_address",
-                "label": "Incorrect Address"
-            },
-            {
-                "value": "wrong_phone",
-                "label": "Wrong Phone Number"
-            },
-            {
-                "value": "outdated_hours",
-                "label": "Outdated Hours"
-            },
-            {
-                "value": "poor_photos",
-                "label": "Poor Quality Photos"
-            },
-            {
-                "value": "duplicate_listing",
-                "label": "Duplicate Listing"
-            },
-            {
-                "value": "no_issues",
-                "label": "No Issues Found"
-            }
+            "Incorrect Address",
+            "Wrong Phone Number",
+            "Outdated Hours",
+            "Poor Quality Photos",
+            "Duplicate Listing",
+            "No Issues Found"
         ],
-        "min_selections": 1,
-        "max_selections": 5,
-        "required": true
+        "max_selections": 5
     },
-    "default_response": "no_issues",
+    "default_response": [],
     "timeout_seconds": 2400,
     "platform": "api"
 }
@@ -329,10 +299,7 @@ request_data = {
 
 ```json
 {
-  "response_data": {
-    "selected_values": ["incorrect_address", "outdated_hours"],
-    "selected_labels": ["📍 Incorrect Address", "🕒 Outdated Hours"]
-  }
+  "response_data": ["incorrect_address", "outdated_hours"]
 }
 ```
 
@@ -342,19 +309,19 @@ Numeric rating scale with configurable range and step values.
 
 ### Configuration
 
-<ParamField body="scale_min" type="number" required>
-Minimum value of the rating scale
-</ParamField>
-
 <ParamField body="scale_max" type="number" required>
-Maximum value of the rating scale (must be > scale_min)
+Maximum value of the rating scale
 </ParamField>
 
-<ParamField body="scale_step" type="number" required>
-Step increment for the rating (e.g., 0.5 for half-point ratings)
+<ParamField body="scale_min" type="number" optional default="1">
+Minimum value of the rating scale (must be < scale_max)
 </ParamField>
 
-<ParamField body="required" type="boolean" required>
+<ParamField body="scale_step" type="number" optional default="1">
+Step increment for the rating scale (e.g., 0.5 for half-star ratings, 1 for full-star ratings)
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
 Whether a rating is required
 </ParamField>
 
@@ -416,15 +383,15 @@ Numeric input with validation and formatting options.
 
 ### Configuration
 
-<ParamField body="min_value" type="number" required>
-Minimum allowed value
-</ParamField>
-
 <ParamField body="max_value" type="number" required>
-Maximum allowed value (must be > min_value)
+Maximum allowed value
 </ParamField>
 
-<ParamField body="decimal_places" type="integer" optional default="0">
+<ParamField body="min_value" type="number" optional default="1">
+Minimum allowed value (must be < max_value)
+</ParamField>
+
+<ParamField body="decimal_places" type="integer" optional default="2">
 Number of decimal places allowed (0-10)
 </ParamField>
 
@@ -432,7 +399,7 @@ Number of decimal places allowed (0-10)
 Whether negative numbers are allowed
 </ParamField>
 
-<ParamField body="required" type="boolean" required>
+<ParamField body="required" type="boolean" optional default="false">
 Whether a value is required
 </ParamField>
 
@@ -448,13 +415,13 @@ request_data = {
     "request_text": "What's a fair market price for this product based on your expertise?",
     "response_type": "number",
     "response_config": {
-        "min_value": 0,
         "max_value": 10000,
-        "decimal_places": 2,
-        "allow_negative": false,
-        "required": true
+        # min_value defaults to 1
+        # decimal_places defaults to 2  
+        # allow_negative defaults to false
+        # required defaults to false
     },
-    "default_response": 0,
+    "default_response": 50,
     "timeout_seconds": 2400,
     "platform": "api"
 }
@@ -468,13 +435,13 @@ const requestData = {
     request_text: "What's a fair market price for this product based on your expertise?",
     response_type: "number",
     response_config: {
-        min_value: 0,
         max_value: 10000,
-        decimal_places: 2,
-        allow_negative: false,
-        required: true
+        // min_value defaults to 1
+        // decimal_places defaults to 2  
+        // allow_negative defaults to false
+        // required defaults to false
     },
-    default_response: 0,
+    default_response: 50,
     timeout_seconds: 2400,
     platform: "api"
 };
@@ -590,36 +557,29 @@ def handle_response(request_id, response_data, response_type):
         extract_keywords(text)
         
     elif response_type == "single_select":
-        selected = response_data["selected_value"]
+        selected = response_data
         if selected == "approve":
             approve_content()
         elif selected == "reject":
             reject_content()
         elif selected == "escalate":
             escalate_to_senior_reviewer()
-            
+
     elif response_type == "multi_select":
-        issues = response_data["selected_values"]
+        issues = response_data
         for issue in issues:
             handle_identified_issue(issue)
-            
+
     elif response_type == "rating":
-        score = response_data["rating"]
+        score = response_data
         if score >= 8:
             mark_as_high_quality()
         elif score <= 3:
             flag_for_improvement()
-            
+
     elif response_type == "number":
-        value = response_data["number"]
+        value = response_data
         update_pricing_model(request_id, value)
-        
-    elif response_type == "boolean":
-        decision = response_data["boolean"]
-        if decision:
-            trigger_investigation()
-        else:
-            approve_transaction()
 ```
 
 ## Next Steps
@@ -633,11 +593,11 @@ Start using these response types in your requests
 See how reviewers interact with these response types
 </Card>
 
-<Card title="Webhooks" icon="webhook" href="/webhooks/global">
+<Card title="Webhooks" icon="webhook" href="/api-reference/webhooks">
 Set up webhooks to receive responses in real-time
 </Card>
 
-<Card title="Best Practices" icon="star" href="/guides/best-practices">
-Learn optimization strategies for better response quality
+<Card title="Simple Integration" icon="puzzle" href="/guides/simple-integration">
+Learn how to integrate HITL.sh with practical examples
 </Card>
 </CardGroup>

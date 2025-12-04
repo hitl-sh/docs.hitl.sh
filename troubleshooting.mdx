@@ -169,9 +169,9 @@ request_data = {
 {
     "response_type": "rating", 
     "response_config": {
-        "min_value": 1,  # Must be less than max_value
-        "max_value": 5,  # Must be greater than min_value
-        "labels": {"1": "Poor", "5": "Excellent"}  # Optional
+        "scale_max": 5  # Required
+        # scale_min defaults to 1
+        # scale_step defaults to 1
     }
 }
 

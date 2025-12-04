@@ -29,15 +29,77 @@ Evaluating multiple aspects or features of content, products, or submissions
 </Card>
 </CardGroup>
 
-## Configuration Options
+## Configuration Formats
 
-Multi select responses require an options array and support selection limits and validation:
+Multi select responses support **two different formats** for the `options` array. Choose based on your needs:
+
+<Tabs>
+<Tab title="Simple Format (Recommended)">
+**Use string arrays** - Easiest approach for most use cases:
+
+```json
+{
+  "response_type": "multi_select",
+  "response_config": {
+    "options": ["Grammar Issues", "Factual Errors", "Tone Problems"],
+    "max_selections": 3
+  }
+}
+```
+
+**What happens:**
+- API automatically generates clean values: `"grammar_issues"`, `"factual_errors"`, `"tone_problems"`
+- Transformation: lowercase, spaces replaced with underscores
+- These generated values are returned in `response_data` as an array
+- Labels display to reviewers in the mobile app
+
+**Best for:** Quick setup, when you don't need custom value formats
+</Tab>
+
+<Tab title="Complex Format (Advanced)">
+**Use objects with value/label** - Full control over returned values:
+
+```json
+{
+  "response_type": "multi_select",
+  "response_config": {
+    "options": [
+      {"value": "pii", "label": "🔒 Contains Personal Information"},
+      {"value": "external_links", "label": "🔗 Includes External Links"},
+      {"value": "promo", "label": "📢 Has Promotional Content"}
+    ],
+    "max_selections": 3
+  }
+}
+```
+
+**What happens:**
+- You specify exact values to be returned: `["pii", "external_links", "promo"]`
+- Labels with emojis/descriptions display to reviewers
+- Full control over response data format
+- Perfect for matching database flag values
+
+**Best for:** Custom values, database flags, rich labels with emojis
+</Tab>
+</Tabs>
+
+<Note>
+**Both formats work identically** - choose based on your preference. The API automatically transforms simple strings to rich objects for mobile app compatibility. Response data is always an array of selected values.
+</Note>
+
+## Configuration Options
 
 ### Required Parameters
 
 <ParamField body="options" type="array" required>
-Array of SelectOption objects (1-20 options maximum)
-<Expandable title="SelectOption Structure">
+Array of options (1-20 options maximum). Can be simple strings or SelectOption objects.
+<Expandable title="Simple Format">
+  ```json
+  ["Option 1", "Option 2", "Option 3"]
+  ```
+  Automatically converted to values like `["option_1", "option_2"]` in response
+</Expandable>
+<Expandable title="Complex Format (SelectOption)">
   <ParamField body="value" type="string" required>
     Internal value used in your application logic (max 100 characters)
   </ParamField>
@@ -50,11 +112,11 @@ Array of SelectOption objects (1-20 options maximum)
 ### Optional Parameters
 
 <ParamField body="min_selections" type="integer" optional default="0">
-Minimum number of options that must be selected
+Minimum number of options that must be selected (defaults to 1 when max_selections is provided)
 </ParamField>
 
-<ParamField body="max_selections" type="integer" optional default="unlimited">
-Maximum number of options that can be selected
+<ParamField body="max_selections" type="integer" optional>
+Maximum number of options that can be selected (required for multi-select)
 </ParamField>
 
 <ParamField body="required" type="boolean" optional default="false">
@@ -107,7 +169,7 @@ request_data = {
         "max_selections": 5,
         "required": True
     },
-    "default_response": "spam,misleading_claims",  # Conservative default
+    "default_response": ["spam", "misleading_claims"],  # Conservative default
     "timeout_seconds": 1800,
     "platform": "api"
 }
@@ -151,7 +213,7 @@ const requestData = {
         max_selections: 5,
         required: true
     },
-    default_response: "spam,misleading_claims",
+    default_response: ["spam", "misleading_claims"],
     timeout_seconds: 1800,
     platform: "api"
 };
@@ -208,7 +270,7 @@ request_data = {
         "max_selections": 7,
         "required": True
     },
-    "default_response": "",
+    "default_response": [],
     "timeout_seconds": 86400,  # 24 hours
     "platform": "api"
 }
@@ -265,7 +327,7 @@ request_data = {
         "max_selections": 6,
         "required": True
     },
-    "default_response": "billing_issue,account_access",
+    "default_response": ["billing_issue", "account_access"],
     "timeout_seconds": 3600,
     "platform": "api"
 }
@@ -275,14 +337,11 @@ request_data = {
 
 ## Response Format
 
-When a reviewer selects multiple options, you'll receive both values and labels:
+When a reviewer selects multiple options, you'll receive an array of the selected values:
 
 ```json
 {
-  "response_data": {
-    "selected_values": ["spam", "misleading_claims", "pressure_tactics"],
-    "selected_labels": ["🚫 Spam Content", "⚠️ Misleading Claims", "⏰ High-Pressure Tactics"]
-  }
+  "response_data": ["spam", "misleading_claims", "pressure_tactics"]
 }
 ```
 

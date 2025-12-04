@@ -35,20 +35,19 @@ Rating responses support flexible scale configuration with custom labels and inc
 
 ### Required Parameters
 
-<ParamField body="scale_min" type="number" required>
-Minimum value on the rating scale (can be negative)
-</ParamField>
-
 <ParamField body="scale_max" type="number" required>
-Maximum value on the rating scale (must be greater than scale_min)
+Maximum value on the rating scale
 </ParamField>
 
 ### Optional Parameters
 
-<ParamField body="scale_step" type="number" optional default="1">
-Increment between valid values (e.g., 0.5 allows half-point ratings)
+<ParamField body="scale_min" type="number" optional default="1">
+Minimum value on the rating scale (must be less than scale_max)
 </ParamField>
 
+<ParamField body="scale_step" type="number" optional default="1">
+Step increment for the rating scale (e.g., 0.5 for half-star ratings, 1 for full-star ratings)
+</ParamField>
 
 <ParamField body="required" type="boolean" optional default="false">
 Whether a rating is mandatory for completion
@@ -101,7 +100,7 @@ const requestData = {
 ```
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{

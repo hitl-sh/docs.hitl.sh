@@ -41,13 +41,14 @@ Maximum allowed value (inclusive)
 
 ### Optional Parameters
 
-<ParamField body="min_value" type="number" optional default="0">
+<ParamField body="min_value" type="number" optional default="1">
 Minimum allowed value (inclusive, can be negative)
 </ParamField>
 
 <ParamField body="decimal_places" type="integer" optional default="2">
 Number of decimal places allowed (0-10)
 </ParamField>
+
 <ParamField body="allow_negative" type="boolean" optional default="false">
 Whether negative numbers are permitted
 </ParamField>
@@ -105,7 +106,7 @@ const requestData = {
 ```
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{

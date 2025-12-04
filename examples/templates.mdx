@@ -1277,15 +1277,9 @@ Rate the overall profile quality and identify any issues.`,
 	)
 
 	responseConfig := map[string]interface{}{
-		"min_value": 1,
-		"max_value": 5,
-		"labels": map[string]string{
-			"1": "Poor - Major issues, needs review",
-			"2": "Below Average - Several problems",
-			"3": "Average - Acceptable with minor issues",
-			"4": "Good - High quality profile",
-			"5": "Excellent - Perfect profile",
-		},
+		"scale_max": 5,
+		// scale_min defaults to 1
+		// scale_step defaults to 1
 	}
 
 	metadata := map[string]interface{}{

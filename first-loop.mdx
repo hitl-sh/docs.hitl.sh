@@ -40,7 +40,7 @@ Create your loop using the HITL.sh API. When you create a loop, you automaticall
 
 <CodeGroup>
 ```bash cURL
-curl -X POST 'https://dev.api.hitl.sh/v1/api/loops' \
+curl -X POST 'https://api.hitl.sh/v1/api/loops' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -53,7 +53,7 @@ curl -X POST 'https://dev.api.hitl.sh/v1/api/loops' \
 ```python Python
 import requests
 
-url = "https://dev.api.hitl.sh/v1/api/loops"
+url = "https://api.hitl.sh/v1/api/loops"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY",
     "Content-Type": "application/json"
@@ -75,7 +75,7 @@ print(f"🔗 Join URL: {loop_data['data']['join_url']}")
 ```javascript Node.js
 const axios = require('axios');
 
-const response = await axios.post('https://dev.api.hitl.sh/v1/api/loops', {
+const response = await axios.post('https://api.hitl.sh/v1/api/loops', {
   name: 'Content Moderation Review',
   description: 'Review user-generated content for community guidelines compliance',
   icon: 'shield-check'
@@ -225,10 +225,6 @@ Rate content on a numeric scale
 <Card title="Number" icon="hashtag">
 Enter specific numeric values
 </Card>
-
-<Card title="Boolean" icon="toggle-on">
-Simple yes/no or true/false decisions
-</Card>
 </CardGroup>
 
 ## Step 4: Submit Your First Request
@@ -237,7 +233,7 @@ Create a test request to verify your loop is working properly. Use the loop ID f
 
 <CodeGroup>
 ```bash cURL
-curl -X POST 'https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests' \
+curl -X POST 'https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests' \
   -H 'Authorization: Bearer YOUR_API_KEY' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -264,7 +260,7 @@ curl -X POST 'https://dev.api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests' \
 ```python Python
 import requests
 
-url = f"https://dev.api.hitl.sh/v1/api/loops/{LOOP_ID}/requests"
+url = f"https://api.hitl.sh/v1/api/loops/{LOOP_ID}/requests"
 headers = {
     "Authorization": f"Bearer {YOUR_API_KEY}",
     "Content-Type": "application/json"
@@ -299,7 +295,7 @@ print(f"🔔 Notifications sent: {request_data['data']['notifications_sent']}")
 const axios = require('axios');
 
 const response = await axios.post(
-  `https://dev.api.hitl.sh/v1/api/loops/${loopId}/requests`,
+  `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
   {
     processing_type: 'time-sensitive',
     type: 'markdown',
@@ -367,7 +363,7 @@ import time
 
 def wait_for_response(request_id, api_key, max_wait=300):
     """Poll for request completion"""
-    url = f"https://dev.api.hitl.sh/v1/api/requests/{request_id}"
+    url = f"https://api.hitl.sh/v1/api/requests/{request_id}"
     headers = {"Authorization": f"Bearer {api_key}"}
     
     start_time = time.time()
@@ -406,11 +402,7 @@ Request is created and push notifications sent to all active reviewers.
 </Step>
 
 <Step title="Pending Review">
-Waiting for a reviewer to claim and respond to the request.
-</Step>
-
-<Step title="Claimed">
-A reviewer has opened the request and is working on it.
+Waiting for a reviewer to respond to the request.
 </Step>
 
 <Step title="Completed">
@@ -462,7 +454,7 @@ async function pollForResponse(requestId) {
     for (let i = 0; i < maxAttempts; i++) {
         try {
             const response = await axios.get(
-                `https://dev.api.hitl.sh/v1/api/requests/${requestId}`,
+                `https://api.hitl.sh/v1/api/requests/${requestId}`,
                 { headers: { 'Authorization': `Bearer ${apiKey}` }}
             );
             
@@ -594,7 +586,7 @@ Learn about all available response types and their configurations.
 Help your reviewers master the mobile app interface.
 </Card>
 
-<Card title="Webhook Setup" icon="webhook" href="/webhooks/global">
+<Card title="Webhook Setup" icon="webhook" href="/api-reference/webhooks">
 Configure webhooks for real-time response notifications.
 </Card>
 

@@ -1,6 +1,6 @@
 ---
 title: "Loop Members"
-api: "GET https://dev.api.hitl.sh/v1/api/loops/{id}/members"
+api: "GET https://api.hitl.sh/v1/api/loops/{id}/members"
 description: "Retrieve detailed member information and manage loop membership. Includes member status, join dates, and activity metrics."
 ---
 
@@ -30,6 +30,9 @@ Get comprehensive information about all members in a loop, including their statu
 
 <ResponseField name="data" type="object">
   <Expandable title="data">
+    <ResponseField name="loop_id" type="string">
+      ID of the loop
+    </ResponseField>
     <ResponseField name="members" type="array">
       Array of member objects with detailed information
       <Expandable title="member">
@@ -45,36 +48,10 @@ Get comprehensive information about all members in a loop, including their statu
         <ResponseField name="joined_at" type="string">
           ISO timestamp when member joined (null for pending members)
         </ResponseField>
-        <ResponseField name="role" type="string">
-          Member role in the loop (member, admin) - for future use
-        </ResponseField>
-        <ResponseField name="last_active" type="string">
-          ISO timestamp of last activity (if available)
-        </ResponseField>
       </Expandable>
     </ResponseField>
-    <ResponseField name="total_count" type="integer">
-      Total number of members (active + pending)
-    </ResponseField>
-    <ResponseField name="active_count" type="integer">
-      Number of active members
-    </ResponseField>
-    <ResponseField name="pending_count" type="integer">
-      Number of pending invitations
-    </ResponseField>
-    <ResponseField name="statistics" type="object">
-      Member activity statistics
-      <Expandable title="statistics">
-        <ResponseField name="avg_join_time_days" type="number">
-          Average time from invitation to join (in days)
-        </ResponseField>
-        <ResponseField name="newest_member_joined" type="string">
-          Timestamp when the newest member joined
-        </ResponseField>
-        <ResponseField name="oldest_member_joined" type="string">
-          Timestamp when the oldest member joined
-        </ResponseField>
-      </Expandable>
+    <ResponseField name="member_count" type="integer">
+      Total number of members in the loop
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -82,7 +59,7 @@ Get comprehensive information about all members in a loop, including their statu
 <RequestExample>
 
 ```bash cURL
-curl -X GET https://dev.api.hitl.sh/v1/api/loops/65f1234567890abcdef12345/members \
+curl -X GET https://api.hitl.sh/v1/api/loops/65f1234567890abcdef12345/members \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -90,7 +67,7 @@ curl -X GET https://dev.api.hitl.sh/v1/api/loops/65f1234567890abcdef12345/member
 import requests
 
 loop_id = "65f1234567890abcdef12345"
-url = f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/members"
+url = f"https://api.hitl.sh/v1/api/loops/{loop_id}/members"
 headers = {
     "Authorization": "Bearer your_api_key_here"
 }
@@ -98,11 +75,16 @@ headers = {
 response = requests.get(url, headers=headers)
 members_data = response.json()
 
-print(f"Total members: {members_data['data']['total_count']}")
-print(f"Active members: {members_data['data']['active_count']}")
-print(f"Pending members: {members_data['data']['pending_count']}")
+# Calculate active and pending counts
+members = members_data['data']['members']
+active_count = sum(1 for m in members if m['status'] == 'active')
+pending_count = sum(1 for m in members if m['status'] == 'pending')
 
-for member in members_data['data']['members']:
+print(f"Total members: {members_data['data']['member_count']}")
+print(f"Active members: {active_count}")
+print(f"Pending members: {pending_count}")
+
+for member in members:
     status_indicator = "✅" if member['status'] == 'active' else "⏳"
     print(f"{status_indicator} {member['email']} ({member['status']})")
 ```
@@ -112,7 +94,7 @@ const axios = require('axios');
 
 async function getLoopMembers(loopId) {
     const response = await axios.get(
-        `https://dev.api.hitl.sh/v1/api/loops/${loopId}/members`,
+        `https://api.hitl.sh/v1/api/loops/${loopId}/members`,
         {
             headers: {
                 'Authorization': 'Bearer your_api_key_here'
@@ -121,9 +103,11 @@ async function getLoopMembers(loopId) {
     );
     
     const data = response.data.data;
-    
-    console.log(`Total members: ${data.total_count}`);
-    console.log(`Active: ${data.active_count}, Pending: ${data.pending_count}`);
+    const activeCount = data.members.filter(m => m.status === 'active').length;
+    const pendingCount = data.members.filter(m => m.status === 'pending').length;
+
+    console.log(`Total members: ${data.member_count}`);
+    console.log(`Active: ${activeCount}, Pending: ${pendingCount}`);
     
     data.members.forEach(member => {
         const statusIcon = member.status === 'active' ? '✅' : '⏳';
@@ -145,48 +129,34 @@ getLoopMembers('65f1234567890abcdef12345');
   "error": false,
   "msg": "Loop members retrieved successfully",
   "data": {
+    "loop_id": "65f1234567890abcdef12345",
     "members": [
       {
         "user_id": "65f1234567890abcdef12346",
         "email": "creator@example.com",
         "status": "active",
-        "joined_at": "2024-03-15T10:30:00Z",
-        "role": "admin",
-        "last_active": "2024-03-15T14:20:00Z"
+        "joined_at": "2024-03-15T10:30:00Z"
       },
       {
         "user_id": "65f1234567890abcdef12347",
         "email": "reviewer1@example.com",
         "status": "active",
-        "joined_at": "2024-03-15T11:45:00Z",
-        "role": "member",
-        "last_active": "2024-03-15T13:30:00Z"
+        "joined_at": "2024-03-15T11:45:00Z"
       },
       {
         "user_id": "65f1234567890abcdef12348",
         "email": "reviewer2@example.com",
         "status": "active",
-        "joined_at": "2024-03-15T12:15:00Z",
-        "role": "member",
-        "last_active": "2024-03-15T12:45:00Z"
+        "joined_at": "2024-03-15T12:15:00Z"
       },
       {
         "user_id": "65f1234567890abcdef12349",
         "email": "pending@example.com",
         "status": "pending",
-        "joined_at": null,
-        "role": "member",
-        "last_active": null
+        "joined_at": null
       }
     ],
-    "total_count": 4,
-    "active_count": 3,
-    "pending_count": 1,
-    "statistics": {
-      "avg_join_time_days": 0.5,
-      "newest_member_joined": "2024-03-15T12:15:00Z",
-      "oldest_member_joined": "2024-03-15T10:30:00Z"
-    }
+    "member_count": 4
   }
 }
 ```
@@ -278,38 +248,90 @@ if (!capacity.isAdequate) {
 
 ## Remove Member
 
-Remove a member from the loop (only available to loop creators):
+Remove a member from the loop. Only loop creators can remove members, and the creator cannot remove themselves.
 
----
-title: "Remove Loop Member"
-api: "DELETE https://dev.api.hitl.sh/v1/api/loops/{id}/members/{userId}"
-description: "Remove a member from a loop. Only loop creators can remove members. The creator cannot be removed."
----
+**Endpoint:** `DELETE /v1/api/loops/{id}/members/{userId}`
 
-<ParamField path="id" type="string" required>
-  The unique identifier of the loop
-</ParamField>
+### Path Parameters
 
-<ParamField path="userId" type="string" required>
-  The unique identifier of the user to remove
-</ParamField>
+- **id** (string, required): The unique identifier of the loop
+- **userId** (string, required): The unique identifier of the user to remove
 
-**Example Request:**
-```bash
-curl -X DELETE https://dev.api.hitl.sh/v1/api/loops/65f1234567890abcdef12345/members/65f1234567890abcdef12347 \
+### Example Request
+
+```bash cURL
+curl -X DELETE https://api.hitl.sh/v1/api/loops/65f1234567890abcdef12345/members/65f1234567890abcdef12347 \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
-**Example Response:**
+```python Python
+import requests
+
+loop_id = "65f1234567890abcdef12345"
+user_id = "65f1234567890abcdef12347"
+url = f"https://api.hitl.sh/v1/api/loops/{loop_id}/members/{user_id}"
+headers = {
+    "Authorization": "Bearer your_api_key_here"
+}
+
+response = requests.delete(url, headers=headers)
+print(response.json())
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const loopId = '65f1234567890abcdef12345';
+const userId = '65f1234567890abcdef12347';
+
+const response = await axios.delete(
+  `https://api.hitl.sh/v1/api/loops/${loopId}/members/${userId}`,
+  {
+    headers: {
+      'Authorization': 'Bearer your_api_key_here'
+    }
+  }
+);
+
+console.log(response.data);
+```
+
+### Response
+
 ```json
 {
   "error": false,
-  "msg": "Member removed from loop successfully",
+  "msg": "Member removed successfully",
   "data": {
     "loop_id": "65f1234567890abcdef12345",
-    "user_id": "65f1234567890abcdef12347",
-    "removed_at": "2024-03-15T15:30:00Z"
+    "user_id": "65f1234567890abcdef12347"
   }
+}
+```
+
+### Error Responses
+
+**Member not found:**
+```json
+{
+  "error": true,
+  "msg": "User is not a member of this loop"
+}
+```
+
+**Cannot remove creator:**
+```json
+{
+  "error": true,
+  "msg": "Loop creator cannot remove themselves"
+}
+```
+
+**Only creator can remove members:**
+```json
+{
+  "error": true,
+  "msg": "Only loop creator can remove members"
 }
 ```
 
@@ -323,7 +345,7 @@ Track and follow up on pending invitations:
 def follow_up_pending_members(loop_id, days_threshold=3):
     """Find pending members who need follow-up"""
     
-    response = requests.get(f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/members", headers=headers)
+    response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}/members", headers=headers)
     members_data = response.json()["data"]["members"]
     
     pending_members = [m for m in members_data if m["status"] == "pending"]
@@ -356,13 +378,13 @@ async function getMemberPerformance(loopId) {
     try {
         // Get members
         const membersResponse = await axios.get(
-            `https://dev.api.hitl.sh/v1/api/loops/${loopId}/members`,
+            `https://api.hitl.sh/v1/api/loops/${loopId}/members`,
             { headers: { 'Authorization': `Bearer ${apiKey}` } }
         );
         
         // Get loop requests for performance analysis
         const requestsResponse = await axios.get(
-            `https://dev.api.hitl.sh/v1/api/loops/${loopId}/requests`,
+            `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
             { headers: { 'Authorization': `Bearer ${apiKey}` } }
         );
         
@@ -416,11 +438,11 @@ def audit_loop_membership(loop_ids):
     for loop_id in loop_ids:
         try:
             # Get loop info
-            loop_response = requests.get(f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
+            loop_response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
             loop_data = loop_response.json()["data"]["loop"]
             
             # Get members
-            members_response = requests.get(f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/members", headers=headers)
+            members_response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}/members", headers=headers)
             members_data = members_response.json()["data"]
             
             # Analyze membership health
@@ -576,14 +598,12 @@ Future feature: Different member roles (admin, reviewer, observer) with varying 
 
 ## Next Steps
 
+<CardGroup cols={2}>
 <Card title="Create Request" icon="plus" href="/api-reference/requests/create-request">
   Now that you understand your team, create requests for them to review.
-</Card>
-
-<Card title="Loop Analytics" icon="chart-bar" href="/api-reference/loops/analytics">
-  Get deeper insights into loop performance and member activity.
 </Card>
 
 <Card title="Manage Invitations" icon="mail" href="/mobile/join-loop">
   Learn how members join loops through mobile invitations.
 </Card>
+</CardGroup>

@@ -29,9 +29,9 @@ Every loop has fundamental properties that define its identity and behavior:
 
 <AccordionGroup>
 <Accordion title="Name & Description">
-- **Name**: Clear, descriptive identifier for the loop
-- **Description**: Detailed explanation of the loop's purpose and scope
-- **Icon**: Optional emoji or character for visual identification
+- **Name**: Clear, descriptive identifier for the loop (required, max 100 characters)
+- **Description**: Detailed explanation of the loop's purpose and scope (optional, max 500 characters)
+- **Icon**: Visual identifier for the loop (required, max 100 characters - typically an emoji or short text)
 - **Creator**: User who created and owns the loop
 </Accordion>
 
@@ -64,15 +64,17 @@ loop_data = {
 }
 
 response = requests.post(
-    "https://dev.api.hitl.sh/v1/api/loops",
+    "https://api.hitl.sh/v1/api/loops",
     headers={"Authorization": f"Bearer {api_key}"},
     json=loop_data
 )
 
-loop = response.json()["data"]["loop"]
+loop_response = response.json()["data"]
+loop = loop_response["loop"]
 print(f"Loop created: {loop['name']}")
-print(f"Invite code: {loop['invite_code']}")
-print(f"QR code URL: {loop['qr_code_url']}")
+print(f"Invite code: {loop_response['invite_code']}")
+print(f"QR code URL: {loop_response['qr_code_url']}")
+print(f"Join URL: {loop_response['join_url']}")
 ```
 
 Reviewers can join using:
@@ -99,7 +101,7 @@ loop_data = {
 }
 
 response = requests.post(
-    "https://dev.api.hitl.sh/v1/api/loops",
+    "https://api.hitl.sh/v1/api/loops",
     headers={
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
@@ -127,7 +129,7 @@ async function createLoop() {
 
     try {
         const response = await axios.post(
-            "https://dev.api.hitl.sh/v1/api/loops",
+            "https://api.hitl.sh/v1/api/loops",
             loopData,
             {
                 headers: {
@@ -148,7 +150,7 @@ async function createLoop() {
 ```
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops \
+curl -X POST https://api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -189,7 +191,7 @@ With reviewers in place, loops continuously process requests:
 ```python
 # Monitor loop activity
 response = requests.get(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -200,7 +202,7 @@ print(f"Pending invites: {loop['pending_count']}")
 
 # Get recent requests for this loop
 requests_response = requests.get(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -228,7 +230,7 @@ update_data = {
 }
 
 response = requests.put(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}",
     headers={"Authorization": f"Bearer {api_key}"},
     json=update_data
 )
@@ -244,7 +246,7 @@ else:
 member_id = "65f1234567890abcdef12346"
 
 response = requests.delete(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/members/{member_id}",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/members/{member_id}",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -402,14 +404,14 @@ Keep track of loop performance and member engagement:
 def analyze_loop_performance(loop_id):
     # Get loop details
     loop_response = requests.get(
-        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}",
+        f"https://api.hitl.sh/v1/api/loops/{loop_id}",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     loop = loop_response.json()["data"]["loop"]
     
     # Get recent requests
     requests_response = requests.get(
-        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+        f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     requests_data = requests_response.json()["data"]["requests"]
@@ -447,7 +449,7 @@ Track and manage loop membership:
 ```python
 # Get detailed member information
 members_response = requests.get(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/members",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/members",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -464,7 +466,7 @@ inactive_members = [m for m in members if m["status"] == "pending" and is_old_in
 for member in inactive_members:
     print(f"Removing inactive member: {member['email']}")
     requests.delete(
-        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/members/{member['user_id']}",
+        f"https://api.hitl.sh/v1/api/loops/{loop_id}/members/{member['user_id']}",
         headers={"Authorization": f"Bearer {api_key}"}
     )
 ```
@@ -616,7 +618,8 @@ if reviewer_selected == "escalate":
 **Problem**: Can't remove members or invite codes aren't working.
 
 **Solutions**:
-- Only loop creators can manage membership
+- **Only loop creators can manage membership** - including removing members, updating loop details, and deleting loops
+- Loop creators cannot remove themselves from the loop
 - Invite codes are case-sensitive and expire after extended periods
 - Removed members can rejoin with the same invite code if needed
 - Check API responses for specific error messages

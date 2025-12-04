@@ -1,0 +1,148 @@
+---
+title: "Coming Soon"
+description: "Upcoming integrations and features for HITL.sh - MCP Server, LangChain, and more"
+---
+
+# Coming Soon
+
+We're constantly expanding HITL.sh's integration ecosystem. Here's what's currently in development and coming soon.
+
+## In Development
+
+### MCP Server Integration
+
+<Card title="Model Context Protocol (MCP) Server" icon="server">
+Connect HITL.sh with AI assistants like Claude, GPT, and other LLMs using the Model Context Protocol for seamless human-in-the-loop AI workflows.
+</Card>
+
+**Status:** In Active Development
+
+**Features:**
+- Direct integration with Claude Desktop and other MCP-compatible AI assistants
+- Add human oversight to AI agent workflows
+- Context sharing between AI and human reviewers
+- Seamless handoff from AI to human decision-making
+
+**Use Cases:**
+- AI agents requesting human approval for critical decisions
+- Quality control for AI-generated content
+- Human verification of automated actions
+- Escalation from AI to human experts when confidence is low
+
+**Installation (Coming Soon):**
+```bash
+npm install @hitl/mcp-server
+```
+
+**Configuration (Preview):**
+```json
+{
+  "mcpServers": {
+    "hitl": {
+      "command": "npx",
+      "args": ["-y", "@hitl/mcp-server"],
+      "env": {
+        "HITL_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+## Planned Integrations
+
+<CardGroup cols={2}>
+<Card title="LangChain" icon="link">
+Python and JavaScript integration for LangChain-based AI applications
+</Card>
+
+<Card title="Temporal" icon="clock">
+Workflow orchestration with human decision points
+</Card>
+
+<Card title="Retool" icon="wrench">
+Low-code internal tools with human approval workflows
+</Card>
+
+<Card title="Pipedream" icon="code">
+Serverless integration platform support
+</Card>
+</CardGroup>
+
+## Request an Integration
+
+Have a specific integration you'd like to see? Let us know!
+
+<CardGroup cols={2}>
+<Card title="Vote on Integrations" icon="thumbs-up" href="https://github.com/hitlsh/feature-requests">
+  Vote for integrations on our GitHub feature requests
+</Card>
+
+<Card title="Join Discord" icon="discord" href="https://discord.gg/jYVrpmnMP9">
+  Discuss integration needs with the community
+</Card>
+
+<Card title="Contact Us" icon="envelope" href="mailto:team@hitl.sh">
+  Email us about enterprise integration requirements
+</Card>
+
+<Card title="API Documentation" icon="book" href="/api-reference/introduction">
+  Build custom integrations using our REST API
+</Card>
+</CardGroup>
+
+## Current Integrations
+
+While you wait for new integrations, check out what's already available:
+
+<CardGroup cols={3}>
+<Card title="n8n" icon="workflow" href="/integrations/n8n">
+  Visual workflow automation with 300+ app integrations
+</Card>
+
+<Card title="Zapier" icon="zap" href="/integrations/zapier">
+  No-code automation connecting 7,000+ apps
+</Card>
+
+<Card title="Make" icon="puzzle" href="/integrations/make">
+  Advanced automation scenarios with webhook triggers
+</Card>
+</CardGroup>
+
+## Build Your Own
+
+Don't see the integration you need? Our REST API makes it easy to build custom integrations:
+
+<Steps>
+<Step title="Review API Documentation">
+Explore our comprehensive API reference
+</Step>
+
+<Step title="Generate API Key">
+Create an API key in your HITL.sh dashboard
+</Step>
+
+<Step title="Build Integration">
+Use your preferred programming language and HTTP client
+</Step>
+
+<Step title="Share with Community">
+Contribute your integration back to the community
+</Step>
+</Steps>
+
+<Card title="API Reference" icon="code" href="/api-reference/introduction">
+  Get started with our REST API documentation
+</Card>
+
+## Stay Updated
+
+<CardGroup cols={2}>
+<Card title="Changelog" icon="newspaper" href="https://github.com/hitlsh/changelog">
+  Follow our changelog for integration announcements
+</Card>
+
+<Card title="Newsletter" icon="envelope-open-text" href="https://hitl.sh/newsletter">
+  Subscribe for updates on new integrations and features
+</Card>
+</CardGroup>
