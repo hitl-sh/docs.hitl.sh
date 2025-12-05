@@ -10,7 +10,7 @@ The HITL.sh API provides a RESTful interface for integrating human supervision i
 ## Base URL
 
 ```
-https://api.hitl.sh/v1
+https://dev.api.hitl.sh/v1
 ```
 
 ## Authentication
@@ -98,7 +98,7 @@ Requests are human review tasks sent to loop members:
 ### 1. Create a Loop
 
 ```bash
-curl -X POST https://api.hitl.sh/v1/api/loops \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -111,7 +111,7 @@ curl -X POST https://api.hitl.sh/v1/api/loops \
 ### 2. Create a Request
 
 ```bash
-curl -X POST https://api.hitl.sh/v1/api/loops/LOOP_ID/requests \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/LOOP_ID/requests \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -146,7 +146,7 @@ curl -X POST https://api.hitl.sh/v1/api/loops/LOOP_ID/requests \
 ### 3. Poll for Response
 
 ```bash
-curl -X GET https://api.hitl.sh/v1/api/requests/REQUEST_ID \
+curl -X GET https://dev.api.hitl.sh/v1/api/requests/REQUEST_ID \
   -H "Authorization: Bearer your_api_key_here"
 ```
 

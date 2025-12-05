@@ -80,7 +80,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -105,14 +105,14 @@ const requestData = {
 };
 
 const response = await axios.post(
-    `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
+    `https://dev.api.hitl.sh/v1/api/loops/${loopId}/requests`,
     requestData,
     { headers: { Authorization: `Bearer ${apiKey}` }}
 );
 ```
 
 ```bash cURL
-curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{

@@ -64,7 +64,7 @@ loop_data = {
 }
 
 response = requests.post(
-    "https://api.hitl.sh/v1/api/loops",
+    "https://dev.api.hitl.sh/v1/api/loops",
     headers={"Authorization": f"Bearer {api_key}"},
     json=loop_data
 )
@@ -101,7 +101,7 @@ loop_data = {
 }
 
 response = requests.post(
-    "https://api.hitl.sh/v1/api/loops",
+    "https://dev.api.hitl.sh/v1/api/loops",
     headers={
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
@@ -129,7 +129,7 @@ async function createLoop() {
 
     try {
         const response = await axios.post(
-            "https://api.hitl.sh/v1/api/loops",
+            "https://dev.api.hitl.sh/v1/api/loops",
             loopData,
             {
                 headers: {
@@ -150,7 +150,7 @@ async function createLoop() {
 ```
 
 ```bash cURL
-curl -X POST https://api.hitl.sh/v1/api/loops \
+curl -X POST https://dev.api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -191,7 +191,7 @@ With reviewers in place, loops continuously process requests:
 ```python
 # Monitor loop activity
 response = requests.get(
-    f"https://api.hitl.sh/v1/api/loops/{loop_id}",
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -202,7 +202,7 @@ print(f"Pending invites: {loop['pending_count']}")
 
 # Get recent requests for this loop
 requests_response = requests.get(
-    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -230,7 +230,7 @@ update_data = {
 }
 
 response = requests.put(
-    f"https://api.hitl.sh/v1/api/loops/{loop_id}",
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}",
     headers={"Authorization": f"Bearer {api_key}"},
     json=update_data
 )
@@ -246,7 +246,7 @@ else:
 member_id = "65f1234567890abcdef12346"
 
 response = requests.delete(
-    f"https://api.hitl.sh/v1/api/loops/{loop_id}/members/{member_id}",
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/members/{member_id}",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -404,14 +404,14 @@ Keep track of loop performance and member engagement:
 def analyze_loop_performance(loop_id):
     # Get loop details
     loop_response = requests.get(
-        f"https://api.hitl.sh/v1/api/loops/{loop_id}",
+        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     loop = loop_response.json()["data"]["loop"]
     
     # Get recent requests
     requests_response = requests.get(
-        f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     requests_data = requests_response.json()["data"]["requests"]
@@ -449,7 +449,7 @@ Track and manage loop membership:
 ```python
 # Get detailed member information
 members_response = requests.get(
-    f"https://api.hitl.sh/v1/api/loops/{loop_id}/members",
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/members",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -466,7 +466,7 @@ inactive_members = [m for m in members if m["status"] == "pending" and is_old_in
 for member in inactive_members:
     print(f"Removing inactive member: {member['email']}")
     requests.delete(
-        f"https://api.hitl.sh/v1/api/loops/{loop_id}/members/{member['user_id']}",
+        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/members/{member['user_id']}",
         headers={"Authorization": f"Bearer {api_key}"}
     )
 ```

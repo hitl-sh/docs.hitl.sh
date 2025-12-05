@@ -15,7 +15,7 @@
   },
   "servers": [
     {
-      "url": "https://api.hitl.sh/v1/",
+      "url": "https://dev.api.hitl.sh/v1/",
       "description": "HITL.sh API Server"
     }
   ],
@@ -1269,7 +1269,7 @@
             "type": "string",
             "format": "uri",
             "description": "URL to access the QR code image",
-            "example": "https://api.hitl.sh/qr/ABC123DEF.png"
+            "example": "https://dev.api.hitl.sh/qr/ABC123DEF.png"
           },
           "join_url": {
             "type": "string",

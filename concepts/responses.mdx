@@ -208,7 +208,7 @@ import requests
 
 # Get completed request with response
 response = requests.get(
-    f"https://api.hitl.sh/v1/api/requests/{request_id}",
+    f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -357,7 +357,7 @@ def analyze_response_patterns(loop_id, days=30):
     
     # Get recent requests for this loop
     response = requests.get(
-        f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     

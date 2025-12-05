@@ -30,7 +30,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -370,7 +370,7 @@ test_request = {
 }
 
 response = requests.post(
-    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=test_request
 )
