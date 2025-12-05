@@ -25,7 +25,7 @@ Keep your API keys secure and never expose them in client-side code or public re
 
 <Steps>
 <Step title="Log In to Dashboard">
-Visit [app.hitl.sh](https://app.hitl.sh) and log in to your account.
+Visit [my.hitl.sh](https://my.hitl.sh) and log in to your account.
 </Step>
 
 <Step title="Navigate to API Keys">
@@ -118,7 +118,7 @@ Use the test endpoint to verify your API key is working correctly:
 
 <CodeGroup>
 ```bash cURL
-curl -X GET 'https://dev.api.hitl.sh/v1/test' \
+curl -X GET 'https://api.hitl.sh/v1/test' \
   -H 'Authorization: Bearer YOUR_API_KEY'
 ```
 
@@ -129,7 +129,7 @@ headers = {
     'Authorization': 'Bearer YOUR_API_KEY'
 }
 
-response = requests.get('https://dev.api.hitl.sh/v1/test', headers=headers)
+response = requests.get('https://api.hitl.sh/v1/test', headers=headers)
 data = response.json()
 
 if data["error"] == False:
@@ -148,7 +148,7 @@ const headers = {
 
 async function testApiKey() {
     try {
-        const response = await axios.get('https://dev.api.hitl.sh/v1/test', { headers });
+        const response = await axios.get('https://api.hitl.sh/v1/test', { headers });
         if (!response.data.error) {
             console.log('✅ API key is valid!');
             console.log(`Rate limit: ${response.data.data.rate_limit.remaining}/${response.data.data.rate_limit.limit}`);
@@ -188,8 +188,9 @@ API keys have usage limits to ensure fair usage:
 
 <Card title="Current Rate Limits" icon="clock">
 - **100 requests per hour** per API key
-- Rate limits reset hourly from the first request
+- Rate limits reset at the **top of each hour** (e.g., 1:00 PM, 2:00 PM, not rolling 60 minutes)
 - Rate limit information included in response headers
+- `X-RateLimit-Reset` header shows the exact UTC timestamp when the limit resets
 </Card>
 
 **Rate Limit Headers:**
@@ -245,7 +246,7 @@ headers = {
 
 # Create a new loop
 response = requests.post(
-    "https://dev.api.hitl.sh/v1/api/loops",
+    "https://api.hitl.sh/v1/api/loops",
     headers=headers,
     json={
         "name": "Content Moderation Loop",
@@ -274,7 +275,7 @@ const headers = {
 async function submitRequest() {
     try {
         const response = await axios.post(
-            `https://dev.api.hitl.sh/v1/api/loops/${loopId}/requests`,
+            `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
             {
                 processing_type: 'time-sensitive',
                 type: 'markdown',
@@ -361,7 +362,7 @@ def debug_api_key(api_key):
     headers = {"Authorization": f"Bearer {api_key}"}
     
     try:
-        response = requests.get("https://dev.api.hitl.sh/v1/test", headers=headers)
+        response = requests.get("https://api.hitl.sh/v1/test", headers=headers)
         
         print(f"Status Code: {response.status_code}")
         print(f"Response: {response.json()}")

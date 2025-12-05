@@ -20,20 +20,83 @@ Rating content quality with discrete levels like "Excellent", "Good", "Fair", "P
 Setting request status, priority levels, or routing decisions where only one choice makes sense
 </Card>
 </CardGroup>
+## Configuration Formats
+
+Single select responses support **two different formats** for the `options` array. Choose based on your needs:
+
+<Tabs>
+<Tab title="Simple Format (Recommended)">
+**Use string arrays** - Easiest approach for most use cases:
+
+```json
+{
+  "response_type": "single_select",
+  "response_config": {
+    "options": ["Approve", "Reject", "Needs Review"]
+  }
+}
+```
+
+**What happens:**
+- API automatically generates clean values: `"approve"`, `"reject"`, `"needs_review"`
+- Transformation: lowercase, spaces replaced with underscores
+- These generated values are returned in `response_data`
+- Labels display to reviewers in the mobile app
+
+**Best for:** Quick setup, when you don't need custom value formats
+</Tab>
+
+<Tab title="Complex Format (Advanced)">
+**Use objects with value/label** - Full control over returned values:
+
+```json
+{
+  "response_type": "single_select",
+  "response_config": {
+    "options": [
+      {"value": "approved", "label": "✅ Approve - Safe to publish"},
+      {"value": "rejected", "label": "❌ Reject - Violates guidelines"},
+      {"value": "review", "label": "⚠️ Needs Review - Unclear content"}
+    ]
+  }
+}
+```
+
+**What happens:**
+- You specify exact values to be returned: `"approved"`, `"rejected"`, `"review"`
+- Labels with emojis/descriptions display to reviewers
+- Full control over response data format
+- Perfect for matching database enum values
+
+**Best for:** Custom values, database keys, rich labels with emojis
+</Tab>
+</Tabs>
+
+<Note>
+**Both formats work identically** - choose based on your preference. The API automatically transforms simple strings to rich objects for mobile app compatibility.
+</Note>
+
 ## Configuration Options
-Single select responses require an options array and support visual customization:
+
 ### Required Parameters
 <ParamField body="options" type="array" required>
-Array of SelectOption objects (1-20 options maximum)
-<Expandable title="SelectOption Structure">
+Array of options (1-20 options maximum). Can be simple strings or SelectOption objects.
+<Expandable title="Simple Format">
+  ```json
+  ["Option 1", "Option 2", "Option 3"]
+  ```
+  Automatically converted to values like `"option_1"`, `"option_2"`, `"option_3"`
+</Expandable>
+<Expandable title="Complex Format (SelectOption)">
   <ParamField body="value" type="string" required>
     Internal value used in your application logic (max 100 characters)
   </ParamField>
   <ParamField body="label" type="string" required>
-    Display text shown to reviewers (max 200 characters) 
+    Display text shown to reviewers (max 200 characters)
   </ParamField>
 </Expandable>
 </ParamField>
+
 ### Optional Parameters
 <ParamField body="required" type="boolean" optional default="false">
 Whether a selection is mandatory for completion
@@ -192,13 +255,10 @@ request_data = {
 ```
 </CodeGroup>
 ## Response Format
-When a reviewer selects an option, you'll receive both the internal value and the display label:
+When a reviewer selects an option, you'll receive the selected value:
 ```json
 {
-  "response_data": {
-    "selected_value": "approve",
-    "selected_label": "✅ Approve Content"
-  }
+  "response_data": "approve"
 }
 ```
 ## Use Case Examples

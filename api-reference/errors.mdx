@@ -77,23 +77,101 @@ Request data is invalid or malformed.
 - Malformed JSON
 - Validation failures
 
+**Invalid request body:**
 ```json
 {
   "error": true,
-  "msg": "Validation failed",
-  "data": "timeout_seconds is required for time-sensitive requests"
+  "msg": "Invalid request body"
 }
 ```
 
-**Example - Missing required field:**
+**Invalid ID format:**
 ```json
 {
   "error": true,
-  "msg": "Invalid request body",
-  "data": {
-    "field": "name",
-    "issue": "Field is required"
-  }
+  "msg": "Invalid loop ID format"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Invalid request ID format"
+}
+```
+
+**Missing required fields:**
+```json
+{
+  "error": true,
+  "msg": "Loop name is required"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Loop icon is required"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Request text is required"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "timeout_seconds is required for time-sensitive requests"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Image URL is required when type is image"
+}
+```
+
+**Invalid configuration:**
+```json
+{
+  "error": true,
+  "msg": "Invalid response configuration",
+  "data": "options array required for select response type"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Invalid default response",
+  "data": "default_response must match one of the configured options"
+}
+```
+
+**State validation errors:**
+```json
+{
+  "error": true,
+  "msg": "No active members found in the loop"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Request cannot be cancelled in current state"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Feedback can only be added to completed requests"
 }
 ```
 </Accordion>
@@ -105,11 +183,53 @@ Authentication is missing or invalid.
 - Missing API key
 - Invalid API key
 - Malformed authorization header
+- Inactive API key
 
+**Missing Authorization header:**
+```json
+{
+  "error": true,
+  "msg": "Missing Authorization header"
+}
+```
+
+**Invalid header format:**
+```json
+{
+  "error": true,
+  "msg": "Invalid Authorization header format. Use 'Bearer <api_key>'"
+}
+```
+
+**Empty API key:**
+```json
+{
+  "error": true,
+  "msg": "Empty API key"
+}
+```
+
+**Invalid API key:**
 ```json
 {
   "error": true,
   "msg": "Invalid API key"
+}
+```
+
+**Inactive API key:**
+```json
+{
+  "error": true,
+  "msg": "API key is inactive"
+}
+```
+
+**API key required:**
+```json
+{
+  "error": true,
+  "msg": "API key required"
 }
 ```
 
@@ -119,10 +239,11 @@ Authentication is missing or invalid.
 Authentication is valid but access is denied.
 
 **Common causes:**
-- Insufficient permissions
-- Not the resource owner
-- Account limitations
+- Not the resource owner (loop creator)
+- Not a member of the loop
+- Insufficient permissions for the operation
 
+**Access denied to loop:**
 ```json
 {
   "error": true,
@@ -130,11 +251,53 @@ Authentication is valid but access is denied.
 }
 ```
 
-**Permission-specific error:**
+**Access denied to request:**
+```json
+{
+  "error": true,
+  "msg": "Access denied to this request"
+}
+```
+
+**Creator-only operations:**
+
+Only loop creators can create requests:
 ```json
 {
   "error": true,
   "msg": "Only loop creators can create requests"
+}
+```
+
+Only loop creator can update:
+```json
+{
+  "error": true,
+  "msg": "Only loop creator can update the loop"
+}
+```
+
+Only loop creator can delete:
+```json
+{
+  "error": true,
+  "msg": "Only loop creator can delete the loop"
+}
+```
+
+Only loop creator can remove members:
+```json
+{
+  "error": true,
+  "msg": "Only loop creator can remove members"
+}
+```
+
+Loop creator cannot remove themselves:
+```json
+{
+  "error": true,
+  "msg": "Loop creator cannot remove themselves"
 }
 ```
 </Accordion>
@@ -146,7 +309,9 @@ The requested resource doesn't exist.
 - Invalid resource ID
 - Resource was deleted
 - Typo in endpoint URL
+- Resource doesn't belong to your account
 
+**Loop not found:**
 ```json
 {
   "error": true,
@@ -161,24 +326,43 @@ The requested resource doesn't exist.
   "msg": "Request not found"
 }
 ```
-</Accordion>
 
-<Accordion title="429 Too Many Requests">
-Rate limit has been exceeded.
-
-**API key rate limit:**
+**User is not a member:**
 ```json
 {
   "error": true,
-  "msg": "API key request limit exceeded",
-  "data": {
-    "usage_count": 100,
-    "usage_limit": 100,
-    "remaining": 0,
-    "reset_at": "2024-03-15T11:00:00Z"
-  }
+  "msg": "User is not a member of this loop"
 }
 ```
+</Accordion>
+
+<Accordion title="429 Too Many Requests">
+Rate limit has been exceeded. Limits reset at the top of each hour.
+
+**Rate limit exceeded:**
+```json
+{
+  "error": true,
+  "msg": "Rate limit exceeded. Maximum 100 requests per hour per API key."
+}
+```
+
+**API key usage limit exceeded:**
+```json
+{
+  "error": true,
+  "msg": "API key usage limit exceeded"
+}
+```
+
+**Response headers (included in all responses):**
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1704204000
+```
+
+The `X-RateLimit-Reset` header contains a Unix timestamp indicating when the rate limit will reset (top of the next hour).
 </Accordion>
 </AccordionGroup>
 
@@ -188,10 +372,70 @@ Rate limit has been exceeded.
 <Accordion title="500 Internal Server Error">
 An unexpected error occurred on our servers.
 
+**Common server errors:**
+
+Database errors:
 ```json
 {
   "error": true,
-  "msg": "Internal server error"
+  "msg": "Failed to retrieve loops"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Failed to retrieve loop"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Failed to create loop"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Failed to update loop"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Failed to retrieve requests"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Failed to retrieve request"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Failed to cancel request"
+}
+```
+
+```json
+{
+  "error": true,
+  "msg": "Failed to add feedback"
+}
+```
+
+User information errors:
+```json
+{
+  "error": true,
+  "msg": "Failed to get user information"
 }
 ```
 
@@ -387,7 +631,7 @@ import requests
 class HITLAPIClient:
     def __init__(self, api_key):
         self.api_key = api_key
-        self.base_url = "https://dev.api.hitl.sh/v1"
+        self.base_url = "https://api.hitl.sh/v1"
         
     def make_request(self, method, endpoint, data=None):
         url = f"{self.base_url}{endpoint}"
@@ -416,7 +660,7 @@ class HITLAPIClient:
 class HITLAPIClient {
     constructor(apiKey) {
         this.apiKey = apiKey;
-        this.baseUrl = 'https://dev.api.hitl.sh/v1';
+        this.baseUrl = 'https://api.hitl.sh/v1';
     }
     
     async makeRequest(method, endpoint, data = null) {
@@ -626,7 +870,7 @@ function logAPIError(response, endpoint, payload = null) {
 
 ```bash
 # Test API key
-curl -v -H "Authorization: Bearer your_api_key" https://dev.api.hitl.sh/v1/loops
+curl -v -H "Authorization: Bearer your_api_key" https://api.hitl.sh/v1/api/loops
 ```
 </Accordion>
 
@@ -669,7 +913,7 @@ for field in required_fields:
 
 ```bash
 # Check rate limit status
-curl -I -H "Authorization: Bearer your_api_key" https://dev.api.hitl.sh/v1/loops
+curl -I -H "Authorization: Bearer your_api_key" https://api.hitl.sh/v1/api/loops
 
 # Look for these headers:
 # X-RateLimit-Limit: 100
@@ -711,7 +955,7 @@ Enable verbose logging to see full HTTP requests and responses:
 curl -v -H "Authorization: Bearer your_api_key" \
      -H "Content-Type: application/json" \
      -d '{"name": "Test Loop", "icon": "test"}' \
-     https://dev.api.hitl.sh/v1/loops
+     https://api.hitl.sh/v1/api/loops
 ```
 
 ```python Python
@@ -732,7 +976,7 @@ const axios = require('axios');
 
 // Create axios instance with logging
 const api = axios.create({
-    baseURL: 'https://dev.api.hitl.sh/v1',
+    baseURL: 'https://api.hitl.sh/v1',
     headers: {
         'Authorization': 'Bearer your_api_key'
     }
@@ -796,14 +1040,12 @@ When contacting support, please include:
 
 ## Next Steps
 
+<CardGroup cols={2}>
 <Card title="Authentication Guide" icon="key" href="/api-reference/authentication">
   Learn about API keys and security best practices.
 </Card>
 
-<Card title="Rate Limits" icon="clock" href="/api-reference/rate-limits">
-  Understand API rate limits and optimization strategies.
+<Card title="Webhooks" icon="webhook" href="/api-reference/webhooks">
+  Use callback URLs to receive notifications when requests complete.
 </Card>
-
-<Card title="Webhooks" icon="webhook" href="/api-reference/webhooks/overview">
-  Set up webhooks to avoid polling and reduce API calls.
-</Card>
+</CardGroup>

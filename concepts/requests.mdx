@@ -51,7 +51,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -68,15 +68,7 @@ Once created, requests are immediately broadcasted to all active members of the 
 - **Email alerts** (if configured) for time-sensitive requests
 - **Request queuing** maintains order and prevents duplicate claims
 
-### 3. Claiming
-
-Human reviewers see pending requests in their mobile app and can claim them for review:
-
-- **First-come-first-served**: The first reviewer to claim gets to respond
-- **Claim timeout**: Claimed requests automatically return to pending if not completed
-- **Priority ordering**: Higher priority requests appear first in the queue
-
-### 4. Review & Response
+### 3. Review & Response
 
 Reviewers interact with the configured response type in a mobile-optimized interface:
 
@@ -86,7 +78,7 @@ Reviewers interact with the configured response type in a mobile-optimized inter
 - **Text**: Type detailed feedback with character count
 - **Number**: Enter numeric values with formatting
 
-### 5. Completion
+### 4. Completion
 
 When a reviewer submits their response:
 
@@ -102,10 +94,10 @@ When a reviewer submits their response:
 <CardGroup cols={2}>
 <Card title="Time-Sensitive" icon="clock">
 **Immediate processing** with explicit timeout
-- Requires `timeout_seconds` parameter
+- Requires `timeout_seconds` parameter (60-86400 seconds / 1 minute to 24 hours)
 - Reviewers get urgent notifications
 - Used for content moderation, fraud detection
-- Typical timeouts: 15 minutes to 24 hours
+- Typical timeouts: 900s (15 min) to 3600s (1 hour)
 </Card>
 
 <Card title="Deferred" icon="calendar">
@@ -173,7 +165,7 @@ Requests can be assigned priority levels that affect reviewer notification urgen
 
 ## Response Types
 
-HITL.sh supports six response types, each with specific configuration options:
+HITL.sh supports five response types, each with specific configuration options:
 
 ### Text Response
 Free-form text input with length validation:
@@ -191,37 +183,64 @@ Free-form text input with length validation:
 ### Single Select Response
 Choose one option from a predefined list:
 
+**Simple Format** (recommended for quick setup):
 ```python
 "response_type": "single_select",
 "response_config": {
     "options": [
-        {
-            "value": "approve",
-            "label": "✅ Approve Content",
-            "description": "Content meets all guidelines",
-            "color": "#22c55e"
-        },
-        {
-            "value": "reject", 
-            "label": "❌ Reject Content",
-            "description": "Content violates policies",
-            "color": "#ef4444"
-        }
-    ],
-    "required": True
+        "Approve",
+        "Reject",
+        "Escalate"
+    ]
+    # required defaults to false
 }
 ```
+
+**Rich Format** (for customization with colors and detailed labels):
+```python
+"response_type": "single_select",
+"response_config": {
+    "options": [
+        {"value": "approve", "label": "✅ Approve", "color": "#22c55e"},
+        {"value": "reject", "label": "❌ Reject", "color": "#ef4444"},
+        {"value": "escalate", "label": "🚨 Escalate", "color": "#8b5cf6"}
+    ],
+    "required": true
+}
+```
+
+<Info>
+Both formats are supported. Simple strings are automatically converted to rich option objects internally. Use the rich format when you need custom colors, icons, or want different display labels vs. stored values.
+</Info>
 
 ### Multi Select Response
 Choose multiple options with limits:
 
+**Simple Format**:
 ```python
 "response_type": "multi_select",
 "response_config": {
-    "options": [...],  # Same format as single select
+    "options": [
+        "Issue Type A",
+        "Issue Type B",
+        "Issue Type C"
+    ],
+    "max_selections": 3
+    # min_selections defaults to 1
+}
+```
+
+**Rich Format**:
+```python
+"response_type": "multi_select",
+"response_config": {
+    "options": [
+        {"value": "type_a", "label": "Issue Type A", "color": "#3b82f6"},
+        {"value": "type_b", "label": "Issue Type B", "color": "#f59e0b"},
+        {"value": "type_c", "label": "Issue Type C", "color": "#ef4444"}
+    ],
     "min_selections": 1,
-    "max_selections": 3,
-    "required": True
+    "max_selections": 3
 }
 ```
 
@@ -250,11 +269,9 @@ Numeric input with validation and formatting:
 "response_type": "number",
 "response_config": {
     "min_value": 0,
-    "max_value": 1000,
-    "decimal_places": 2,
-    "prefix": "$",
-    "suffix": " USD",
-    "required": True
+    "max_value": 1000
+    # decimal_places defaults to 2 (perfect for currency)
+    # allow_negative defaults to false
 }
 ```
 
@@ -266,28 +283,19 @@ Requests move through several states during their lifecycle:
 ```mermaid
 graph TD
     A[Created] --> B[Pending]
-    B --> C[Claimed]
-    B --> F[Timeout]
-    C --> D[Completed]
-    C --> B[Released back to Pending]
+    B --> C[Completed]
+    B --> D[Timeout]
     B --> E[Cancelled]
-    D --> G[Response Available]
-    F --> G
+    C --> F[Response Available]
+    D --> F
 ```
 
 <AccordionGroup>
 <Accordion title="Pending">
 - Request created and broadcasted to reviewers
-- Waiting for someone to claim and review
+- Waiting for a reviewer to respond
 - Visible in all loop members' mobile apps
 - Can be cancelled by the creator
-</Accordion>
-
-<Accordion title="Claimed">
-- A specific reviewer has claimed the request
-- No longer visible to other reviewers
-- Reviewer has limited time to complete
-- Automatically returns to pending if abandoned
 </Accordion>
 
 <Accordion title="Completed">
@@ -307,7 +315,7 @@ graph TD
 <Accordion title="Cancelled">
 - Creator cancelled the request before completion
 - No response data available
-- Can only cancel pending or claimed requests
+- Can only cancel pending requests
 - Used when request is no longer needed
 </Accordion>
 </AccordionGroup>
@@ -321,7 +329,7 @@ Check request status programmatically:
 ```python
 # Get specific request
 response = requests.get(
-    f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+    f"https://api.hitl.sh/v1/api/requests/{request_id}",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -344,7 +352,7 @@ Get all your requests:
 ```python
 # Get all requests for this API key
 response = requests.get(
-    "https://dev.api.hitl.sh/v1/api/requests",
+    "https://api.hitl.sh/v1/api/requests",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -446,7 +454,7 @@ request_data = {
   "msg": "timeout_seconds is required for time-sensitive requests"
 }
 ```
-**Solution**: Add timeout_seconds parameter for time-sensitive processing types.
+**Solution**: Add timeout_seconds parameter (must be between 60 and 86400 seconds) for time-sensitive processing types.
 </Accordion>
 </AccordionGroup>
 
@@ -470,7 +478,7 @@ request_data = {
   "msg": "Request cannot be cancelled in current state"
 }
 ```
-**Solution**: Only pending or claimed requests can be cancelled.
+**Solution**: Only pending requests can be cancelled.
 </Accordion>
 </AccordionGroup>
 

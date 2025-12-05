@@ -36,7 +36,7 @@ Go to your dashboard and create a new API key. Copy and save it securely.
 Verify your API key works using the dedicated test endpoint:
 
 ```bash
-curl -X GET https://dev.api.hitl.sh/v1/test \
+curl -X GET https://api.hitl.sh/v1/test \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -55,7 +55,7 @@ import requests
 
 # Your API credentials
 API_KEY = "your_api_key_here"
-BASE_URL = "https://dev.api.hitl.sh/v1"
+BASE_URL = "https://api.hitl.sh/v1"
 
 headers = {
     "Authorization": f"Bearer {API_KEY}",
@@ -69,15 +69,17 @@ loop_data = {
     "icon": "🛡️"
 }
 
-response = requests.post(f"{BASE_URL}/loops", headers=headers, json=loop_data)
-loop = response.json()
+response = requests.post(f"{BASE_URL}/api/loops", headers=headers, json=loop_data)
+loop_response = response.json()
 
-print(f"✅ Created loop: {loop['data']['loop']['name']}")
-print(f"   Loop ID: {loop['data']['loop']['id']}")
-print(f"   Invite Code: {loop['data']['loop']['invite_code']}")
+print(f"✅ Created loop: {loop_response['data']['loop']['name']}")
+print(f"   Loop ID: {loop_response['data']['loop']['id']}")
+print(f"   Invite Code: {loop_response['data']['invite_code']}")
+print(f"   QR Code URL: {loop_response['data']['qr_code_url']}")
+print(f"   Join URL: {loop_response['data']['join_url']}")
 
 # Save the loop ID for the next steps
-LOOP_ID = loop['data']['loop']['id']
+LOOP_ID = loop_response['data']['loop']['id']
 ```
 </Tab>
 
@@ -87,7 +89,7 @@ const axios = require('axios');
 
 // Your API credentials
 const API_KEY = 'your_api_key_here';
-const BASE_URL = 'https://dev.api.hitl.sh/v1';
+const BASE_URL = 'https://api.hitl.sh/v1';
 
 const headers = {
   'Authorization': `Bearer ${API_KEY}`,
@@ -102,12 +104,15 @@ async function createLoop() {
       icon: '🛡️'
     };
 
-    const response = await axios.post(`${BASE_URL}/loops`, loopData, { headers });
-    const loop = response.data.data.loop;
+    const response = await axios.post(`${BASE_URL}/api/loops`, loopData, { headers });
+    const loopResponse = response.data.data;
+    const loop = loopResponse.loop;
 
     console.log(`✅ Created loop: ${loop.name}`);
     console.log(`   Loop ID: ${loop.id}`);
-    console.log(`   Invite Code: ${loop.invite_code}`);
+    console.log(`   Invite Code: ${loopResponse.invite_code}`);
+    console.log(`   QR Code URL: ${loopResponse.qr_code_url}`);
+    console.log(`   Join URL: ${loopResponse.join_url}`);
 
     return loop.id;
   } catch (error) {
@@ -122,7 +127,7 @@ createLoop();
 <Tab title="cURL">
 ```bash
 # Create content moderation loop
-curl -X POST https://dev.api.hitl.sh/v1/loops \
+curl -X POST https://api.hitl.sh/v1/api/loops \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -135,7 +140,14 @@ curl -X POST https://dev.api.hitl.sh/v1/loops \
 </Tabs>
 
 <Warning>
-**Save the Loop ID**: You'll need the `loop_id` from the response for creating requests. Also note the `invite_code` - you'll use this to invite reviewers to your loop.
+**Loop Creation Response**: The API returns the created loop along with invitation details:
+- `loop` - The loop object with `id`, `name`, `description`, `icon`, etc.
+- `invite_code` - 6-character code for reviewers to join (e.g., "ABC123")
+- `qr_code_base64` - Base64-encoded QR code image
+- `qr_code_url` - Public URL to the QR code image
+- `join_url` - Direct link to join the loop (e.g., "https://hitl.sh/join/ABC123")
+
+Save the `loop.id` for creating requests!
 </Warning>
 
 ## Step 3: Invite Reviewers
@@ -151,7 +163,7 @@ import qrcode
 import requests
 
 # Get loop details with QR code
-response = requests.get(f"{BASE_URL}/loops/{LOOP_ID}", headers=headers)
+response = requests.get(f"{BASE_URL}/api/loops/{LOOP_ID}", headers=headers)
 loop_details = response.json()['data']['loop']
 
 print("📱 Share this QR code with reviewers:")
@@ -222,10 +234,10 @@ request_data = {
     "priority": "medium",
     "processing_type": "time-sensitive",
     "default_response": "❌ Reject - Review timeout",
-    "timeout_minutes": 60
+    "timeout_seconds": 3600  # 1 hour
 }
 
-response = requests.post(f"{BASE_URL}/requests", headers=headers, json=request_data)
+response = requests.post(f"{BASE_URL}/api/loops/{LOOP_ID}/requests", headers=headers, json=request_data)
 request = response.json()
 
 if response.status_code == 201:
@@ -266,11 +278,11 @@ async function createModerationRequest(loopId) {
     priority: 'medium',
     processing_type: 'time-sensitive',
     default_response: '❌ Reject - Review timeout',
-    timeout_minutes: 60
+    timeout_seconds: 3600  // 1 hour
   };
 
   try {
-    const response = await axios.post(`${BASE_URL}/requests`, requestData, { headers });
+    const response = await axios.post(`${BASE_URL}/api/loops/${loopId}/requests`, requestData, { headers });
     const request = response.data.data.request;
 
     console.log('✅ Content moderation request created!');
@@ -289,11 +301,10 @@ async function createModerationRequest(loopId) {
 <Tab title="cURL">
 ```bash
 # Create content moderation request
-curl -X POST https://dev.api.hitl.sh/v1/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/your_loop_id_here/requests \
   -H "Authorization: Bearer your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "loop_id": "your_loop_id_here",
     "request_text": "Please review this user comment for community guidelines compliance:\n\nHey everyone! Just wanted to share my experience with this amazing product...",
     "response_type": "single_select",
     "response_config": {
@@ -307,7 +318,7 @@ curl -X POST https://dev.api.hitl.sh/v1/requests \
     "priority": "medium",
     "processing_type": "time-sensitive",
     "default_response": "❌ Reject - Review timeout",
-    "timeout_minutes": 60
+    "timeout_seconds": 3600
   }'
 ```
 </Tab>
@@ -324,7 +335,7 @@ import time
 
 def check_request_status(request_id):
     """Check and display request status"""
-    response = requests.get(f"{BASE_URL}/requests/{request_id}", headers=headers)
+    response = requests.get(f"{BASE_URL}/api/requests/{request_id}", headers=headers)
     
     if response.status_code == 200:
         request_data = response.json()['data']['request']
@@ -370,7 +381,7 @@ else:
 ```javascript
 async function checkRequestStatus(requestId) {
   try {
-    const response = await axios.get(`${BASE_URL}/requests/${requestId}`, { headers });
+    const response = await axios.get(`${BASE_URL}/api/requests/${requestId}`, { headers });
     const request = response.data.data.request;
     const status = request.status;
 
@@ -597,7 +608,7 @@ class ContentModerationSystem:
     def __init__(self, api_key, loop_id):
         self.api_key = api_key
         self.loop_id = loop_id
-        self.base_url = "https://dev.api.hitl.sh/v1"
+        self.base_url = "https://api.hitl.sh/v1"
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
@@ -629,7 +640,7 @@ class ContentModerationSystem:
             }
         }
         
-        response = requests.post(f"{self.base_url}/requests", headers=self.headers, json=request_data)
+        response = requests.post(f"{self.base_url}/api/loops/{self.loop_id}/requests", headers=self.headers, json=request_data)
         
         if response.status_code == 201:
             request = response.json()['data']['request']
@@ -641,7 +652,7 @@ class ContentModerationSystem:
     
     def get_moderation_stats(self):
         """Get overall moderation statistics"""
-        response = requests.get(f"{self.base_url}/requests?limit=100", headers=self.headers)
+        response = requests.get(f"{self.base_url}/api/requests?limit=100", headers=self.headers)
         
         if response.status_code == 200:
             requests_data = response.json()['data']['requests']
@@ -772,9 +783,8 @@ ai_review = {
     "request_text": f"Review this AI-generated article:\n\n{ai_content}",
     "response_type": "rating",
     "response_config": {
-        "min_value": 1,
-        "max_value": 5,
-        "labels": {"1": "Poor quality", "5": "Excellent quality"}
+        "scale_max": 5
+        # scale_min defaults to 1
     }
 }
 ```

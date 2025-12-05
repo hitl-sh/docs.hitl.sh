@@ -1,0 +1,428 @@
+---
+title: "Zapier Integration"
+description: "Connect HITL.sh with 7,000+ apps using Zapier's no-code automation platform for seamless human-in-the-loop workflows"
+---
+
+# Zapier Integration
+
+Integrate HITL.sh with Zapier to connect human decision-making with over 7,000 apps and services. Perfect for teams who want powerful automation without writing code.
+
+<Frame>
+<img src="/images/integrations/zapier-pics/zapier-workflow.png" alt="Zapier workflow with HITL.sh integration" />
+</Frame>
+
+## Why Use Zapier with HITL.sh?
+
+<CardGroup cols={2}>
+<Card title="7,000+ App Integrations" icon="plug">
+Connect HITL.sh with popular tools like Gmail, Slack, Google Sheets, Airtable, and more
+</Card>
+
+<Card title="No-Code Automation" icon="wand-magic-sparkles">
+Build powerful workflows without writing a single line of code using visual interface
+</Card>
+
+<Card title="Multi-Step Workflows" icon="workflow">
+Create complex automation sequences with conditional logic and multiple actions
+</Card>
+
+<Card title="Instant Setup" icon="bolt">
+Get started in minutes with pre-built templates and intuitive configuration
+</Card>
+</CardGroup>
+
+## Available Actions
+
+HITL.sh provides two powerful actions in Zapier:
+
+<Tabs>
+<Tab title="Create Request">
+### Create Request Action
+
+Submit content for human review directly from your Zaps:
+
+<Frame>
+<img src="/images/integrations/zapier-pics/hitl-module.png" alt="HITL.sh action module in Zapier" />
+</Frame>
+
+**Use Cases:**
+- Content moderation from form submissions
+- Approval workflows from CRM updates
+- Quality checks from data entries
+- Escalation from support tickets
+
+<Steps>
+<Step title="Add HITL.sh Action">
+Search for "HITL.sh" and select "Create Request" action
+</Step>
+
+<Step title="Authenticate">
+Connect your HITL.sh account using your API key
+
+<Frame>
+<img src="/images/integrations/zapier-pics/authentication-module.png" alt="Authenticating HITL.sh in Zapier" />
+</Frame>
+</Step>
+
+<Step title="Configure Request">
+Set up your request parameters
+
+<Frame>
+<img src="/images/integrations/zapier-pics/create-request-step-1-setup-phase.png" alt="Create Request - Setup phase in Zapier" />
+</Frame>
+
+<Frame>
+<img src="/images/integrations/zapier-pics/create-request-step-2-configure.png" alt="Create Request - Configuration in Zapier" />
+</Frame>
+</Step>
+
+<Step title="Test & Activate">
+Test your Zap and turn it on to start automating
+</Step>
+</Steps>
+</Tab>
+
+<Tab title="Get Request Status">
+### Get Request Status Action
+
+Retrieve the status and response data of a submitted request:
+
+<Frame>
+<img src="/images/integrations/zapier-pics/get-request-status-step-1-setup.png" alt="Get Request Status - Setup in Zapier" />
+</Frame>
+
+<Frame>
+<img src="/images/integrations/zapier-pics/get-request-status-step-2-configure.png" alt="Get Request Status - Configuration in Zapier" />
+</Frame>
+
+**Use Cases:**
+- Poll for completed reviews
+- Update databases with reviewer decisions
+- Trigger follow-up actions based on responses
+- Generate reports from review outcomes
+
+<Note>
+The workflow waits for the human to answer before ending the execution using polling.
+</Note>
+</Tab>
+</Tabs>
+
+## Supported Response Types
+
+Configure how reviewers respond to your requests:
+
+<AccordionGroup>
+<Accordion title="Text Response">
+Free-form text with character validation:
+
+**Configuration:**
+```json
+{
+  "response_type": "text",
+  "response_config": {
+    "placeholder": "Enter feedback...",
+    "min_length": 10,
+    "max_length": 1000
+  }
+}
+```
+
+**Example Response:** `"The proposal looks solid but needs budget clarification in section 3."`
+</Accordion>
+
+<Accordion title="Single Select">
+Choose one option from a list:
+
+**Configuration:**
+```json
+{
+  "response_type": "single_select",
+  "response_config": {
+    "options": ["Approve", "Reject", "Revise"]
+  }
+}
+```
+
+**Example Response:** `"approve"`
+</Accordion>
+
+<Accordion title="Multi Select">
+Choose multiple options:
+
+**Configuration:**
+```json
+{
+  "response_type": "multi_select",
+  "response_config": {
+    "options": ["Accuracy", "Tone", "Grammar", "Formatting"],
+    "max_selections": 3
+  }
+}
+```
+
+**Example Response:** `["accuracy", "grammar"]`
+</Accordion>
+
+<Accordion title="Rating">
+Numeric scale rating:
+
+**Configuration:**
+```json
+{
+  "response_type": "rating",
+  "response_config": {
+    "scale_min": 1,
+    "scale_max": 5,
+    "scale_step": 0.5
+  }
+}
+```
+
+**Example Response:** `4.5`
+</Accordion>
+
+<Accordion title="Number">
+Numeric input with validation:
+
+**Configuration:**
+```json
+{
+  "response_type": "number",
+  "response_config": {
+    "min_value": 0,
+    "max_value": 1000,
+    "decimal_places": 2
+  }
+}
+```
+
+**Example Response:** `149.99`
+</Accordion>
+
+<Accordion title="Boolean">
+Simple yes/no decision:
+
+**Configuration:**
+```json
+{
+  "response_type": "boolean",
+  "response_config": {
+    "true_label": "Approved",
+    "false_label": "Rejected"
+  }
+}
+```
+
+**Example Response:** `true`
+</Accordion>
+</AccordionGroup>
+
+## Request Configuration
+
+### Required Fields
+
+<ParamField body="Loop ID" type="string" required>
+  The unique identifier of your HITL loop
+</ParamField>
+
+<ParamField body="Request Text" type="string" required>
+  The content or question for reviewers
+</ParamField>
+
+<ParamField body="Response Type" type="select" required>
+  Choose from: text, single_select, multi_select, rating, number, boolean
+</ParamField>
+
+<ParamField body="Response Config" type="object" required>
+  Configuration object for your chosen response type
+</ParamField>
+
+### Optional Fields
+
+<ParamField body="Processing Type" type="select" default="time-sensitive">
+  `time-sensitive` (urgent) or `deferred` (non-urgent)
+</ParamField>
+
+<ParamField body="Priority" type="select" default="medium">
+  Priority level: `low`, `medium`, `high`, or `critical`
+</ParamField>
+
+<ParamField body="Timeout Seconds" type="number">
+  Time limit before default response is used (60-86400 seconds)
+</ParamField>
+
+<ParamField body="Default Response" type="varies">
+  Fallback value if request times out
+</ParamField>
+
+<ParamField body="Context" type="object">
+  Additional metadata in JSON format
+</ParamField>
+
+## Status Codes
+
+When retrieving request status, you'll receive one of four status codes:
+
+<CardGroup cols={2}>
+<Card title="pending" icon="clock">
+Waiting for reviewer response
+</Card>
+
+<Card title="completed" icon="check-circle">
+Reviewer has submitted response
+</Card>
+
+<Card title="timeout" icon="clock-rotate-left">
+Request timed out, default response applied
+</Card>
+
+<Card title="cancelled" icon="ban">
+Request was cancelled before completion
+</Card>
+</CardGroup>
+
+## Example Workflows
+
+### Content Approval from Google Forms
+
+Automatically send form submissions for human review:
+
+**Trigger:** New Google Forms Response
+**Action 1:** HITL.sh Create Request
+```
+Loop ID: content_review
+Request Text: {{Form Response}}
+Response Type: single_select
+Options: Approve, Reject, Needs Changes
+Priority: high
+```
+**Action 2:** Send Email (based on response)
+**Action 3:** Update Google Sheet with decision
+
+### Slack Message Moderation
+
+Monitor Slack channels and flag inappropriate content:
+
+**Trigger:** New Message Posted in Slack
+**Filter:** Message contains flagged keywords
+**Action 1:** HITL.sh Create Request
+```
+Request Text: Review this Slack message: {{Message Text}}
+Response Type: single_select
+Options: Allow, Remove, Warn User
+Context: {"channel": "{{Channel}}", "user": "{{User ID}}"}
+```
+**Action 2:** Slack - Delete Message (if "Remove")
+**Action 3:** Slack - Send DM to User (if "Warn User")
+
+### Customer Refund Workflow
+
+Handle refund requests with human oversight:
+
+**Trigger:** New Row in Airtable (Refund Requests)
+**Filter:** Amount > $100
+**Action 1:** HITL.sh Create Request
+```
+Request Text: Refund request for ${{Amount}}
+Reason: {{Reason}}
+Customer: {{Customer Name}} ({{Customer ID}})
+Response Type: single_select
+Options: Approve Full, Approve Partial, Deny, Escalate
+Priority: {{Amount > 500 ? "high" : "medium"}}
+```
+**Action 2:** Update Airtable with decision
+**Action 3:** Send confirmation email
+**Action 4:** Process refund (if approved)
+
+## Using Paths for Conditional Logic
+
+Zapier Paths allow you to handle different response types:
+
+```
+├─ Path A: If response = "approve"
+│  └─ Send approval email
+│  └─ Update database status
+│  └─ Post to Slack channel
+│
+├─ Path B: If response = "reject"
+│  └─ Send rejection email
+│  └─ Archive submission
+│  └─ Log for review
+│
+└─ Path C: If response = "escalate"
+   └─ Notify management
+   └─ Create high-priority ticket
+   └─ Send urgent Slack message
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+<Card title="Test Thoroughly" icon="flask">
+Always test your Zaps with sample data before going live
+</Card>
+
+<Card title="Use Filters" icon="filter">
+Add filters to control when requests are created
+</Card>
+
+<Card title="Error Handling" icon="triangle-exclamation">
+Set up error notifications to catch failed Zaps
+</Card>
+
+<Card title="Monitor Usage" icon="chart-line">
+Track your Zapier task usage to stay within limits
+</Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="Authentication Failed">
+**Solution:**
+- Verify API key is correct
+- Regenerate API key if needed
+- Check API key permissions in HITL dashboard
+</Accordion>
+
+<Accordion title="Invalid Loop ID">
+**Solution:**
+- Confirm loop exists in your HITL dashboard
+- Copy Loop ID directly from loop settings
+- Check for extra spaces in the field
+</Accordion>
+
+<Accordion title="Zap Not Firing">
+**Solution:**
+- Check trigger conditions are met
+- Verify Zap is turned ON
+- Review Zap history for errors
+- Test trigger manually
+</Accordion>
+</AccordionGroup>
+
+## Pricing Considerations
+
+<Note>
+Zapier integration uses your Zapier task quota. Each action (Create Request, Get Status) counts as one task. The workflow uses polling to wait for human responses before ending execution.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="n8n Integration" icon="workflow" href="/integrations/n8n">
+  Explore n8n for more advanced automation capabilities
+</Card>
+
+<Card title="Make Integration" icon="puzzle" href="/integrations/make">
+  Learn about Make.com with webhook triggers
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/requests/create-request">
+  View complete API documentation
+</Card>
+
+<Card title="Community Templates" icon="users" href="https://discord.gg/jYVrpmnMP9">
+  Browse Zapier templates shared by the community
+</Card>
+</CardGroup>

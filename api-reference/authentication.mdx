@@ -9,7 +9,7 @@ HITL.sh uses API key authentication for secure access to the API. All requests m
 
 ## API Key Authentication
 
-API keys are designed for server-to-server communication and automated workflows. They provide access to the HITL.sh API at `https://dev.api.hitl.sh/v1`.
+API keys are designed for server-to-server communication and automated workflows. They provide access to the HITL.sh API at `https://api.hitl.sh/v1`.
 
 ### Getting Your API Key
 
@@ -23,10 +23,14 @@ API keys are designed for server-to-server communication and automated workflows
 
 Include your API key in the `Authorization` header with the `Bearer` prefix:
 
+<Info>
+**Using the API Playground**: When testing endpoints in the documentation playground, enter your API key in the format: `Bearer your_api_key_here` (including the word "Bearer" and a space before your key).
+</Info>
+
 ```bash
 curl -H "Authorization: Bearer your_api_key_here" \
      -H "Content-Type: application/json" \
-     https://dev.api.hitl.sh/v1/loops
+     https://api.hitl.sh/v1/api/loops
 ```
 
 <CodeGroup>
@@ -39,7 +43,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://dev.api.hitl.sh/v1/loops', headers=headers)
+response = requests.get('https://api.hitl.sh/v1/api/loops', headers=headers)
 ```
 
 ```javascript Node.js
@@ -50,7 +54,7 @@ const headers = {
     'Content-Type': 'application/json'
 };
 
-const response = await axios.get('https://dev.api.hitl.sh/v1/loops', { headers });
+const response = await axios.get('https://api.hitl.sh/v1/api/loops', { headers });
 ```
 
 ```go Go
@@ -61,7 +65,7 @@ import (
 )
 
 func main() {
-    req, _ := http.NewRequest("GET", "https://dev.api.hitl.sh/v1/loops", nil)
+    req, _ := http.NewRequest("GET", "https://api.hitl.sh/v1/api/loops", nil)
     req.Header.Set("Authorization", "Bearer your_api_key_here")
     req.Header.Set("Content-Type", "application/json")
     
@@ -75,7 +79,7 @@ func main() {
 $curl = curl_init();
 
 curl_setopt_array($curl, [
-    CURLOPT_URL => "https://dev.api.hitl.sh/v1/loops",
+    CURLOPT_URL => "https://api.hitl.sh/v1/api/loops",
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER => [
         "Authorization: Bearer your_api_key_here",
@@ -96,8 +100,9 @@ Each API key has the following limits:
 
 <Card title="Rate Limits" icon="clock">
 - **100 requests per hour** per API key
-- Resets every hour from first request
+- Resets at the **top of each hour** (e.g., 1:00 PM, 2:00 PM)
 - Rate limit headers included in all responses
+- `X-RateLimit-Reset` shows exact UTC timestamp of next reset
 </Card>
 
 **Rate limit headers:**
@@ -113,22 +118,19 @@ API keys have specific permissions based on your account:
 
 <AccordionGroup>
 <Accordion title="Loop Management">
-- Create, read, update, and delete loops
-- Manage loop members (add/remove)
-- View loop statistics and analytics
+- Create new loops
+- View loops you created or are a member of
+- Update and delete loops you created (creator only)
+- Add/remove members from loops you created (creator only)
+- View loop statistics and member lists
 </Accordion>
 
 <Accordion title="Request Operations">
-- Create requests in loops you own
-- View and cancel your requests
-- Add feedback to completed requests
-- Access request history and analytics
-</Accordion>
-
-<Accordion title="Webhook Configuration">
-- Set up webhook endpoints
-- Configure webhook events
-- View webhook delivery logs
+- Create requests in loops you created
+- View requests in loops you're a member of
+- Cancel your own requests
+- Add feedback to completed requests you created
+- Access request history and response data
 </Accordion>
 </AccordionGroup>
 
@@ -187,7 +189,7 @@ headers = {
 }
 
 # Always use HTTPS
-response = requests.get('https://dev.api.hitl.sh/v1/loops', headers=headers)
+response = requests.get('https://api.hitl.sh/v1/api/loops', headers=headers)
 ```
 
 ## Error Handling
@@ -195,33 +197,60 @@ response = requests.get('https://dev.api.hitl.sh/v1/loops', headers=headers)
 ### Authentication Errors
 
 <AccordionGroup>
-<Accordion title="401 Unauthorized - Invalid API Key">
-```json
-{
-  "error": true,
-  "msg": "Invalid authorization token"
-}
-```
-
-**Solutions:**
-- Verify API key is correct
-- Check if key has been revoked
-- Ensure proper Authorization header format with "Bearer " prefix
-- Verify you're not including extra spaces or characters
-</Accordion>
-
 <Accordion title="401 Unauthorized - Missing Authorization Header">
 ```json
 {
   "error": true,
-  "msg": "Missing or invalid authorization header"
+  "msg": "Missing Authorization header"
 }
 ```
 
 **Solutions:**
 - Include the Authorization header in your request
 - Use the correct format: `Authorization: Bearer your_api_key_here`
-- Check header name capitalization (case-sensitive)
+</Accordion>
+
+<Accordion title="401 Unauthorized - Invalid Header Format">
+```json
+{
+  "error": true,
+  "msg": "Invalid Authorization header format. Use 'Bearer <api_key>'"
+}
+```
+
+**Solutions:**
+- Ensure header starts with "Bearer " (with a space after it)
+- Check for typos in the header format
+- Don't use quotes around the API key value
+</Accordion>
+
+<Accordion title="401 Unauthorized - Invalid API Key">
+```json
+{
+  "error": true,
+  "msg": "Invalid API key"
+}
+```
+
+**Solutions:**
+- Verify API key is correct (no typos or extra spaces)
+- Check if key has been revoked or deleted
+- Regenerate a new API key if needed
+- Ensure you're not using an old/expired key
+</Accordion>
+
+<Accordion title="401 Unauthorized - Inactive API Key">
+```json
+{
+  "error": true,
+  "msg": "API key is inactive"
+}
+```
+
+**Solutions:**
+- Check API key status in your dashboard
+- Reactivate the key if it was disabled
+- Generate a new API key if needed
 </Accordion>
 
 <Accordion title="403 Forbidden - Insufficient Permissions">
@@ -336,7 +365,7 @@ Use the dedicated test endpoint to verify your API key:
 ```bash
 # Test API key validity and get account info
 curl -H "Authorization: Bearer your_api_key_here" \
-     https://dev.api.hitl.sh/v1/test
+     https://api.hitl.sh/v1/test
 
 # Expected response for valid key:
 {
@@ -359,7 +388,7 @@ curl -H "Authorization: Bearer your_api_key_here" \
 # Expected response for invalid key:
 {
   "error": true,
-  "msg": "Invalid authorization token"
+  "msg": "Invalid API key"
 }
 ```
 
@@ -375,13 +404,13 @@ Use verbose curl to debug authentication problems:
 # Verbose request to see headers and response
 curl -v -H "Authorization: Bearer your_api_key_here" \
      -H "Content-Type: application/json" \
-     https://dev.api.hitl.sh/v1/loops
+     https://api.hitl.sh/v1/api/loops
 
 # Check if your header is being sent correctly
 curl -H "Authorization: Bearer your_api_key_here" \
      -H "Content-Type: application/json" \
      -w "HTTP Status: %{http_code}\n" \
-     https://dev.api.hitl.sh/v1/loops
+     https://api.hitl.sh/v1/api/loops
 ```
 
 ### Environment-Specific Testing
@@ -412,7 +441,7 @@ def test_authentication():
         'Content-Type': 'application/json'
     }
     
-    response = requests.get('https://dev.api.hitl.sh/v1/loops', headers=headers)
+    response = requests.get('https://api.hitl.sh/v1/api/loops', headers=headers)
     
     if response.status_code == 200:
         print("✅ Authentication successful")
@@ -436,11 +465,7 @@ test_authentication()
   Learn how to handle and debug authentication errors effectively.
 </Card>
 
-<Card title="Rate Limiting" icon="clock" href="/guides/best-practices">
-  Understand rate limits and how to optimize your API usage.
-</Card>
-
 <Card title="Webhooks" icon="webhook" href="/api-reference/webhooks">
-  Set up webhooks to receive real-time notifications from HITL.sh.
+  Use callback URLs to receive notifications when requests complete.
 </Card>
 </CardGroup>

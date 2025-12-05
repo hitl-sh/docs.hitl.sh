@@ -1,6 +1,6 @@
 ---
 title: "Get Request"
-api: "GET https://dev.api.hitl.sh/v1/requests/{id}"
+api: "GET https://api.hitl.sh/v1/api/requests/{id}"
 description: "Retrieve detailed information about a specific request including status, response data, and broadcast results"
 ---
 
@@ -91,7 +91,7 @@ Get comprehensive information about a specific request. This endpoint is useful 
           ISO timestamp when the request was broadcasted
         </ResponseField>
         <ResponseField name="status" type="string">
-          Current status (`pending`, `claimed`, `completed`, `timeout`, `cancelled`)
+          Current status (`pending`, `completed`, `timeout`, `cancelled`)
         </ResponseField>
         <ResponseField name="response_by" type="string">
           ID of the user who responded (if completed)
@@ -119,14 +119,14 @@ Get comprehensive information about a specific request. This endpoint is useful 
 <RequestExample>
 
 ```bash cURL
-curl -X GET https://dev.api.hitl.sh/v1/requests/65f1234567890abcdef12348 \
+curl -X GET https://api.hitl.sh/v1/api/requests/65f1234567890abcdef12348 \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
 ```python Python
 import requests
 
-url = "https://dev.api.hitl.sh/v1/requests/65f1234567890abcdef12348"
+url = "https://api.hitl.sh/v1/api/requests/65f1234567890abcdef12348"
 headers = {
     "Authorization": "Bearer your_api_key_here"
 }
@@ -139,7 +139,7 @@ print(response.json())
 const axios = require('axios');
 
 const response = await axios.get(
-  'https://dev.api.hitl.sh/v1/requests/65f1234567890abcdef12348',
+  'https://api.hitl.sh/v1/api/requests/65f1234567890abcdef12348',
   {
     headers: {
       'Authorization': 'Bearer your_api_key_here'
@@ -269,11 +269,7 @@ console.log(response.data);
 
 <CardGroup cols={2}>
 <Card title="Pending" icon="clock">
-Request is waiting for a reviewer to claim it. No response yet.
-</Card>
-
-<Card title="Claimed" icon="user-check">
-A reviewer has claimed the request and is working on it.
+Request is waiting for a reviewer response. No response yet.
 </Card>
 
 <Card title="Completed" icon="check-circle">
@@ -300,7 +296,7 @@ import requests
 
 def poll_request_status(request_id, api_key, max_attempts=120):
     """Poll request status for up to 1 hour (120 * 30 seconds)"""
-    url = f"https://dev.api.hitl.sh/v1/requests/{request_id}"
+    url = f"https://api.hitl.sh/v1/api/requests/{request_id}"
     headers = {"Authorization": f"Bearer {api_key}"}
     
     for attempt in range(max_attempts):
@@ -324,7 +320,7 @@ import requests
 
 def poll_with_backoff(request_id, api_key):
     """Poll with exponential backoff"""
-    url = f"https://dev.api.hitl.sh/v1/requests/{request_id}"
+    url = f"https://api.hitl.sh/v1/api/requests/{request_id}"
     headers = {"Authorization": f"Bearer {api_key}"}
     
     intervals = [5, 10, 30, 60, 120, 300]  # seconds
@@ -381,6 +377,7 @@ def poll_with_backoff(request_id, api_key):
 
 ## Next Steps
 
+<CardGroup cols={2}>
 <Card title="Add Feedback" icon="comment" href="/api-reference/requests/add-feedback">
   Provide feedback on completed requests to improve reviewer performance.
 </Card>
@@ -389,6 +386,7 @@ def poll_with_backoff(request_id, api_key):
   Cancel a pending request if it's no longer needed.
 </Card>
 
-<Card title="Set Up Webhooks" icon="webhook" href="/api-reference/webhooks/setup">
+<Card title="Set Up Webhooks" icon="webhook" href="/api-reference/webhooks">
   Get real-time notifications instead of polling for status updates.
 </Card>
+</CardGroup>

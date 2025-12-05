@@ -289,7 +289,7 @@ import { HITLClient } from 'hitl-js';
 // Initialize client
 const client = new HITLClient({
   apiKey: 'your_api_key_here',
-  baseURL: 'https://dev.api.hitl.sh/v1'
+  baseURL: 'https://api.hitl.sh/v1'
 });
 
 async function main() {
@@ -711,7 +711,7 @@ use HITL\Exception\RateLimitException;
 // Initialize client
 $client = new Client([
     'api_key' => 'your_api_key_here',
-    'base_url' => 'https://dev.api.hitl.sh/v1'
+    'base_url' => 'https://api.hitl.sh/v1'
 ]);
 
 try {
@@ -762,7 +762,7 @@ try {
 // config/hitl.php
 return [
     'api_key' => env('HITL_API_KEY'),
-    'base_url' => env('HITL_BASE_URL', 'https://dev.api.hitl.sh/v1'),
+    'base_url' => env('HITL_BASE_URL', 'https://api.hitl.sh/v1'),
     'moderation_loop_id' => env('HITL_MODERATION_LOOP_ID'),
 ];
 

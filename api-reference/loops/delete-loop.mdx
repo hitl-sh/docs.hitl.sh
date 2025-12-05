@@ -1,6 +1,6 @@
 ---
 title: "Delete Loop"
-api: "DELETE https://dev.api.hitl.sh/v1/loops/{id}"
+api: "DELETE https://api.hitl.sh/v1/api/loops/{id}"
 description: "Permanently delete a loop and all associated data. Only the loop creator can delete loops. This action cannot be undone."
 ---
 
@@ -43,30 +43,13 @@ This action permanently deletes the loop and all associated data including:
     <ResponseField name="loop_id" type="string">
       ID of the deleted loop for confirmation
     </ResponseField>
-    <ResponseField name="deleted_at" type="string">
-      ISO timestamp when the loop was deleted
-    </ResponseField>
-    <ResponseField name="deleted_data" type="object">
-      Summary of what was deleted
-      <Expandable title="deleted_data">
-        <ResponseField name="members_removed" type="integer">
-          Number of members removed
-        </ResponseField>
-        <ResponseField name="requests_deleted" type="integer">
-          Number of requests deleted
-        </ResponseField>
-        <ResponseField name="responses_deleted" type="integer">
-          Number of responses deleted
-        </ResponseField>
-      </Expandable>
-    </ResponseField>
   </Expandable>
 </ResponseField>
 
 <RequestExample>
 
 ```bash cURL
-curl -X DELETE https://dev.api.hitl.sh/v1/loops/65f1234567890abcdef12345 \
+curl -X DELETE https://api.hitl.sh/v1/api/loops/65f1234567890abcdef12345 \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -74,7 +57,7 @@ curl -X DELETE https://dev.api.hitl.sh/v1/loops/65f1234567890abcdef12345 \
 import requests
 
 loop_id = "65f1234567890abcdef12345"
-url = f"https://dev.api.hitl.sh/v1/loops/{loop_id}"
+url = f"https://api.hitl.sh/v1/api/loops/{loop_id}"
 headers = {
     "Authorization": "Bearer your_api_key_here"
 }
@@ -99,7 +82,7 @@ const confirmed = confirm(`Are you sure you want to delete loop ${loopId}?`);
 
 if (confirmed) {
     const response = await axios.delete(
-        `https://dev.api.hitl.sh/v1/loops/${loopId}`,
+        `https://api.hitl.sh/v1/api/loops/${loopId}`,
         {
             headers: {
                 'Authorization': 'Bearer your_api_key_here'
@@ -122,13 +105,7 @@ if (confirmed) {
   "error": false,
   "msg": "Loop deleted successfully",
   "data": {
-    "loop_id": "65f1234567890abcdef12345",
-    "deleted_at": "2024-03-15T15:30:00Z",
-    "deleted_data": {
-      "members_removed": 5,
-      "requests_deleted": 23,
-      "responses_deleted": 18
-    }
+    "loop_id": "65f1234567890abcdef12345"
   }
 }
 ```
@@ -200,7 +177,7 @@ def safe_delete_loop(loop_id, require_confirmation=True):
     """Safely delete a loop with pre-flight checks"""
     
     # Get loop information first
-    response = requests.get(f"https://dev.api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+    response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
     if response.status_code != 200:
         return {"error": True, "msg": "Loop not found or inaccessible"}
     
@@ -212,7 +189,7 @@ def safe_delete_loop(loop_id, require_confirmation=True):
         print(f"Warning: Loop has {active_members} active members")
     
     # Check for recent activity (optional: get requests)
-    requests_response = requests.get(f"https://dev.api.hitl.sh/v1/loops/{loop_id}/requests", headers=headers)
+    requests_response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests", headers=headers)
     if requests_response.status_code == 200:
         requests_data = requests_response.json()["data"]["requests"]
         recent_requests = [r for r in requests_data if r["status"] in ["pending", "claimed"]]
@@ -227,7 +204,7 @@ def safe_delete_loop(loop_id, require_confirmation=True):
             return {"error": False, "msg": "Deletion cancelled by user"}
     
     # Proceed with deletion
-    delete_response = requests.delete(f"https://dev.api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+    delete_response = requests.delete(f"https://api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
     return delete_response.json()
 ```
 
@@ -235,7 +212,7 @@ def safe_delete_loop(loop_id, require_confirmation=True):
 async function safeDeleteLoop(loopId, requireConfirmation = true) {
     try {
         // Get loop information first
-        const loopResponse = await axios.get(`https://dev.api.hitl.sh/v1/loops/${loopId}`, {
+        const loopResponse = await axios.get(`https://api.hitl.sh/v1/api/loops/${loopId}`, {
             headers: { 'Authorization': `Bearer ${apiKey}` }
         });
         
@@ -249,7 +226,7 @@ async function safeDeleteLoop(loopId, requireConfirmation = true) {
         
         // Check for active requests
         try {
-            const requestsResponse = await axios.get(`https://dev.api.hitl.sh/v1/loops/${loopId}/requests`, {
+            const requestsResponse = await axios.get(`https://api.hitl.sh/v1/api/loops/${loopId}/requests`, {
                 headers: { 'Authorization': `Bearer ${apiKey}` }
             });
             
@@ -272,7 +249,7 @@ async function safeDeleteLoop(loopId, requireConfirmation = true) {
         }
         
         // Proceed with deletion
-        const deleteResponse = await axios.delete(`https://dev.api.hitl.sh/v1/loops/${loopId}`, {
+        const deleteResponse = await axios.delete(`https://api.hitl.sh/v1/api/loops/${loopId}`, {
             headers: { 'Authorization': `Bearer ${apiKey}` }
         });
         
@@ -304,7 +281,7 @@ def bulk_delete_loops(loop_ids, dry_run=True):
         try:
             if dry_run:
                 # Just check if we can access the loop
-                response = requests.get(f"https://dev.api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+                response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
                 if response.status_code == 200:
                     loop_data = response.json()["data"]["loop"]
                     results.append({
@@ -321,7 +298,7 @@ def bulk_delete_loops(loop_ids, dry_run=True):
                     })
             else:
                 # Actually delete the loop
-                response = requests.delete(f"https://dev.api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+                response = requests.delete(f"https://api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
                 if response.status_code == 200:
                     results.append({
                         "loop_id": loop_id,
@@ -431,7 +408,7 @@ def archive_loop(loop_id):
     """Archive a loop by updating its name instead of deleting"""
     
     # Get current loop data
-    response = requests.get(f"https://dev.api.hitl.sh/v1/loops/{loop_id}", headers=headers)
+    response = requests.get(f"https://api.hitl.sh/v1/api/loops/{loop_id}", headers=headers)
     loop_data = response.json()["data"]["loop"]
     
     # Update with archived naming
@@ -439,7 +416,7 @@ def archive_loop(loop_id):
     archived_description = f"ARCHIVED on {datetime.now().strftime('%Y-%m-%d')} - {loop_data.get('description', '')}"
     
     update_response = requests.put(
-        f"https://dev.api.hitl.sh/v1/loops/{loop_id}",
+        f"https://api.hitl.sh/v1/api/loops/{loop_id}",
         headers=headers,
         json={
             "name": archived_name,
@@ -453,7 +430,7 @@ def archive_loop(loop_id):
 ```javascript Node.js
 async function archiveLoop(loopId) {
     // Get current loop data
-    const response = await axios.get(`https://dev.api.hitl.sh/v1/loops/${loopId}`, {
+    const response = await axios.get(`https://api.hitl.sh/v1/api/loops/${loopId}`, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
     });
     
@@ -464,7 +441,7 @@ async function archiveLoop(loopId) {
     const archivedDescription = `ARCHIVED on ${new Date().toISOString().split('T')[0]} - ${loopData.description || ''}`;
     
     const updateResponse = await axios.put(
-        `https://dev.api.hitl.sh/v1/loops/${loopId}`,
+        `https://api.hitl.sh/v1/api/loops/${loopId}`,
         {
             name: archivedName,
             description: archivedDescription

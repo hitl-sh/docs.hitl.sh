@@ -5,7 +5,7 @@ description: "Understand how human reviewers provide structured responses and ho
 
 # Responses
 
-Responses are the structured decisions and feedback that human reviewers provide when completing HITL.sh requests. The response system supports six different types, each designed for specific use cases and providing different levels of structure and validation.
+Responses are the structured decisions and feedback that human reviewers provide when completing HITL.sh requests. The response system supports five different types, each designed for specific use cases and providing different levels of structure and validation.
 
 ## What is a Response?
 
@@ -23,7 +23,7 @@ Responses are collected via the HITL mobile app and made available to your appli
 
 ## Response Types Overview
 
-HITL.sh supports six distinct response types, each optimized for different decision-making scenarios:
+HITL.sh supports five distinct response types, each optimized for different decision-making scenarios:
 
 <CardGroup cols={2}>
 <Card title="Text Response" icon="message">
@@ -96,20 +96,12 @@ For structured decisions with predefined options:
 "response_type": "single_select",
 "response_config": {
     "options": [
-        {
-            "value": "approve",
-            "label": "✅ Approve Content",
-            "description": "Content meets all guidelines",
-            "color": "#22c55e"
-        },
-        {
-            "value": "reject",
-            "label": "❌ Reject Content", 
-            "description": "Content violates policies",
-            "color": "#ef4444"
-        }
-    ],
-    "required": True
+        "Approve",
+        "Reject",
+        "Escalate"
+    ]
+    # required defaults to false
+    # Simple strings automatically converted to rich SelectOption objects
 }
 ```
 
@@ -131,13 +123,13 @@ For identifying multiple issues or aspects:
 "response_type": "multi_select",
 "response_config": {
     "options": [
-        {"value": "spam", "label": "🚫 Spam Content"},
-        {"value": "inappropriate", "label": "⚠️ Inappropriate Language"},
-        {"value": "misleading", "label": "❌ Misleading Claims"}
+        "Spam Content",
+        "Inappropriate Language",
+        "Misleading Claims"
     ],
-    "min_selections": 1,
-    "max_selections": 3,
-    "required": True
+    "max_selections": 3
+    # min_selections defaults to 1
+    # Simple strings automatically converted to rich SelectOption objects
 }
 ```
 
@@ -188,11 +180,9 @@ For quantitative input with validation:
 "response_type": "number",
 "response_config": {
     "min_value": 0,
-    "max_value": 1000,
-    "decimal_places": 2,
-    "prefix": "$",
-    "suffix": " USD",
-    "required": True
+    "max_value": 1000
+    # decimal_places defaults to 2 (perfect for currency)
+    # allow_negative defaults to false
 }
 ```
 
@@ -218,7 +208,7 @@ import requests
 
 # Get completed request with response
 response = requests.get(
-    f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+    f"https://api.hitl.sh/v1/api/requests/{request_id}",
     headers={"Authorization": f"Bearer {api_key}"}
 )
 
@@ -367,7 +357,7 @@ def analyze_response_patterns(loop_id, days=30):
     
     # Get recent requests for this loop
     response = requests.get(
-        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+        f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     
@@ -476,7 +466,7 @@ Use consistent terminology across response options to avoid confusion and improv
 
 <CardGroup cols={2}>
 <Card title="Response Types Guide" icon="list" href="/responses/types">
-Detailed documentation of all six response types with examples
+Detailed documentation of all five response types with examples
 </Card>
 
 <Card title="Request Creation" icon="plus" href="/api-reference/requests/create-request">
@@ -487,7 +477,7 @@ Learn how to configure responses when creating requests
 See how reviewers interact with different response types
 </Card>
 
-<Card title="Best Practices" icon="star" href="/guides/best-practices">
-Advanced strategies for optimizing response quality and processing
+<Card title="Simple Integration" icon="puzzle" href="/guides/simple-integration">
+Learn how to integrate HITL.sh into your application with practical examples
 </Card>
 </CardGroup>

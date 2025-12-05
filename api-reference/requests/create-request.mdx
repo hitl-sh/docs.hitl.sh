@@ -1,6 +1,6 @@
 ---
 title: "Create Request"
-api: "POST https://dev.api.hitl.sh/v1/loops/{loopId}/requests"
+api: "POST https://api.hitl.sh/v1/api/loops/{loopId}/requests"
 description: "Create a new human review request within a loop and broadcast it to active members with push notifications"
 ---
 
@@ -277,28 +277,32 @@ For complete configuration options and advanced examples, visit the [Response Ty
 ```json
 {
   "response_config": {
-    "scale_min": 1,
-    "scale_max": 5,
-    "scale_step": 1,
-    "required": true
+    "scale_max": 5
   },
   "default_response": 3
 }
 ```
 
+**Note:** Only `scale_max` is required. Optional fields with defaults:
+- `scale_min`: defaults to 1
+- `scale_step`: defaults to 1
+- `required`: defaults to false
+
 ### Number - Numeric Input
 ```json
 {
   "response_config": {
-    "min_value": 0,
-    "max_value": 100,
-    "decimal_places": 0,
-    "allow_negative": false,
-    "required": true
+    "max_value": 100
   },
   "default_response": 50
 }
 ```
+
+**Note:** Only `max_value` is required. Optional fields with defaults:
+- `min_value`: defaults to 1
+- `decimal_places`: defaults to 2  
+- `allow_negative`: defaults to false
+- `required`: defaults to false
 
 
 ### Text - Free Form Input
@@ -324,7 +328,7 @@ For complete configuration options and advanced examples, visit the [Response Ty
 <RequestExample>
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -354,7 +358,7 @@ API_KEY = "YOUR_API_KEY"
 LOOP_ID = "YOUR_LOOP_ID"
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/loops/{LOOP_ID}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{LOOP_ID}/requests",
     headers={"Authorization": f"Bearer {API_KEY}"},
     json={
         "processing_type": "time-sensitive",
@@ -386,7 +390,7 @@ const API_KEY = 'YOUR_API_KEY';
 const LOOP_ID = 'YOUR_LOOP_ID';
 
 const response = await axios.post(
-  `https://dev.api.hitl.sh/v1/loops/${LOOP_ID}/requests`,
+  `https://api.hitl.sh/v1/api/loops/${LOOP_ID}/requests`,
   {
     processing_type: 'time-sensitive',
     type: 'markdown',
@@ -447,7 +451,7 @@ Copy any of these examples to test different response types:
 Perfect for yes/no decisions or selecting one option.
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -474,7 +478,7 @@ curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
 For selecting multiple issues or features.
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -505,7 +509,7 @@ curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
 For quality ratings and scores.
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -531,7 +535,7 @@ curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
 For quantities, counts, or measurements.
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -542,11 +546,9 @@ curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
     "timeout_seconds": 1800,
     "response_type": "number",
     "response_config": {
-      "min_value": 0,
       "max_value": 100,
-      "decimal_places": 0,
-      "allow_negative": false,
-      "required": true
+      "min_value": 0,
+      "decimal_places": 0
     },
     "default_response": 0,
     "platform": "api"
@@ -558,7 +560,7 @@ curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
 For detailed feedback and explanations.
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/loops/YOUR_LOOP_ID/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -608,9 +610,11 @@ Review images for appropriate content:
   "request_text": "Review this uploaded image for inappropriate content",
   "image_url": "https://example.com/uploads/image123.jpg",
   "timeout_seconds": 900,
-  "response_type": "boolean",
-  "response_config": {},
-  "default_response": true,
+  "response_type": "single_select",
+  "response_config": {
+    "options": ["Approve", "Reject"]
+  },
+  "default_response": "Reject",
   "platform": "api"
 }
 ```
@@ -640,10 +644,9 @@ Rate AI-generated content quality:
 
 1. **Creation** - Request is created and assigned a unique ID
 2. **Broadcasting** - Push notifications sent to all active loop members
-3. **Pending** - Waiting for a reviewer to claim and respond
-4. **Claimed** - A reviewer has started working on the request
-5. **Completed** - Reviewer has submitted their response
-6. **Webhook** - Callback URL is notified (if configured)
+3. **Pending** - Waiting for a reviewer to respond
+4. **Completed** - Reviewer has submitted their response
+5. **Webhook** - Callback URL is notified (if configured)
 
 ## Next Steps
 
@@ -651,7 +654,7 @@ Rate AI-generated content quality:
   Check the status and response of your request using the polling URL.
 </Card>
 
-<Card title="Set Up Webhooks" icon="webhook" href="/api-reference/webhooks/setup">
+<Card title="Set Up Webhooks" icon="webhook" href="/api-reference/webhooks">
   Configure webhooks to receive real-time notifications when requests complete.
 </Card>
 

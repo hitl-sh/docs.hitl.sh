@@ -40,16 +40,16 @@ Connect with popular automation and workflow platforms:
 Automate workflows with visual automation builder.
 </Card>
 
-<Card title="Zapier" icon="zap">
-Connect HITL.sh with 5000+ apps and services.
-</Card>
-
 <Card title="Make" icon="puzzle">
 Create complex automation scenarios with visual tools.
 </Card>
 
-<Card title="LangGraph" icon="graph">
-Build AI agent workflows with human oversight.
+<Card title="Zapier" icon="zap">
+Connect HITL.sh with 5000+ apps and services.
+</Card>
+
+<Card title="MCP Server" icon="server">
+Integrate with Model Context Protocol for AI assistants.
 </Card>
 </CardGroup>
 
@@ -63,7 +63,7 @@ Secure your API calls with API keys:
 import requests
 
 class HITLClient:
-    def __init__(self, api_key, base_url="https://dev.api.hitl.sh/v1"):
+    def __init__(self, api_key, base_url="https://api.hitl.sh/v1"):
         self.api_key = api_key
         self.base_url = base_url
         self.headers = {
@@ -278,6 +278,43 @@ Build complex automation scenarios with Make:
 - Integration with multiple data sources
 - Complex escalation chains
 
+### MCP Server Integration
+
+Connect HITL.sh with AI assistants using Model Context Protocol:
+
+<Card title="MCP Server Features" icon="server">
+- **AI Assistant Integration**: Connect Claude, GPT, and other AI assistants
+- **Human-in-the-Loop Workflows**: Add human oversight to AI agent workflows
+- **Context Management**: Share context between AI and human reviewers
+- **Seamless Handoff**: Smooth transition from AI to human decision-making
+</Card>
+
+**Use Cases:**
+- AI agents requesting human approval for critical decisions
+- Quality control for AI-generated content
+- Human verification of automated actions
+- Escalation from AI to human experts
+
+**Installation:**
+```bash
+npm install @hitl/mcp-server
+```
+
+**Configuration:**
+```json
+{
+  "mcpServers": {
+    "hitl": {
+      "command": "npx",
+      "args": ["-y", "@hitl/mcp-server"],
+      "env": {
+        "HITL_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
 ## Custom Application Integration
 
 ### Frontend Integration
@@ -320,7 +357,7 @@ class HITLIntegration {
 }
 
 // Usage in your application
-const hitl = new HITLIntegration(API_KEY, 'https://dev.api.hitl.sh/v1');
+const hitl = new HITLIntegration(API_KEY, 'https://api.hitl.sh/v1');
 
 document.getElementById('submit-button').addEventListener('click', async () => {
     const content = document.getElementById('content-input').value;
@@ -442,7 +479,7 @@ Ready to integrate HITL.sh with your systems?
 Learn about specific platform integrations like N8N and Zapier.
 </Card>
 
-<Card title="Set Up Webhooks" icon="bell" href="/webhooks/global">
+<Card title="Set Up Webhooks" icon="bell" href="/api-reference/webhooks">
 Configure webhooks for real-time notifications.
 </Card>
 

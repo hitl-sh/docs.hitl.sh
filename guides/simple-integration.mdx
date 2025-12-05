@@ -79,7 +79,7 @@ def review_content(content, priority="medium"):
     
     # Create the review request
     response = requests.post(
-        f"https://dev.api.hitl.sh/v1/loops/{HITL_LOOP_ID}/requests",
+        f"https://api.hitl.sh/v1/api/loops/{HITL_LOOP_ID}/requests",
         headers={
             "Authorization": f"Bearer {HITL_API_KEY}",
             "Content-Type": "application/json"
@@ -118,7 +118,7 @@ def wait_for_response(request_id, max_wait_minutes=30):
     
     for _ in range(max_wait_minutes * 2):  # Check every 30 seconds
         response = requests.get(
-            f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+            f"https://api.hitl.sh/v1/api/requests/{request_id}",
             headers={"Authorization": f"Bearer {HITL_API_KEY}"}
         )
         
@@ -159,7 +159,7 @@ async function reviewContent(content, priority = 'medium') {
     try {
         // Create the review request
         const response = await axios.post(
-            `https://dev.api.hitl.sh/v1/loops/${process.env.HITL_LOOP_ID}/requests`,
+            `https://api.hitl.sh/v1/api/loops/${process.env.HITL_LOOP_ID}/requests`,
             {
                 processing_type: 'time-sensitive',
                 type: 'markdown', 
@@ -200,7 +200,7 @@ async function waitForResponse(requestId, maxWaitMinutes = 30) {
     for (let i = 0; i < maxWaitMinutes * 2; i++) {
         try {
             const response = await axios.get(
-                `https://dev.api.hitl.sh/v1/api/requests/${requestId}`,
+                `https://api.hitl.sh/v1/api/requests/${requestId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${process.env.HITL_API_KEY}`
@@ -263,7 +263,7 @@ CONTENT="Check out this amazing deal on cryptocurrency!"
 echo "🔄 Sending content for human review..."
 
 # Create review request
-RESPONSE=$(curl -s -X POST "https://dev.api.hitl.sh/v1/loops/$HITL_LOOP_ID/requests" \
+RESPONSE=$(curl -s -X POST "https://api.hitl.sh/v1/api/loops/$HITL_LOOP_ID/requests" \
   -H "Authorization: Bearer $HITL_API_KEY" \
   -H "Content-Type: application/json" \
   -d "{
@@ -299,7 +299,7 @@ echo "⏳ Waiting for human reviewer response..."
 
 # Poll for response (check every 30 seconds for up to 30 minutes)
 for i in {1..60}; do
-    STATUS_RESPONSE=$(curl -s -X GET "https://dev.api.hitl.sh/v1/api/requests/$REQUEST_ID" \
+    STATUS_RESPONSE=$(curl -s -X GET "https://api.hitl.sh/v1/api/requests/$REQUEST_ID" \
       -H "Authorization: Bearer $HITL_API_KEY")
     
     STATUS=$(echo $STATUS_RESPONSE | jq -r '.data.request.status')
@@ -344,7 +344,7 @@ def review_ai_output(ai_response, context="", min_quality=3):
     """Review AI output quality and get human feedback"""
     
     response = requests.post(
-        f"https://dev.api.hitl.sh/v1/loops/{HITL_LOOP_ID}/requests",
+        f"https://api.hitl.sh/v1/api/loops/{HITL_LOOP_ID}/requests",
         headers={
             "Authorization": f"Bearer {HITL_API_KEY}",
             "Content-Type": "application/json"
@@ -400,7 +400,7 @@ else:
 async function reviewAiOutput(aiResponse, context = '', minQuality = 3) {
     try {
         const response = await axios.post(
-            `https://dev.api.hitl.sh/v1/loops/${process.env.HITL_LOOP_ID}/requests`,
+            `https://api.hitl.sh/v1/api/loops/${process.env.HITL_LOOP_ID}/requests`,
             {
                 processing_type: 'time-sensitive',
                 type: 'markdown',
@@ -472,7 +472,7 @@ def approve_document(document_title, document_content, urgency="medium"):
     """Send document for approval with detailed feedback"""
     
     response = requests.post(
-        f"https://dev.api.hitl.sh/v1/loops/{HITL_LOOP_ID}/requests",
+        f"https://api.hitl.sh/v1/api/loops/{HITL_LOOP_ID}/requests",
         headers={
             "Authorization": f"Bearer {HITL_API_KEY}",
             "Content-Type": "application/json"
@@ -496,7 +496,7 @@ def approve_document(document_title, document_content, urgency="medium"):
                 "max_selections": 5,
                 "required": true
             },
-            "default_response": "needs_major_revisions",  # Conservative default
+            "default_response": ["needs_major_revisions"],  # Conservative default
             "platform": "api"
         }
     )
@@ -541,7 +541,7 @@ if isinstance(approval.get("decision"), list):
 async function approveDocument(documentTitle, documentContent, urgency = 'medium') {
     try {
         const response = await axios.post(
-            `https://dev.api.hitl.sh/v1/loops/${process.env.HITL_LOOP_ID}/requests`,
+            `https://api.hitl.sh/v1/api/loops/${process.env.HITL_LOOP_ID}/requests`,
             {
                 processing_type: urgency === 'high' ? 'time-sensitive' : 'deferred',
                 type: 'markdown',
@@ -616,7 +616,29 @@ October 1 - December 31, 2024
 
 ## Using Webhooks (Recommended for Production)
 
-Instead of polling for responses, set up webhooks to get notified instantly when reviews complete:
+Instead of polling for responses, set up webhooks to get notified instantly when reviews complete. Add a `callback_url` field when creating your request:
+
+```python
+# Create request with webhook callback
+response = requests.post(
+    f"https://api.hitl.sh/v1/api/loops/{HITL_LOOP_ID}/requests",
+    headers={"Authorization": f"Bearer {HITL_API_KEY}"},
+    json={
+        "processing_type": "time-sensitive",
+        "type": "markdown",
+        "priority": "high",
+        "request_text": "Review this content...",
+        "timeout_seconds": 1800,
+        "response_type": "single_select",
+        "response_config": {"options": [...]},
+        "default_response": "reject",
+        "platform": "api",
+        "callback_url": "https://your-domain.com/hitl-webhook"  # Your webhook endpoint
+    }
+)
+```
+
+Then set up an endpoint to receive the webhook notifications:
 
 <CodeGroup>
 
@@ -733,7 +755,7 @@ def create_request_with_retry(request_data, max_retries=3):
     for attempt in range(max_retries):
         try:
             response = requests.post(
-                f"https://dev.api.hitl.sh/v1/loops/{HITL_LOOP_ID}/requests",
+                f"https://api.hitl.sh/v1/api/loops/{HITL_LOOP_ID}/requests",
                 headers={"Authorization": f"Bearer {HITL_API_KEY}"},
                 json=request_data,
                 timeout=30
@@ -818,7 +840,7 @@ def create_clear_request(content, request_type="approval"):
 ## Next Steps
 
 <CardGroup cols={2}>
-<Card title="Set Up Webhooks" icon="webhook" href="/webhooks/global">
+<Card title="Set Up Webhooks" icon="webhook" href="/api-reference/webhooks">
   Configure real-time notifications for production use
 </Card>
 
@@ -828,10 +850,6 @@ def create_clear_request(content, request_type="approval"):
 
 <Card title="Response Types Guide" icon="list" href="/responses/types">
   Learn about advanced response configurations
-</Card>
-
-<Card title="Best Practices" icon="star" href="/guides/best-practices">  
-  Advanced tips for optimizing your integration
 </Card>
 </CardGroup>
 
