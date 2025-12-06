@@ -24,6 +24,7 @@
             "group": "Getting Started",
             "pages": [
               "index",
+              "overview",
               "introduction",
               "dashboard",
               "api-keys",
