@@ -149,17 +149,7 @@
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Contact Team",
-        "href": "mailto:team@hitl.sh"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-              "href": "https://my.hitl.sh"
-    }
+   
   },
   "contextual": {
     "options": ["copy", "chatgpt", "claude", "cursor", "vscode"]
