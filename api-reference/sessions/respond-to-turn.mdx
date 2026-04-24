@@ -1,0 +1,23 @@
+---
+title: "Respond to Turn"
+api: "PUT https://dev.api.hitl.sh/v1/api/sessions/{id}/turns/{turn_id}"
+description: "Record the human decision on a pending turn."
+---
+
+Dashboards and admin tools call this directly. Mobile reviewers typically respond to the backing [HITL request](/api-reference/requests/get-request) instead — the server reflects their response onto the turn automatically.
+
+## Body
+
+<ParamField body="decision" type="string" required>
+  `approve` · `modify` · `reject` · `escalate`.
+</ParamField>
+<ParamField body="comment" type="string">Optional reviewer note.</ParamField>
+
+## Response
+
+- `200` with the resolved turn, or
+- `409 Conflict` if the turn was already resolved (e.g. racy mobile+dashboard response).
+
+## Side effects
+
+- Fires the `turn.resolved` webhook to every subscriber on the session's API key (exponential-backoff retry: 0s, 1s, 5s, 30s).

@@ -1,0 +1,147 @@
+---
+title: "Claude Code Plugin"
+description: "Route every Write, Edit, and dangerous Bash action in Claude Code through a human reviewer on HITL.sh."
+---
+
+# Claude Code Plugin
+
+The **HITL Sessions** plugin for [Claude Code](https://claude.com/claude-code) intercepts proposed file writes, edits, and dangerous shell commands, routes each one to a human reviewer on your phone, and blocks the agent until you respond. It's designed for engineers who want to let Claude Code move fast on a real repo without giving up supervision of the risky parts.
+
+<CardGroup cols={2}>
+<Card title="Stateful" icon="layer-group">
+Every Claude Code session creates one HITL session. Context — repo, branch, commit, turn history — is preserved across all turns.
+</Card>
+<Card title="Mobile-first review" icon="mobile">
+Turns route to the HITL mobile app via push notification. Approve, modify, reject, or escalate from anywhere.
+</Card>
+<Card title="Audit trail" icon="clipboard-list">
+Every proposed action, every decision, every outcome is stored on the session and visible in the [dashboard](https://my.hitl.sh/sessions).
+</Card>
+<Card title="Zero-config denylist" icon="shield">
+`Read` is never gated. `Bash` is only gated on commands that look risky (`git push`, `rm -rf`, piped shell, sudo, publish).
+</Card>
+</CardGroup>
+
+## Install
+
+<Steps>
+<Step title="Clone the plugin repo">
+```bash
+git clone https://github.com/hitl-sh/sessions.hitl.sh.git
+```
+</Step>
+
+<Step title="Point Claude Code at it">
+For a single shell session:
+```bash
+claude --plugin-dir /path/to/sessions.hitl.sh/claude
+```
+
+Or register it persistently via a local marketplace:
+```bash
+/plugin marketplace add /path/to/sessions.hitl.sh
+/plugin install hitl-sessions@sessions.hitl.sh
+```
+</Step>
+
+<Step title="Get an API key">
+Head to [my.hitl.sh → API Keys](https://my.hitl.sh/api-keys) and create one. Any HITL API key works — there's no separate Sessions-only key type.
+</Step>
+
+<Step title="Configure">
+Either via env vars:
+```bash
+export HITL_SESSIONS_API_KEY=hitl_...
+# optional — the backend auto-creates a loop if omitted
+export HITL_SESSIONS_LOOP_ID=<loop-id-from-my.hitl.sh>
+```
+
+Or via `~/.claude/plugins/hitl-sessions/config.json`:
+```json
+{
+  "api_key": "hitl_...",
+  "loop_id": "...",
+  "fail_closed": false,
+  "wait_timeout_seconds": 60,
+  "wait_max_rounds": 10,
+  "bash_denylist": [
+    "^rm\\s+-rf\\b",
+    "^git\\s+push\\b",
+    "\\|\\s*sh\\b"
+  ]
+}
+```
+
+Env vars override the file.
+</Step>
+</Steps>
+
+## What gets gated
+
+| Tool | Default behavior |
+|---|---|
+| `Write` | **Always gated.** Creates a turn with `action_type=file_write`. |
+| `Edit` | **Always gated.** Same as Write. |
+| `Bash` | **Gated only if the command matches the denylist.** Non-matching commands pass through with zero latency. |
+| `Read` | **Never gated.** |
+
+The default denylist covers `rm -rf`, `git push`, `git reset --hard`, `git checkout --`, piped shell (`| sh`, `| bash`), `sudo`, and package publishing (`npm publish`, `pnpm publish`, `yarn publish`). Override with your own regex list in the config file.
+
+Bash `action_type` is inferred from the command so reviewers see the right label:
+`git push ...` → `git_push`, `git commit ...` → `git_commit`, `npm install ...` → `dependency_install`, anything with "migrate" → `migration_run`, `rm ...` → `file_delete`, everything else → `command_exec`.
+
+## Decision flow
+
+<Steps>
+<Step title="Agent proposes an action">
+Claude Code is about to call `Write /src/server.ts`. The `PreToolUse` hook fires before the tool actually runs.
+</Step>
+<Step title="Plugin creates a turn">
+The plugin posts a turn to the HITL API. This creates a backing `request` in the configured loop and sends FCM push notifications to every active reviewer's device.
+</Step>
+<Step title="Plugin long-polls">
+The plugin holds the tool call open while it long-polls `/turns/:id/wait` (60s per round, up to 10 rounds = 10 minutes of patience by default).
+</Step>
+<Step title="Reviewer decides on mobile">
+The mobile app shows the proposed action with full context (repo, branch, diff/command). The reviewer picks approve / modify / reject / escalate, optionally with a comment.
+</Step>
+<Step title="Plugin unblocks">
+- **Approve** → Claude Code runs the tool. Reviewer's comment (if any) is surfaced to Claude via stderr.
+- **Modify / reject / escalate** → the tool is blocked; the reviewer's reason is returned to Claude as a `permissionDecision: deny` so it can re-plan.
+</Step>
+<Step title="Plugin records outcome">
+`PostToolUse` records `exit_code`, stdout/stderr excerpt (for Bash) or the file path (for Write/Edit), and `files_modified` onto the turn for the audit trail.
+</Step>
+</Steps>
+
+## Slash commands
+
+| Command | What it does |
+|---|---|
+| `/hitl-status` | Prints the current session id, status, turn count, and dashboard link. |
+| `/hitl-bypass` | Logs a bypass turn (for audit) and tells you how to disable gating for the rest of the shell via `HITL_SESSIONS_BYPASS=1`. |
+
+## Fail-open vs fail-closed
+
+If the HITL backend is unreachable, by default the plugin **fails open** — the tool call proceeds without review so a network blip doesn't freeze your session. To **fail closed** (block tool calls when HITL is down), set `HITL_SESSIONS_FAIL_CLOSED=1` or `"fail_closed": true` in config. Pick based on your risk tolerance.
+
+## Dashboard
+
+Every session and turn is visible at [my.hitl.sh/sessions](https://my.hitl.sh/sessions). The detail page shows the turn timeline with decisions, reviewer comments, files touched, and exit codes — and lets you export the full transcript as JSON for audit.
+
+## Troubleshooting
+
+```bash
+# Tail the plugin log — every hook invocation writes a JSON line here
+tail -f ~/.claude/plugins/hitl-sessions/plugin.log
+
+# Check the persisted per-project session id
+cat ~/.claude/plugins/hitl-sessions/state.json
+
+# Smoke-test SessionStart against your configured endpoint
+node /path/to/sessions.hitl.sh/claude/scripts/session-start.mjs
+```
+
+## Source
+
+Plugin source + contribution guide: [github.com/hitl-sh/sessions.hitl.sh](https://github.com/hitl-sh/sessions.hitl.sh).

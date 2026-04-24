@@ -1,0 +1,21 @@
+---
+title: "List Sessions"
+api: "GET https://dev.api.hitl.sh/v1/api/sessions"
+description: "Return sessions owned by the API key's user, most recent first."
+---
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>Bearer API key.</ParamField>
+
+## Query
+
+<ParamField query="status" type="string">Filter: `active` | `paused` | `completed` | `abandoned`.</ParamField>
+<ParamField query="agent_type" type="string">Filter: `claude` | `codex`.</ParamField>
+<ParamField query="limit" type="integer" default="50">Max 100.</ParamField>
+<ParamField query="offset" type="integer" default="0" />
+
+## Response
+
+<ResponseField name="data.sessions" type="array">Array of session objects.</ResponseField>
+<ResponseField name="data.count" type="integer">Number of sessions returned.</ResponseField>

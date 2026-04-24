@@ -1,0 +1,12 @@
+---
+title: "Update Session"
+api: "PUT https://dev.api.hitl.sh/v1/api/sessions/{id}"
+description: "Update mutable session fields."
+---
+
+## Body
+
+<ParamField body="context" type="object">Replacement session context (repo/branch/commit/task).</ParamField>
+<ParamField body="reviewer_id" type="string">Assign/unassign a reviewer; pass an empty string to clear.</ParamField>
+
+Status transitions go through the dedicated pause/resume/complete endpoints rather than this one.

@@ -43,6 +43,7 @@
               "concepts/loops",
               "concepts/requests",
               "concepts/responses",
+              "concepts/sessions",
               "concepts/integrations"
             ]
           },
@@ -73,6 +74,7 @@
           {
             "group": "Integrations",
             "pages": [
+              "integrations/claude-code",
               "integrations/n8n",
               "integrations/zapier",
               "integrations/make",
@@ -112,6 +114,21 @@
               "api-reference/requests/get-request",
               "api-reference/requests/cancel-request",
               "api-reference/requests/add-feedback"
+            ]
+          },
+          {
+            "group": "Sessions",
+            "pages": [
+              "api-reference/sessions/overview",
+              "api-reference/sessions/create-session",
+              "api-reference/sessions/list-sessions",
+              "api-reference/sessions/get-session",
+              "api-reference/sessions/update-session",
+              "api-reference/sessions/session-lifecycle",
+              "api-reference/sessions/create-turn",
+              "api-reference/sessions/wait-for-turn",
+              "api-reference/sessions/respond-to-turn",
+              "api-reference/sessions/record-action"
             ]
           },
           {

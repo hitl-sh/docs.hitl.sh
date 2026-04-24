@@ -1,0 +1,40 @@
+---
+title: "Session Lifecycle"
+description: "Pause, resume, and complete a session."
+---
+
+## State machine
+
+```
+active ──pause──▶ paused ──resume──▶ active
+  │                                     │
+  └──complete──▶ completed ◀────────────┘
+
+active / paused ──idle 24h──▶ abandoned (TTL 30d, then deleted)
+```
+
+Each transition is its own endpoint and each rejects invalid transitions with `409 Conflict`.
+
+## Pause
+
+```http
+POST /v1/api/sessions/{id}/pause
+```
+
+Transitions `active → paused`. Paused sessions reject new turns.
+
+## Resume
+
+```http
+POST /v1/api/sessions/{id}/resume
+```
+
+Transitions `paused → active`.
+
+## Complete
+
+```http
+POST /v1/api/sessions/{id}/complete
+```
+
+Transitions `active|paused → completed`. Complete is terminal and idempotent — calling it on an already-completed session returns the session with no error.

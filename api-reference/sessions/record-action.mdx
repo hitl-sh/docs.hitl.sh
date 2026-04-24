@@ -1,0 +1,25 @@
+---
+title: "Record Turn Action"
+api: "POST https://dev.api.hitl.sh/v1/api/sessions/{id}/turns/{turn_id}/action"
+description: "Attach the real outcome of an approved action to its turn."
+---
+
+The agent plugin calls this after running the tool that a human approved, so reviewers can see what actually happened (exit code, stdout/stderr excerpt, files touched) — not just what was proposed.
+
+## Body
+
+<ParamField body="action" type="object" required>
+  <Expandable title="action">
+    <ParamField body="success" type="boolean" required />
+    <ParamField body="exit_code" type="integer">For Bash.</ParamField>
+    <ParamField body="stdout" type="string">Truncated to ~4KB.</ParamField>
+    <ParamField body="stderr" type="string">Truncated to ~4KB.</ParamField>
+    <ParamField body="extra" type="object">Free-form tool response.</ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="files_modified" type="string[]">Paths the tool touched.</ParamField>
+
+## Response
+
+The updated turn with `action_taken` populated.

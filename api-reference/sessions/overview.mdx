@@ -1,0 +1,47 @@
+---
+title: "Sessions Overview"
+description: "Stateful, multi-turn human-in-the-loop oversight for AI coding agents."
+---
+
+Sessions group related turns (proposed actions) by agent coding session. Each session is scoped to a user and a loop. Every turn routes to a human reviewer via the same mobile app that reviews regular HITL requests.
+
+Use Sessions when you're running an AI coding agent (Claude Code, Codex CLI) that needs human oversight on file writes, shell commands, git actions, dependency changes, and migrations.
+
+For the product-level walk-through, see [Sessions concept](/concepts/sessions). For the ready-made Claude Code integration, see the [Claude Code plugin guide](/integrations/claude-code).
+
+## Authentication
+
+All endpoints require a Bearer API key in the `Authorization` header:
+
+```http
+Authorization: Bearer hitl_...
+```
+
+API keys are created at [my.hitl.sh → API Keys](https://my.hitl.sh/api-keys).
+
+## Resources
+
+- **Session** — container for an agent coding run. Has `status` (`active` | `paused` | `completed` | `abandoned`), `loop_id`, `context` (repo/branch/commit/task), and a running `turn_count`.
+- **Turn** — a proposed action inside a session. Has `action_type`, `proposed_tool`, `proposed_args`, a `request_id` (for the backing mobile-app record), and eventually `human_decision` + `action_taken`.
+
+## Endpoint map
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/v1/api/sessions` | Create session |
+| GET | `/v1/api/sessions` | List sessions (filters: `status`, `agent_type`) |
+| GET | `/v1/api/sessions/:id` | Get session |
+| PUT | `/v1/api/sessions/:id` | Update `context` / `reviewer_id` |
+| POST | `/v1/api/sessions/:id/pause` | Transition active → paused |
+| POST | `/v1/api/sessions/:id/resume` | Transition paused → active |
+| POST | `/v1/api/sessions/:id/complete` | Transition active\|paused → completed |
+| POST | `/v1/api/sessions/:id/turns` | Create a turn |
+| GET | `/v1/api/sessions/:id/turns` | List turns on a session |
+| GET | `/v1/api/sessions/:id/turns/:turn_id` | Get a turn |
+| GET | `/v1/api/sessions/:id/turns/:turn_id/wait` | Long-poll until resolved (default 60s, configurable up to 300s) |
+| PUT | `/v1/api/sessions/:id/turns/:turn_id` | Record human decision (approve/modify/reject/escalate) |
+| POST | `/v1/api/sessions/:id/turns/:turn_id/action` | Record `action_taken` + `files_modified` after the agent runs the tool |
+
+## Webhooks
+
+Subscribe to `turn.resolved` via the [Webhooks API](/api-reference/webhooks) to get notified whenever a reviewer acts on a turn.

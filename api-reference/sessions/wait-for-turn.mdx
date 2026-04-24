@@ -1,0 +1,36 @@
+---
+title: "Wait for Turn"
+api: "GET https://dev.api.hitl.sh/v1/api/sessions/{id}/turns/{turn_id}/wait"
+description: "Long-poll for the human decision on a turn."
+---
+
+Holds the connection until either the turn is resolved or `timeout` seconds elapse, whichever comes first.
+
+The endpoint also **reconciles** the backing HITL request before returning: if a reviewer responded via the mobile app (hitting the regular request-response flow instead of PUT /turns/:id), the server picks that up, maps it to a decision, resolves the turn, and returns the resolved turn in a single round-trip.
+
+## Path
+
+<ParamField path="id" type="string" required>Session id.</ParamField>
+<ParamField path="turn_id" type="string" required>Turn id.</ParamField>
+
+## Query
+
+<ParamField query="timeout" type="integer" default="60">
+  Seconds to wait (max 300).
+</ParamField>
+
+## Response
+
+When resolved (status `200`):
+
+```json
+{ "error": false, "msg": "turn resolved", "data": { "turn": { "human_decision": "approve", ... } } }
+```
+
+When still pending after timeout (status `408`):
+
+```json
+{ "error": false, "msg": "timeout — turn still pending", "data": { "turn": { ... }, "pending": true } }
+```
+
+The typical plugin pattern is to call `/wait` in a loop until `turn.human_decision` is set.

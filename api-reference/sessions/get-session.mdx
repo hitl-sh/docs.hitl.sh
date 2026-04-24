@@ -1,0 +1,17 @@
+---
+title: "Get Session"
+api: "GET https://dev.api.hitl.sh/v1/api/sessions/{id}"
+description: "Fetch a single session by id."
+---
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>Bearer API key.</ParamField>
+
+## Path
+
+<ParamField path="id" type="string" required>Session id.</ParamField>
+
+## Response
+
+<ResponseField name="data.session" type="object" />

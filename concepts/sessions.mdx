@@ -1,0 +1,98 @@
+---
+title: "Sessions"
+description: "Stateful, multi-turn human-in-the-loop oversight for AI coding agents like Claude Code and Codex."
+---
+
+# Sessions
+
+Sessions are a HITL.sh primitive built for AI **coding** agents — Claude Code, Codex CLI, and any future agent that proposes file writes and shell commands. Where a classic HITL request is a one-off "review this piece of content", a session is a long-running container of **turns**. Every turn is a proposed action the agent wants to take; every turn routes to a human reviewer, who approves, modifies, rejects, or escalates before the agent proceeds.
+
+This primitive exists because multi-turn coding workflows build up context: the agent reads files, forms a plan, edits several files, runs tests, commits. A single-shot review model can't maintain that thread. Sessions do.
+
+## When to use
+
+Use Sessions when:
+
+- You're running an AI coding agent (Claude Code, Codex CLI) in an environment that shouldn't make unsupervised changes to your repo.
+- You want **mobile push review** of every risky action: file writes, shell commands, `git push`, dependency installs, migrations.
+- You want a full **audit trail** of what the agent proposed and what humans decided.
+
+Use classic Loops/Requests when:
+
+- You just need one-off content review (moderation, classification, rating).
+- You have a single-turn automation that needs a thumbs-up/down.
+
+## Core resources
+
+### Session
+
+A container for an agent coding session, scoped to a single project directory on the agent's machine.
+
+| Field | Description |
+|---|---|
+| `id` | Unique session identifier |
+| `agent_type` | `claude` \| `codex` |
+| `status` | `active` \| `paused` \| `completed` \| `abandoned` |
+| `loop_id` | The loop whose members review turns. Auto-created if omitted. |
+| `context` | `{ repo, branch, commit, task }` — auto-detected by the plugin |
+| `turn_count` | Number of turns on the session so far |
+| `created_at` / `updated_at` | Timestamps |
+
+### Turn
+
+A single proposed action within a session.
+
+| Field | Description |
+|---|---|
+| `id`, `session_id`, `turn_number` | Identity (turn_number is sequential, unique per session) |
+| `action_type` | `file_write` \| `file_delete` \| `command_exec` \| `git_commit` \| `git_push` \| `dependency_install` \| `migration_run` \| `bypass` |
+| `agent_prompt` | Human-readable summary of what the agent wants to do |
+| `proposed_tool` + `proposed_args` | The raw tool call (e.g. `Bash` + `{ command: "..." }`) |
+| `request_id` | The backing HITL `request` record — rendered in the mobile reviewer app with no app-side changes |
+| `human_decision` | `approve` \| `modify` \| `reject` \| `escalate` (null until a reviewer responds) |
+| `human_comment` | Optional reviewer note |
+| `action_taken` | Exit code, stdout/stderr excerpt, success flag — written after the tool ran |
+| `files_modified` | List of file paths touched by the turn |
+
+## Lifecycle
+
+```text
+agent starts ─▶ POST /v1/api/sessions                   ─▶ session active
+
+agent wants to Write /tmp/x
+  ├─ POST /v1/api/sessions/:id/turns                    ─▶ turn pending (push sent)
+  ├─ GET  /v1/api/sessions/:id/turns/:tid/wait          ─▶ 60s long-poll, retried
+  │                                                         — reviewer responds on mobile
+  └─ (decision lands)
+       ├─ approve         ─▶ agent runs Write
+       │    └─ POST /action ─▶ turn finalized
+       ├─ modify/reject/
+       │  escalate        ─▶ agent re-plans with reviewer's reason
+
+session ends  ─▶ POST /v1/api/sessions/:id/complete     ─▶ session completed
+```
+
+Abandoned sessions (idle 24h) are auto-cleaned after 30 days via MongoDB TTL.
+
+## How reviewers see turns
+
+Every turn is backed by a standard HITL `request` (response_type `single_select`, options `[approve, modify, reject, escalate]`), so the existing mobile reviewer app renders turns with no changes. The request's `context` carries `session_id`, `turn_id`, `action_type`, `proposed_tool`, `proposed_args`, and the repo / branch / commit — giving reviewers everything they need to decide on one screen.
+
+## Webhooks
+
+Subscribe to `turn.resolved` to get push notifications when a reviewer acts:
+
+```json
+{
+  "event": "turn.resolved",
+  "timestamp": "2026-04-23T18:12:44.113Z",
+  "session_id": "...",
+  "turn": { "id": "...", "human_decision": "approve", ... }
+}
+```
+
+Delivery is at-least-once with exponential-backoff retry (0s, 1s, 5s, 30s). 4xx responses are treated as subscriber rejects and not retried.
+
+## Install the plugin
+
+See the [Claude Code plugin guide](/integrations/claude-code) to wire this into a real coding session.

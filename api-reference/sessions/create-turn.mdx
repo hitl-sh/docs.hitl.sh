@@ -1,0 +1,60 @@
+---
+title: "Create Turn"
+api: "POST https://dev.api.hitl.sh/v1/api/sessions/{id}/turns"
+description: "Propose an action. Creates a turn + a backing HITL request + dispatches push to loop reviewers."
+---
+
+## Path
+
+<ParamField path="id" type="string" required>Session id.</ParamField>
+
+## Body
+
+<ParamField body="action_type" type="string" required>
+  One of `file_write` · `file_delete` · `command_exec` · `git_commit` · `git_push` · `dependency_install` · `migration_run` · `bypass`.
+</ParamField>
+
+<ParamField body="agent_prompt" type="string">
+  Human-readable summary (e.g. `"Write file /src/server.ts"` or `"Run shell command: git push origin main"`).
+</ParamField>
+
+<ParamField body="proposed_tool" type="string">
+  Name of the tool the agent wants to call (e.g. `Write`, `Edit`, `Bash`).
+</ParamField>
+
+<ParamField body="proposed_args" type="object">
+  Raw tool arguments. For `Bash` this typically includes `command`; for `Write`/`Edit`, `file_path` + `content`.
+</ParamField>
+
+## Response
+
+<ResponseField name="data.turn" type="object">
+  The created turn. `turn.request_id` is set to the backing HITL request id — that request is what renders in the mobile reviewer app.
+</ResponseField>
+
+## Side effects
+
+- Creates a HITL `request` in the session's loop with `response_type=single_select`, options `[approve, modify, reject, escalate]`. Priority is `high` for destructive action types and `medium` otherwise.
+- Sends FCM push to every active loop member's device.
+
+<ResponseExample>
+```json 201 Created
+{
+  "error": false,
+  "msg": "turn created",
+  "data": {
+    "turn": {
+      "id": "663f9...",
+      "session_id": "663f8...",
+      "turn_number": 4,
+      "request_id": "663fa...",
+      "action_type": "git_push",
+      "agent_prompt": "Run shell command: git push origin preview",
+      "proposed_tool": "Bash",
+      "proposed_args": { "command": "git push origin preview" },
+      "created_at": "2026-04-23T18:14:22Z"
+    }
+  }
+}
+```
+</ResponseExample>
