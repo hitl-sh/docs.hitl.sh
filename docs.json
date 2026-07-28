@@ -58,7 +58,7 @@
           },
           {
             "group": "Requests",
-            "pages": ["requests/introduction"]
+            "pages": ["requests/introduction", "requests/content-types"]
           },
           {
             "group": "Responses",

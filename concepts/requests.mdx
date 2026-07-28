@@ -34,7 +34,7 @@ import requests
 # Create a content moderation request
 request_data = {
     "processing_type": "time-sensitive",  # or "deferred"
-    "type": "markdown",                   # or "image"
+    "type": "markdown",                   # markdown, image, file, video, or audio
     "priority": "high",                   # low, medium, high, critical
     "request_text": "Please review this user comment for guideline compliance: 'This product changed my life! Everyone should try it. Use my referral code SAVE20 for a discount.'",
     "response_type": "single_select",
@@ -112,7 +112,7 @@ When a reviewer submits their response:
 
 ### Content Types
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
 <Card title="Markdown" icon="file-text">
 **Text-based content** for review
 - Request text displayed as formatted markdown
@@ -126,7 +126,31 @@ When a reviewer submits their response:
 - Requires `image_url` parameter
 - Full-screen image viewing on mobile
 - Zoom and pan capabilities
-- Used for photos, graphics, screenshots
+- Upload supported (10MB max)
+</Card>
+
+<Card title="Document" icon="file">
+**File-based content** for review
+- Requires `file_url`, `file_type`, and `file_name`
+- Supports PDF, DOCX, and other document formats
+- Upload supported (50MB max)
+- Used for contracts, reports, compliance docs
+</Card>
+
+<Card title="Video Link" icon="video">
+**Video content** requiring review
+- Requires `video_url` parameter
+- Supports YouTube, Vimeo, or raw .mp4/.webm/.mov
+- Link only — no upload supported
+- Used for training videos, recorded demos
+</Card>
+
+<Card title="Audio Link" icon="music">
+**Audio content** requiring review
+- Requires `audio_url` parameter
+- Supports SoundCloud, Spotify, or raw .mp3/.wav/.ogg/.m4a/.aac
+- Link only — no upload supported
+- Used for call recordings, podcasts, voice reviews
 </Card>
 </CardGroup>
 

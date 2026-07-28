@@ -117,15 +117,27 @@ def get_response(request_id):
 
 ## Request Content Types
 
-HITL.sh supports two content types for human review:
+HITL.sh supports five content types for human review:
 
-<CardGroup cols={2}>
-<Card title="Markdown Requests" icon="file-text">
+<CardGroup cols={3}>
+<Card title="Markdown" icon="file-text">
 Review text-based content like comments, posts, articles, or documents formatted in markdown
 </Card>
 
-<Card title="Image Requests" icon="image">
-Review visual content like photos, graphics, or screenshots requiring human evaluation
+<Card title="Image" icon="image">
+Review visual content like photos, graphics, or screenshots requiring human evaluation. Upload supported (10MB max)
+</Card>
+
+<Card title="Document" icon="file">
+Review files such as PDFs, DOCX, and other documents via `file_url`, `file_type`, and `file_name`. Upload supported (50MB max)
+</Card>
+
+<Card title="Video Link" icon="video">
+Review video content via `video_url`. Supports YouTube, Vimeo, or raw .mp4/.webm/.mov links. Link only — no upload
+</Card>
+
+<Card title="Audio Link" icon="music">
+Review audio content via `audio_url`. Supports SoundCloud, Spotify, or raw .mp3/.wav/.ogg/.m4a/.aac links. Link only — no upload
 </Card>
 </CardGroup>
 
@@ -167,6 +179,69 @@ request_data = {
 }
 ```
 
+### Document / File Content Type
+
+Use `type: "file"` for document review:
+
+```python
+request_data = {
+    "type": "file",
+    "request_text": "Review this contract for compliance issues",
+    "file_url": "https://cdn.example.com/documents/contract_v2.pdf",
+    "file_type": "application/pdf",
+    "file_name": "contract_v2.pdf",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {"value": "approve", "label": "Approve"},
+            {"value": "reject", "label": "Reject"},
+            {"value": "revise", "label": "Needs Revision"}
+        ]
+    },
+    "default_response": "revise"
+}
+```
+
+### Video Link Content Type
+
+Use `type: "video"` for video content review:
+
+```python
+request_data = {
+    "type": "video",
+    "request_text": "Review this training video for accuracy and completeness",
+    "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 5,
+        "scale_step": 1
+    },
+    "default_response": 3
+}
+```
+
+### Audio Link Content Type
+
+Use `type: "audio"` for audio content review:
+
+```python
+request_data = {
+    "type": "audio",
+    "request_text": "Review this customer service call for quality assurance",
+    "audio_url": "https://cdn.example.com/recordings/call_12345.mp3",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {"value": "satisfactory", "label": "Satisfactory"},
+            {"value": "unsatisfactory", "label": "Unsatisfactory"},
+            {"value": "escalate", "label": "Needs Escalation"}
+        ]
+    },
+    "default_response": "escalate"
+}
+```
+
 ## Request Structure
 
 ### Required Fields
@@ -176,7 +251,7 @@ Every request must include these essential elements:
 ```json
 {
   "processing_type": "time-sensitive|deferred",
-  "type": "markdown|image",
+  "type": "markdown|image|file|video|audio",
   "priority": "low|medium|high|critical",
   "request_text": "string",
   "response_type": "text|single_select|multi_select|rating|number",
@@ -193,6 +268,11 @@ Enhance requests with additional context and configuration:
 ```json
 {
   "image_url": "https://example.com/image.jpg",
+  "file_url": "https://example.com/document.pdf",
+  "file_type": "application/pdf",
+  "file_name": "document.pdf",
+  "video_url": "https://youtube.com/watch?v=...",
+  "audio_url": "https://soundcloud.com/artist/track",
   "context": {
     "user_id": "user_123", 
     "post_id": "post_456",
@@ -451,6 +531,132 @@ request_data = {
         "required": True
     },
     "default_response": "reject",  # Conservative default
+    "platform": "api"
+}
+
+response = requests.post(
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=request_data
+)
+```
+
+### Document Review (File)
+
+Review a file such as a contract or compliance document:
+
+```python
+import requests
+
+# Create a document review request
+request_data = {
+    "processing_type": "deferred",
+    "type": "file",
+    "priority": "medium",
+    "request_text": "Review this contract for compliance issues and confirm it meets our legal requirements.",
+    "file_url": "https://cdn.example.com/documents/contract_v2.pdf",
+    "file_type": "application/pdf",
+    "file_name": "contract_v2.pdf",
+    "context": {
+        "contract_id": "contract_456",
+        "client_name": "Acme Corp",
+        "contract_value": "$50,000"
+    },
+    "timeout_seconds": 86400,
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {"value": "approve", "label": "✅ Approve", "color": "#22c55e"},
+            {"value": "reject", "label": "❌ Reject", "color": "#ef4444"},
+            {"value": "revise", "label": "✏️ Needs Revision", "color": "#f59e0b"}
+        ],
+        "required": True
+    },
+    "default_response": "revise",
+    "platform": "api"
+}
+
+response = requests.post(
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=request_data
+)
+```
+
+### Video Review
+
+Review a video for accuracy and quality:
+
+```python
+import requests
+
+# Create a video review request
+request_data = {
+    "processing_type": "deferred",
+    "type": "video",
+    "priority": "low",
+    "request_text": "Review this training video for accuracy and completeness before publishing to employees.",
+    "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "context": {
+        "video_id": "video_789",
+        "department": "Engineering",
+        "creator": "Learning & Development"
+    },
+    "timeout_seconds": 86400,
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 5,
+        "scale_step": 1,
+        "labels": {
+            "1": "Poor",
+            "3": "Acceptable",
+            "5": "Excellent"
+        },
+        "required": True
+    },
+    "default_response": 3,
+    "platform": "api"
+}
+
+response = requests.post(
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=request_data
+)
+```
+
+### Audio Review
+
+Review an audio recording for quality assurance:
+
+```python
+import requests
+
+# Create an audio review request
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "audio",
+    "priority": "high",
+    "request_text": "Review this customer service call for quality assurance. Check for compliance with our communication guidelines.",
+    "audio_url": "https://cdn.example.com/recordings/call_12345.mp3",
+    "context": {
+        "call_id": "call_12345",
+        "agent_id": "agent_99",
+        "customer_tier": "enterprise",
+        "call_duration_seconds": 342
+    },
+    "timeout_seconds": 3600,
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {"value": "satisfactory", "label": "✅ Satisfactory", "color": "#22c55e"},
+            {"value": "unsatisfactory", "label": "❌ Unsatisfactory", "color": "#ef4444"},
+            {"value": "escalate", "label": "🚨 Needs Escalation", "color": "#8b5cf6"}
+        ],
+        "required": True
+    },
+    "default_response": "escalate",
     "platform": "api"
 }
 

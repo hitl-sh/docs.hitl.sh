@@ -1,0 +1,301 @@
+---
+title: "Content Types"
+description: "Learn about the different content types supported for review requests"
+icon: "layers"
+---
+
+# Content Types
+
+HITL.sh supports five content types for review requests. Each type determines how content is rendered on the mobile app and which fields are required when creating a request.
+
+<CardGroup cols={3}>
+<Card title="Markdown" icon="file-text">
+Text-based content rendered as formatted markdown. No extra URL fields required.
+</Card>
+
+<Card title="Image" icon="image">
+Visual content loaded from a URL. Requires `image_url`. Upload supported (10MB max).
+</Card>
+
+<Card title="Document" icon="file">
+PDF, DOCX, and other files loaded from a URL. Requires `file_url`, `file_type`, and `file_name`. Upload supported (50MB max).
+</Card>
+
+<Card title="Video Link" icon="video">
+YouTube, Vimeo, or raw video files loaded from a URL. Requires `video_url`. Link only — no upload.
+</Card>
+
+<Card title="Audio Link" icon="music">
+SoundCloud, Spotify, or raw audio files loaded from a URL. Requires `audio_url`. Link only — no upload.
+</Card>
+</CardGroup>
+
+## Comparison Table
+
+| Content Type | Field Required | Formats Supported | Upload | Max Size |
+|---|---|---|---|---|
+| `markdown` | — | Markdown text | N/A | N/A |
+| `image` | `image_url` | JPG, PNG, GIF, WebP | Yes | 10MB |
+| `file` | `file_url`, `file_type`, `file_name` | PDF, DOCX, XLSX, and more | Yes | 50MB |
+| `video` | `video_url` | YouTube, Vimeo, .mp4, .webm, .mov | No (link only) | — |
+| `audio` | `audio_url` | SoundCloud, Spotify, .mp3, .wav, .ogg, .m4a, .aac | No (link only) | — |
+
+---
+
+## Markdown
+
+The `markdown` content type renders the `request_text` field as formatted markdown in the mobile app. Use it for text content such as comments, articles, support tickets, or any content where the full context can be expressed in text.
+
+### Required Fields
+
+No additional URL fields are required beyond the standard request fields.
+
+### API Example
+
+```python
+request_data = {
+    "type": "markdown",
+    "request_text": "## User Comment\n\nPlease review this comment for community guideline compliance:\n\n> 'This product changed my life! Use my code SAVE20 for a discount.'",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {"value": "approve", "label": "✅ Approve", "color": "#22c55e"},
+            {"value": "reject", "label": "❌ Reject", "color": "#ef4444"},
+            {"value": "escalate", "label": "🚨 Escalate", "color": "#8b5cf6"}
+        ]
+    },
+    "default_response": "reject"
+}
+```
+
+### How It Renders
+
+- **Mobile app**: `request_text` is rendered as formatted markdown with support for headings, lists, bold/italic, code blocks, and links.
+- **Web portal**: Full markdown rendering with the same formatting support.
+
+---
+
+## Image
+
+The `image` content type loads a visual asset from a URL and displays it to the reviewer. Use it for profile photos, user-uploaded images, AI-generated graphics, or any content that requires visual inspection.
+
+### Required Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `image_url` | string | Public URL to the image |
+
+### Supported Formats
+
+JPG, PNG, GIF, WebP, and other common image formats. The URL must be publicly accessible.
+
+### API Example
+
+```python
+request_data = {
+    "type": "image",
+    "request_text": "Review this uploaded profile photo for appropriateness and compliance with our image guidelines.",
+    "image_url": "https://cdn.example.com/uploads/profile_photos/user_12345.jpg",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {"value": "approve", "label": "✅ Approve", "color": "#22c55e"},
+            {"value": "reject", "label": "❌ Reject", "color": "#ef4444"},
+            {"value": "flag", "label": "🚩 Flag for Review", "color": "#f59e0b"}
+        ]
+    },
+    "default_response": "reject"
+}
+```
+
+### How It Renders
+
+- **Mobile app**: Full-screen image viewer with pinch-to-zoom and pan support. The `request_text` appears as a header above the image.
+- **Web portal**: Inline image display with zoom capability.
+
+### Upload Support
+
+You can upload images directly to HITL.sh (up to 10MB) rather than hosting them yourself. See the [Upload section](#uploading-files) below for details.
+
+---
+
+## Document
+
+The `file` content type loads a document from a URL and presents it to the reviewer. Use it for contracts, compliance documents, reports, invoices, or any file-based content requiring human review.
+
+### Required Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `file_url` | string | Public URL to the document |
+| `file_type` | string | MIME type (e.g. `application/pdf`) |
+| `file_name` | string | Display name shown to reviewers |
+
+### Supported Formats
+
+PDF, DOCX, XLSX, PPTX, TXT, CSV, and other common document formats. The URL must be publicly accessible.
+
+### API Example
+
+```python
+request_data = {
+    "type": "file",
+    "request_text": "Review this contract for compliance issues and confirm it meets our legal requirements.",
+    "file_url": "https://cdn.example.com/documents/contract_v2.pdf",
+    "file_type": "application/pdf",
+    "file_name": "contract_v2.pdf",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {"value": "approve", "label": "✅ Approve", "color": "#22c55e"},
+            {"value": "reject", "label": "❌ Reject", "color": "#ef4444"},
+            {"value": "revise", "label": "✏️ Needs Revision", "color": "#f59e0b"}
+        ]
+    },
+    "default_response": "revise"
+}
+```
+
+### How It Renders
+
+- **Mobile app**: Inline document viewer with scroll support. File name and type are shown as metadata above the viewer.
+- **Web portal**: Embedded document viewer. Reviewers can also open the file in a new tab.
+
+### Upload Support
+
+You can upload documents directly to HITL.sh (up to 50MB) rather than hosting them yourself. See the [Upload section](#uploading-files) below for details.
+
+---
+
+## Video Link
+
+The `video` content type embeds a video player in the review interface. Use it for training videos, recorded demos, customer-submitted videos, or any video content requiring quality review. 
+
+<Info>
+Video is link-only — HITL.sh does not support direct video file uploads. Host your video on YouTube, Vimeo, or a CDN and provide the URL.
+</Info>
+
+### Required Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `video_url` | string | URL to the video (platform or direct file link) |
+
+### Supported Platforms and Formats
+
+- **Platforms**: YouTube, Vimeo
+- **Direct files**: `.mp4`, `.webm`, `.mov` hosted on a publicly accessible CDN
+
+### API Example
+
+```python
+request_data = {
+    "type": "video",
+    "request_text": "Review this training video for accuracy and completeness before publishing to employees.",
+    "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 5,
+        "scale_step": 1,
+        "labels": {
+            "1": "Poor",
+            "3": "Acceptable",
+            "5": "Excellent"
+        }
+    },
+    "default_response": 3
+}
+```
+
+### How It Renders
+
+- **Mobile app**: Embedded video player with standard playback controls. The `request_text` appears above the player.
+- **Web portal**: Embedded iframe player for platform URLs, or HTML5 video player for direct file links.
+
+---
+
+## Audio Link
+
+The `audio` content type embeds an audio player in the review interface. Use it for call recordings, podcasts, voice samples, or any audio content requiring quality assurance review.
+
+<Info>
+Audio is link-only — HITL.sh does not support direct audio file uploads. Host your audio file on SoundCloud, Spotify, or a CDN and provide the URL.
+</Info>
+
+### Required Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `audio_url` | string | URL to the audio (platform or direct file link) |
+
+### Supported Platforms and Formats
+
+- **Platforms**: SoundCloud, Spotify
+- **Direct files**: `.mp3`, `.wav`, `.ogg`, `.m4a`, `.aac` hosted on a publicly accessible CDN
+
+### API Example
+
+```python
+request_data = {
+    "type": "audio",
+    "request_text": "Review this customer service call for quality assurance. Check for compliance with our communication guidelines.",
+    "audio_url": "https://cdn.example.com/recordings/call_12345.mp3",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {"value": "satisfactory", "label": "✅ Satisfactory", "color": "#22c55e"},
+            {"value": "unsatisfactory", "label": "❌ Unsatisfactory", "color": "#ef4444"},
+            {"value": "escalate", "label": "🚨 Needs Escalation", "color": "#8b5cf6"}
+        ]
+    },
+    "default_response": "escalate"
+}
+```
+
+### How It Renders
+
+- **Mobile app**: Embedded audio player with play/pause, seek bar, and playback speed controls. The `request_text` appears above the player.
+- **Web portal**: Embedded platform player for SoundCloud/Spotify URLs, or HTML5 audio player for direct file links.
+
+---
+
+## Uploading Files
+
+For image and document content types, HITL.sh provides a direct upload path so you do not need to manage your own file hosting.
+
+<CardGroup cols={2}>
+<Card title="Image Upload" icon="image">
+Upload images up to **10MB**. Supported formats: JPG, PNG, GIF, WebP.
+</Card>
+
+<Card title="Document Upload" icon="file">
+Upload documents up to **50MB**. Supported formats: PDF, DOCX, XLSX, PPTX, TXT, CSV.
+</Card>
+</CardGroup>
+
+After uploading, HITL.sh returns a hosted URL that you pass as `image_url` or `file_url` in your request. Uploaded files are stored securely and served via CDN.
+
+<Info>
+Video and audio content types do not support direct uploads. Use a video hosting platform (YouTube, Vimeo) or a CDN for your media files and provide the URL in `video_url` or `audio_url`.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Requests Introduction" icon="file-text" href="/requests/introduction">
+See complete API examples for all five content types.
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/requests/create-request">
+Full parameter reference for the create request endpoint.
+</Card>
+
+<Card title="Response Types" icon="message-circle" href="/responses/types">
+Learn how to collect structured feedback from reviewers.
+</Card>
+
+<Card title="Mobile App" icon="mobile" href="/mobile/responding">
+Understand how reviewers interact with each content type on mobile.
+</Card>
+</CardGroup>
