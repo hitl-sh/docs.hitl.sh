@@ -6,7 +6,7 @@ icon: "shapes"
 
 # Response Types
 
-HITL.sh supports five different response types that allow reviewers to provide structured feedback. Each response type has its own configuration options and validation rules, giving you flexibility to design the perfect review experience for your use case.
+HITL.sh supports six different response types that allow reviewers to provide structured feedback. Each response type has its own configuration options and validation rules, giving you flexibility to design the perfect review experience for your use case.
 
 ## Overview
 
@@ -15,6 +15,10 @@ When creating a request, you specify the `response_type` and `response_config` t
 <CardGroup cols={3}>
 <Card title="Text" icon="message">
 Free-form text responses with character limits and validation
+</Card>
+
+<Card title="Editable Draft" icon="edit">
+Send a draft for the reviewer to revise before sending back
 </Card>
 
 <Card title="Single Select" icon="circle-dot">
@@ -143,6 +147,128 @@ When a reviewer submits a text response, you'll receive:
 ```json
 {
   "response_data": "This article is well-written and factually accurate. The tone is professional and engaging. I recommend approval with minor grammar corrections on paragraph 3."
+}
+```
+
+## Editable Text Response
+
+Send a draft message for the reviewer to edit and revise before sending back. Perfect for AI-generated notifications, emails, or messages that need human polish.
+
+### Configuration
+
+<ParamField body="draft_text" type="string" required>
+The initial draft text that the reviewer will edit
+</ParamField>
+
+<ParamField body="placeholder" type="string" optional>
+Placeholder text shown in the editor
+</ParamField>
+
+<ParamField body="min_length" type="integer" optional default="0">
+Minimum characters required
+</ParamField>
+
+<ParamField body="max_length" type="integer" required>
+Maximum characters allowed (1-10000)
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a response is required
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```python Python
+import requests
+
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please review and edit this AI-generated client notification before it is sent.",
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Dear Client,\n\nYour project milestone has been completed ahead of schedule. Our team will reach out shortly to discuss next steps.\n\nBest regards,\nThe Team",
+        "placeholder": "Edit the message above...",
+        "min_length": 20,
+        "max_length": 2000,
+        "required": True
+    },
+    "default_response": "Notification not reviewed within timeout period",
+    "timeout_seconds": 3600,
+    "platform": "api"
+}
+
+response = requests.post(
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=request_data
+)
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "medium",
+    request_text: "Please review and edit this AI-generated client notification before it is sent.",
+    response_type: "editable_text",
+    response_config: {
+        draft_text: "Dear Client,\n\nYour project milestone has been completed ahead of schedule. Our team will reach out shortly to discuss next steps.\n\nBest regards,\nThe Team",
+        placeholder: "Edit the message above...",
+        min_length: 20,
+        max_length: 2000,
+        required: true
+    },
+    default_response: "Notification not reviewed within timeout period",
+    timeout_seconds: 3600,
+    platform: "api"
+};
+
+const response = await axios.post(
+    `https://api.hitl.sh/v1/api/loops/${loopId}/requests`,
+    requestData,
+    { headers: { Authorization: `Bearer ${apiKey}` }}
+);
+```
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please review and edit this AI-generated client notification before it is sent.",
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Dear Client,\n\nYour project milestone has been completed ahead of schedule. Our team will reach out shortly to discuss next steps.\n\nBest regards,\nThe Team",
+        "placeholder": "Edit the message above...",
+        "min_length": 20,
+        "max_length": 2000,
+        "required": true
+    },
+    "default_response": "Notification not reviewed within timeout period",
+    "timeout_seconds": 3600,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+### Response Format
+
+When a reviewer submits an editable text response, you'll receive:
+
+```json
+{
+  "response_data": {
+    "revised_text": "Dear Client,\n\nGreat news — your project milestone has been completed two days ahead of schedule! We will be in touch by end of day to walk you through the next phase.\n\nWarm regards,\nThe Team",
+    "was_edited": true
+  }
 }
 ```
 
@@ -494,6 +620,13 @@ HITL.sh validates all responses against the configured rules:
 - Negative numbers only allowed if allow_negative is true
 </Accordion>
 
+<Accordion title="Editable Text Validation">
+- Response must be an object containing `revised_text` (string) and `was_edited` (boolean)
+- `revised_text` length must be within min_length and max_length bounds
+- Required responses cannot have an empty `revised_text`
+- `max_length` must be between 1 and 10000
+</Accordion>
+
 </AccordionGroup>
 
 ## Best Practices
@@ -519,6 +652,10 @@ Use ratings for quantitative assessments where you need to measure quality, sati
 
 <Step title="Number for Quantitative Input">
 Use number responses for pricing, quantities, measurements, or any numeric data that needs validation and formatting.
+</Step>
+
+<Step title="Editable Text for Human Polish">
+Use editable text when you have AI-generated drafts — emails, notifications, or messages — that need a human to refine the tone, accuracy, or wording before delivery.
 </Step>
 
 </Steps>
@@ -581,6 +718,13 @@ def handle_response(request_id, response_data, response_type):
     elif response_type == "number":
         value = response_data
         update_pricing_model(request_id, value)
+
+    elif response_type == "editable_text":
+        revised_text = response_data["revised_text"]
+        was_edited = response_data["was_edited"]
+        send_client_notification(revised_text)
+        if was_edited:
+            log_human_revision(request_id, revised_text)
 ```
 
 ## Next Steps

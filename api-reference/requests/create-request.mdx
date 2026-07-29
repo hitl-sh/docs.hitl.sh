@@ -106,6 +106,30 @@ Identify multiple issues, features, or categories in content.
 }
 ```
 </Accordion>
+
+<Accordion title="✏️ Editable Draft" icon="pen">
+Send an AI-generated draft for a human to polish before delivery. Perfect for notifications, emails, or any message that benefits from a final human touch.
+
+```json
+{
+  "processing_type": "time-sensitive",
+  "type": "markdown",
+  "priority": "medium",
+  "request_text": "Please review and edit this AI-generated client notification before it is sent.",
+  "timeout_seconds": 3600,
+  "response_type": "editable_text",
+  "response_config": {
+    "draft_text": "Dear Client,\n\nYour project milestone has been completed ahead of schedule. Our team will reach out shortly to discuss next steps.\n\nBest regards,\nThe Team",
+    "placeholder": "Edit the message above...",
+    "min_length": 20,
+    "max_length": 2000,
+    "required": true
+  },
+  "default_response": "Notification not reviewed within timeout period",
+  "platform": "api"
+}
+```
+</Accordion>
 </AccordionGroup>
 
 ## Authentication
@@ -135,7 +159,7 @@ When `processing_type` is set to `"time-sensitive"`, the `timeout_seconds` param
 <ParamField body="type" type="string" required>
   Content type of the request
   <br />
-  <strong>Options:</strong> `markdown`, `image`
+  <strong>Options:</strong> `markdown`, `image`, `file`, `video`, `audio`
 </ParamField>
 
 <ParamField body="priority" type="string" required>
@@ -150,6 +174,50 @@ When `processing_type` is set to `"time-sensitive"`, the `timeout_seconds` param
 
 <ParamField body="image_url" type="string">
   URL of the image to review (required when `type` is `image`)
+</ParamField>
+
+<ParamField body="image_urls" type="string[]">
+  Array of image URLs for multi-image requests
+</ParamField>
+
+<ParamField body="file_url" type="string">
+  URL of the document to review (required when `type` is `file`)
+</ParamField>
+
+<ParamField body="file_type" type="string">
+  MIME type of the document, e.g. `application/pdf` (required when `type` is `file`)
+</ParamField>
+
+<ParamField body="file_name" type="string">
+  Display name shown to reviewers (required when `type` is `file`)
+</ParamField>
+
+<ParamField body="file_urls" type="string[]">
+  Array of document URLs for multi-document requests
+</ParamField>
+
+<ParamField body="file_types" type="string[]">
+  MIME types for each document in `file_urls`
+</ParamField>
+
+<ParamField body="file_names" type="string[]">
+  Display names for each document in `file_urls`
+</ParamField>
+
+<ParamField body="video_url" type="string">
+  URL of the video to review (required when `type` is `video`)
+</ParamField>
+
+<ParamField body="video_urls" type="string[]">
+  Array of video URLs for multi-video requests
+</ParamField>
+
+<ParamField body="audio_url" type="string">
+  URL of the audio to review (required when `type` is `audio`)
+</ParamField>
+
+<ParamField body="audio_urls" type="string[]">
+  Array of audio URLs for multi-audio requests
 </ParamField>
 
 <ParamField body="context" type="object">
@@ -167,7 +235,7 @@ When `processing_type` is set to `"time-sensitive"`, the `timeout_seconds` param
 <ParamField body="response_type" type="string" required>
   Type of response expected from reviewers
   <br />
-  <strong>Options:</strong> `text`, `single_select`, `multi_select`, `rating`, `number`
+  <strong>Options:</strong> `text`, `editable_text`, `single_select`, `multi_select`, `rating`, `number`
 </ParamField>
 
 <ParamField body="response_config" type="object" required>
@@ -572,6 +640,33 @@ curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
     "response_type": "text",
     "response_config": {},
     "default_response": "No feedback provided",
+    "platform": "api"
+  }'
+```
+</Accordion>
+
+<Accordion title="✏️ Editable Draft" icon="pen-to-square">
+For AI-generated messages that need human review and revision before sending.
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/api/loops/YOUR_LOOP_ID/requests \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please review and edit this AI-generated client notification before it is sent.",
+    "timeout_seconds": 3600,
+    "response_type": "editable_text",
+    "response_config": {
+      "draft_text": "Dear Client,\n\nYour project milestone has been completed ahead of schedule. Our team will reach out shortly to discuss next steps.\n\nBest regards,\nThe Team",
+      "placeholder": "Edit the message above...",
+      "min_length": 20,
+      "max_length": 2000,
+      "required": true
+    },
+    "default_response": "Notification not reviewed within timeout period",
     "platform": "api"
   }'
 ```

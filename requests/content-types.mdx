@@ -35,8 +35,8 @@ SoundCloud, Spotify, or raw audio files loaded from a URL. Requires `audio_url`.
 | Content Type | Field Required | Formats Supported | Upload | Max Size |
 |---|---|---|---|---|
 | `markdown` | — | Markdown text | N/A | N/A |
-| `image` | `image_url` | JPG, PNG, GIF, WebP | Yes | 10MB |
-| `file` | `file_url`, `file_type`, `file_name` | PDF, DOCX, XLSX, and more | Yes | 50MB |
+| `image` | `image_url` | JPG, PNG, GIF, WebP | Yes (public API) | 10MB |
+| `file` | `file_url`, `file_type`, `file_name` | PDF, DOCX, XLSX, and more | Yes (public API) | 50MB |
 | `video` | `video_url` | YouTube, Vimeo, .mp4, .webm, .mov | No (link only) | — |
 | `audio` | `audio_url` | SoundCloud, Spotify, .mp3, .wav, .ogg, .m4a, .aac | No (link only) | — |
 
@@ -279,6 +279,48 @@ After uploading, HITL.sh returns a hosted URL that you pass as `image_url` or `f
 <Info>
 Video and audio content types do not support direct uploads. Use a video hosting platform (YouTube, Vimeo) or a CDN for your media files and provide the URL in `video_url` or `audio_url`.
 </Info>
+
+---
+
+## Multiple Attachments
+
+You can attach multiple media items to a single request using array fields. This is useful for batch review, galleries, or requests requiring multiple supporting documents.
+
+| Array Field | Singular Field | Description |
+|---|---|---|
+| `image_urls` | `image_url` | Multiple images for gallery review |
+| `file_urls` | `file_url` | Multiple documents |
+| `file_types` | `file_type` | MIME types for each file |
+| `file_names` | `file_name` | Display names for each file |
+| `video_urls` | `video_url` | Multiple videos |
+| `audio_urls` | `audio_url` | Multiple audio files |
+
+<Note>
+**Backward compatible:** Singular fields (`image_url`, `file_url`, etc.) continue to work exactly as before. Array fields are additive — use them only when you need to attach more than one item.
+</Note>
+
+### API Example
+
+```python
+request_data = {
+    "type": "image",
+    "request_text": "Review these three product photos for quality and compliance before publishing to the store.",
+    "image_urls": [
+        "https://cdn.example.com/products/item_42_front.jpg",
+        "https://cdn.example.com/products/item_42_side.jpg",
+        "https://cdn.example.com/products/item_42_detail.jpg"
+    ],
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            {"value": "approve_all", "label": "✅ Approve All", "color": "#22c55e"},
+            {"value": "reject_some", "label": "⚠️ Reject Some", "color": "#f59e0b"},
+            {"value": "reject_all", "label": "❌ Reject All", "color": "#ef4444"}
+        ]
+    },
+    "default_response": "reject_all"
+}
+```
 
 ## Next Steps
 
