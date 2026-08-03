@@ -1,0 +1,438 @@
+---
+title: "Editable Text Responses"
+description: "Complete guide to implementing editable text responses for AI draft refinement, translation review, copy editing, and content revision workflows"
+---
+
+# Editable Text Responses
+
+Editable text responses present reviewers with pre-filled draft text that they can revise before submitting. This is ideal for AI-generated content that needs human refinement — product descriptions, email copy, translations, or any text that benefits from a human editing pass.
+
+## When to Use Editable Text Responses
+
+Editable text responses are ideal for:
+
+<CardGroup cols={2}>
+<Card title="AI Draft Editing" icon="wand-magic-sparkles">
+Refine AI-generated content like product descriptions, blog posts, or marketing copy before publishing
+</Card>
+
+<Card title="Translation Review" icon="language">
+Review and correct machine-translated text while preserving the original structure and intent
+</Card>
+
+<Card title="Copy Editing" icon="pen-to-square">
+Polish drafts for grammar, tone, clarity, and brand voice consistency
+</Card>
+
+<Card title="Template Customization" icon="file-pen">
+Personalize templated messages, notifications, or responses before they reach end users
+</Card>
+</CardGroup>
+
+## Configuration Options
+
+Editable text responses require the draft text that reviewers will start with:
+
+### Required Parameters
+
+<ParamField body="draft_text" type="string" required>
+The initial text presented to the reviewer for editing. This is pre-filled in the text editor when the reviewer opens the request.
+</ParamField>
+
+<ParamField body="max_length" type="integer" required>
+Maximum number of characters allowed in the revised text (1-5000)
+</ParamField>
+
+### Optional Parameters
+
+<ParamField body="placeholder" type="string" optional>
+Placeholder text shown if the reviewer clears the draft entirely
+</ParamField>
+
+<ParamField body="min_length" type="integer" optional default="0">
+Minimum number of characters required in the revised text
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a response is mandatory for completion
+</ParamField>
+
+## Implementation Examples
+
+### AI-Generated Product Description
+
+Refine an AI-generated product listing before publishing:
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Review and edit this AI-generated product description before publishing to the store:",
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Introducing our premium wireless headphones. Experience crystal-clear audio with advanced noise cancellation technology. Featuring 30-hour battery life and ergonomic design for all-day comfort. Compatible with all Bluetooth 5.0 devices.",
+        "placeholder": "Enter the revised description...",
+        "min_length": 50,
+        "max_length": 2000,
+        "required": True
+    },
+    "default_response": "No edits provided",
+    "timeout_seconds": 3600,
+    "platform": "api"
+}
+
+response = requests.post(
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=request_data
+)
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "deferred",
+    type: "markdown",
+    priority: "medium",
+    request_text: "Review and edit this AI-generated product description before publishing to the store:",
+    response_type: "editable_text",
+    response_config: {
+        draft_text: "Introducing our premium wireless headphones. Experience crystal-clear audio with advanced noise cancellation technology. Featuring 30-hour battery life and ergonomic design for all-day comfort. Compatible with all Bluetooth 5.0 devices.",
+        placeholder: "Enter the revised description...",
+        min_length: 50,
+        max_length: 2000,
+        required: true
+    },
+    default_response: "No edits provided",
+    timeout_seconds: 3600,
+    platform: "api"
+};
+
+const response = await axios.post(
+    `https://dev.api.hitl.sh/v1/api/loops/${loopId}/requests`,
+    requestData,
+    { headers: { Authorization: `Bearer ${apiKey}` }}
+);
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Review and edit this AI-generated product description before publishing:",
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Introducing our premium wireless headphones. Experience crystal-clear audio with advanced noise cancellation technology. Featuring 30-hour battery life and ergonomic design for all-day comfort.",
+        "placeholder": "Enter the revised description...",
+        "min_length": 50,
+        "max_length": 2000,
+        "required": true
+    },
+    "default_response": "No edits provided",
+    "timeout_seconds": 3600,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+### Translation Review
+
+Review and correct machine-translated content:
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Review this machine-translated email from English to Spanish. Fix any grammar, tone, or cultural issues:\n\n**Original (English):**\n> Dear customer, we're excited to announce our new product line launching next month.\n\n**Machine Translation (Spanish):**",
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Estimado cliente, estamos emocionados de anunciar nuestra nueva linea de productos que se lanzara el proximo mes.",
+        "min_length": 20,
+        "max_length": 1000,
+        "required": True
+    },
+    "default_response": "No edits provided",
+    "timeout_seconds": 1800,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "high",
+    request_text: "Review this machine-translated email from English to Spanish. Fix any grammar, tone, or cultural issues:\n\n**Original (English):**\n> Dear customer, we're excited to announce our new product line launching next month.\n\n**Machine Translation (Spanish):**",
+    response_type: "editable_text",
+    response_config: {
+        draft_text: "Estimado cliente, estamos emocionados de anunciar nuestra nueva linea de productos que se lanzara el proximo mes.",
+        min_length: 20,
+        max_length: 1000,
+        required: true
+    },
+    default_response: "No edits provided",
+    timeout_seconds: 1800,
+    platform: "api"
+};
+```
+
+</CodeGroup>
+
+### Email Draft Refinement
+
+Polish an AI-drafted customer response:
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Edit this AI-generated customer response email before sending. Ensure the tone is professional and empathetic.\n\n**Customer Issue:** Order #4521 arrived damaged.\n\n**AI Draft:**",
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Hi Sarah,\n\nThank you for reaching out about your damaged order #4521. We sincerely apologize for the inconvenience. We've initiated a replacement shipment that will arrive within 3-5 business days. You do not need to return the damaged item.\n\nPlease let us know if there's anything else we can help with.\n\nBest regards,\nCustomer Support Team",
+        "min_length": 50,
+        "max_length": 3000,
+        "required": True
+    },
+    "default_response": "No edits provided",
+    "timeout_seconds": 900,
+    "platform": "api"
+}
+```
+
+</CodeGroup>
+
+## Response Format
+
+When a reviewer submits an editable text response, you receive the revised text and a flag indicating whether changes were made:
+
+```json
+{
+  "response_data": {
+    "revised_text": "Introducing our premium wireless headphones — crystal-clear audio meets advanced noise cancellation. With 30 hours of battery life and an ergonomic design built for all-day comfort, these headphones redefine your listening experience. Works with any Bluetooth 5.0 device.",
+    "was_edited": true
+  }
+}
+```
+
+When the reviewer submits without making changes:
+
+```json
+{
+  "response_data": {
+    "revised_text": "Introducing our premium wireless headphones. Experience crystal-clear audio with advanced noise cancellation technology. Featuring 30-hour battery life and ergonomic design for all-day comfort.",
+    "was_edited": false
+  }
+}
+```
+
+## Use Case Examples
+
+### 1. Content Publishing Pipeline
+
+<Tabs>
+<Tab title="Configuration">
+```python
+content_editing_config = {
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": ai_generated_article,
+        "placeholder": "Enter revised article...",
+        "min_length": 100,
+        "max_length": 5000,
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "revised_text": "The polished, human-edited version of the article...",
+    "was_edited": true
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_content_edit(response_data, content_id):
+    revised_text = response_data["revised_text"]
+    was_edited = response_data["was_edited"]
+    
+    if was_edited:
+        # Publish the human-edited version
+        update_content(content_id, revised_text)
+        log_edit_metrics(content_id, "edited")
+        
+        # Track editing patterns for AI improvement
+        original = get_original_draft(content_id)
+        store_edit_diff(content_id, original, revised_text)
+    else:
+        # AI draft was good enough — publish as-is
+        publish_content(content_id)
+        log_edit_metrics(content_id, "approved_as_is")
+    
+    set_content_status(content_id, "published")
+```
+</Tab>
+</Tabs>
+
+### 2. Automated Email QA
+
+<Tabs>
+<Tab title="Configuration">
+```python
+email_qa_config = {
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": ai_generated_email,
+        "min_length": 20,
+        "max_length": 3000,
+        "required": True
+    }
+}
+```
+</Tab>
+
+<Tab title="Sample Response">
+```json
+{
+  "response_data": {
+    "revised_text": "The corrected email text...",
+    "was_edited": true
+  }
+}
+```
+</Tab>
+
+<Tab title="Processing">
+```python
+def process_email_edit(response_data, email_id, recipient):
+    revised_text = response_data["revised_text"]
+    was_edited = response_data["was_edited"]
+    
+    # Send the final version
+    send_email(
+        to=recipient,
+        body=revised_text,
+        metadata={"human_reviewed": True, "was_edited": was_edited}
+    )
+    
+    # Feed back into AI training
+    if was_edited:
+        original = get_draft(email_id)
+        record_training_pair(original, revised_text, "email_refinement")
+```
+</Tab>
+</Tabs>
+
+## Validation and Error Handling
+
+### Automatic Validation
+
+The mobile app and web dashboard automatically validate editable text responses:
+
+- **Type validation**: Ensures response is a string
+- **Length validation**: Enforces min_length and max_length bounds
+- **Required validation**: Prevents empty submissions when required=true
+
+### Server-Side Validation
+
+```python
+def validate_editable_text_response(response_data, response_config):
+    """Validate editable text response against configuration"""
+    
+    if not isinstance(response_data, dict):
+        return False, "Response must be an object"
+    
+    if "revised_text" not in response_data:
+        return False, "Missing revised_text field"
+    
+    revised_text = response_data["revised_text"]
+    
+    if not isinstance(revised_text, str):
+        return False, "revised_text must be a string"
+    
+    min_len = response_config.get("min_length", 0)
+    max_len = response_config.get("max_length", 5000)
+    
+    if len(revised_text) < min_len:
+        return False, f"Text too short (minimum {min_len} characters)"
+    
+    if len(revised_text) > max_len:
+        return False, f"Text too long (maximum {max_len} characters)"
+    
+    if response_config.get("required", False) and not revised_text.strip():
+        return False, "Revised text is required"
+    
+    return True, "Valid"
+```
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Provide Clear Drafts">
+- Start with well-structured, nearly-complete drafts
+- Include proper formatting (paragraphs, punctuation) in the draft
+- Make the draft good enough that minor edits are sufficient
+- Avoid placeholder text like "[INSERT NAME HERE]" — use realistic content
+</Accordion>
+
+<Accordion title="Set Appropriate Length Limits">
+- Set `min_length` to prevent empty or trivially short responses
+- Set `max_length` generously — reviewers may expand the draft
+- Consider the output context (email subject vs. blog post)
+- Match limits to the target platform's constraints
+</Accordion>
+
+<Accordion title="Use was_edited Effectively">
+- Track edit rates to measure AI draft quality over time
+- If `was_edited` is consistently `false`, your AI drafts are already strong
+- If `was_edited` is consistently `true`, analyze diffs to improve the AI model
+- Use the edit patterns as training data for future AI generations
+</Accordion>
+
+<Accordion title="Provide Context in request_text">
+- Include the original source material or prompt that generated the draft
+- Specify the target audience and tone (formal, casual, technical)
+- Highlight specific areas to focus on (grammar, factual accuracy, brand voice)
+- Mention any constraints (character limits, required keywords)
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Response Types Overview" icon="list" href="/responses/types">
+Compare all seven response types and choose the right one for your use case
+</Card>
+
+<Card title="Text Responses" icon="message" href="/responses/text">
+For free-form text input without a pre-filled draft, use text responses instead
+</Card>
+
+<Card title="Boolean Responses" icon="toggle-on" href="/responses/boolean">
+For simple approve/reject decisions on content, use boolean responses
+</Card>
+
+<Card title="Mobile Experience" icon="mobile" href="/mobile/responding">
+See how reviewers interact with editable text on mobile devices
+</Card>
+</CardGroup>

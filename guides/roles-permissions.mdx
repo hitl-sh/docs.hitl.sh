@@ -1,0 +1,168 @@
+---
+title: "Roles & Permissions"
+description: "Understand the 4-tier role model for organizations — owner, admin, member, and viewer — and what each role can do"
+---
+
+# Roles & Permissions
+
+HITL.sh uses a 4-tier role model to control access within organizations. Each role has a defined set of capabilities, ensuring team members can only perform actions appropriate to their responsibilities.
+
+## Role Hierarchy
+
+Roles are hierarchical — higher-tier roles inherit all capabilities of lower tiers.
+
+| Role | Level | Description |
+|------|-------|-------------|
+| **owner** | 4 | Full control over the organization, billing, and settings. One per organization. |
+| **admin** | 3 | Manages members, loops, and most settings. Cannot transfer ownership or delete the organization. |
+| **member** | 2 | Active reviewer who can respond to requests and participate in loops. |
+| **viewer** | 1 | Read-only access to view requests, responses, and analytics. |
+
+## Capabilities by Role
+
+### Owner
+
+<Card title="Owner" icon="crown">
+The organization creator with full control. There is exactly one owner per organization.
+</Card>
+
+- Everything an admin can do, plus:
+- Transfer organization ownership
+- Delete the organization
+- Manage billing and subscription
+- Change the organization plan (Business / Enterprise)
+
+### Admin
+
+<Card title="Admin" icon="user-shield">
+Team leads and managers who configure workflows and manage the team.
+</Card>
+
+- Everything a member can do, plus:
+- Invite and remove members
+- Change member roles (except promoting to owner)
+- Create, update, and delete loops
+- Configure organization settings
+- Manage API keys
+- Generate and revoke invite codes
+- View audit logs
+
+### Member
+
+<Card title="Member" icon="user">
+Active reviewers who participate in loops and respond to requests.
+</Card>
+
+- Everything a viewer can do, plus:
+- Respond to requests assigned to their loops
+- Submit approval chain decisions
+- Join loops via invite codes
+- Access the mobile app with full review capabilities
+
+### Viewer
+
+<Card title="Viewer" icon="eye">
+Stakeholders who need visibility into review activity without participating.
+</Card>
+
+- View requests and their statuses
+- View responses and decisions
+- View loop membership and configuration
+- Access analytics dashboards (read-only)
+- Cannot respond to requests or modify any settings
+
+## Role Comparison Table
+
+| Capability | Viewer | Member | Admin | Owner |
+|-----------|--------|--------|-------|-------|
+| View requests & responses | Yes | Yes | Yes | Yes |
+| View analytics | Yes | Yes | Yes | Yes |
+| Respond to requests | — | Yes | Yes | Yes |
+| Submit approval decisions | — | Yes | Yes | Yes |
+| Join loops | — | Yes | Yes | Yes |
+| Create & manage loops | — | — | Yes | Yes |
+| Invite & remove members | — | — | Yes | Yes |
+| Change member roles | — | — | Yes | Yes |
+| Manage API keys | — | — | Yes | Yes |
+| Configure org settings | — | — | Yes | Yes |
+| View audit logs | — | — | Yes | Yes |
+| Manage billing | — | — | — | Yes |
+| Transfer ownership | — | — | — | Yes |
+| Delete organization | — | — | — | Yes |
+
+## Assigning Roles
+
+### During Invitation
+
+When inviting a member, admins and owners can specify the role:
+
+<Steps>
+<Step title="Open Organization Settings">
+Navigate to your organization's settings page in the dashboard.
+</Step>
+
+<Step title="Go to Members">
+Select the **Members** tab to view current members and invite new ones.
+</Step>
+
+<Step title="Invite with Role">
+Enter the invitee's email and select the role (viewer, member, or admin). Click **Send Invite**.
+</Step>
+</Steps>
+
+### Via Invite Code
+
+Members who join via an invite code are automatically assigned the **member** role. An admin or owner can change their role after they join.
+
+### Changing Roles
+
+Admins and owners can change any member's role from the Members tab:
+
+1. Find the member in the members list
+2. Click the role dropdown next to their name
+3. Select the new role
+4. The change takes effect immediately
+
+<Note>
+Admins cannot promote members to **owner** — only the current owner can transfer ownership. Admins also cannot demote other admins; only the owner can do this.
+</Note>
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Principle of Least Privilege">
+Assign the minimum role needed for each team member's responsibilities. Start with **viewer** or **member** and promote as needed rather than defaulting to admin access.
+</Accordion>
+
+<Accordion title="Limit Admin Count">
+Keep the number of admins small — ideally 2-3 per organization. Too many admins increases the risk of accidental configuration changes.
+</Accordion>
+
+<Accordion title="Use Viewers for Stakeholders">
+Product managers, executives, or clients who need to monitor review activity but shouldn't participate should be assigned the **viewer** role.
+</Accordion>
+
+<Accordion title="Audit Role Changes">
+Enterprise organizations should periodically review the members list and ensure roles still match current responsibilities. Audit logs track all role changes for compliance.
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Organizations" icon="building" href="/guides/organizations">
+Learn how to create and manage organizations
+</Card>
+
+<Card title="Approval Chains" icon="list-check" href="/guides/approval-chains">
+Set up multi-step approval workflows that leverage role-based routing
+</Card>
+
+<Card title="Loop Members" icon="users" href="/api-reference/loops/loop-members">
+Manage loop membership via the API
+</Card>
+
+<Card title="Dashboard" icon="gauge" href="/dashboard">
+Access the organization settings and members page
+</Card>
+</CardGroup>

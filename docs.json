@@ -25,26 +25,39 @@
             "pages": [
               "index",
               "introduction",
+              "quickstart",
               "dashboard",
               "api-keys",
-              "first-loop"
+              "first-loop",
+              "sdks"
             ]
           },
           {
             "group": "Integration Guides",
             "pages": [
               "guides/simple-integration",
-              "guides/response-types"
+              "guides/response-types",
+              "guides/rich-content-types"
+            ]
+          },
+          {
+            "group": "Enterprise",
+            "pages": [
+              "guides/organizations",
+              "guides/roles-permissions",
+              "guides/approval-chains"
             ]
           },
           {
             "group": "Core Concepts",
             "pages": [
+              "concepts",
               "concepts/loops",
               "concepts/requests",
               "concepts/responses",
               "concepts/sessions",
-              "concepts/integrations"
+              "concepts/integrations",
+              "concepts/ai-agents"
             ]
           },
           {
@@ -55,6 +68,10 @@
               "mobile/join-loop",
               "mobile/responding"
             ]
+          },
+          {
+            "group": "Features",
+            "pages": ["features/inbox"]
           },
           {
             "group": "Requests",
@@ -68,16 +85,39 @@
               "responses/single-select",
               "responses/multi-select",
               "responses/rating",
-              "responses/number"
+              "responses/number",
+              "responses/boolean",
+              "responses/editable-text"
             ]
+          },
+          {
+            "group": "Templates",
+            "pages": ["templates/overview"]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "examples/content-moderation",
+              "examples/templates"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": ["webhooks/global"]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": ["troubleshooting"]
           },
           {
             "group": "Integrations",
             "pages": [
+              "integrations/overview",
               "integrations/claude-code",
               "integrations/n8n",
               "integrations/zapier",
               "integrations/make",
+              "integrations/python",
               "integrations/coming-soon"
             ]
           }
@@ -92,7 +132,8 @@
               "api-reference/introduction",
               "api-reference/authentication",
               "api-reference/test-api-key",
-              "api-reference/errors"
+              "api-reference/errors",
+              "api-reference/playground"
             ]
           },
           {
@@ -129,6 +170,21 @@
               "api-reference/sessions/wait-for-turn",
               "api-reference/sessions/respond-to-turn",
               "api-reference/sessions/record-action"
+            ]
+          },
+          {
+            "group": "Upload",
+            "pages": [
+              "api-reference/upload/upload-image",
+              "api-reference/upload/upload-document"
+            ]
+          },
+          {
+            "group": "Approval Chains",
+            "pages": [
+              "api-reference/approvals/create-chain",
+              "api-reference/approvals/get-chain",
+              "api-reference/approvals/submit-decision"
             ]
           },
           {

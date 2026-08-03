@@ -1,0 +1,202 @@
+---
+title: "Create Approval Chain"
+api: "POST https://dev.api.hitl.sh/v1/requests/{requestId}/approval-chain"
+description: "Create a multi-step approval chain for a request"
+---
+
+# Create Approval Chain
+
+Attach an approval chain to an existing request. The chain defines the approval steps, designated approvers, and evaluation mode.
+
+<Note>
+Only one approval chain can exist per request. Attempting to create a second chain returns a `409 Conflict` error.
+</Note>
+
+## Path Parameters
+
+<ParamField path="requestId" type="string" required>
+The ID of the request to attach the approval chain to
+</ParamField>
+
+## Request Body
+
+<ParamField body="org_id" type="string" required>
+The organization ID this approval chain belongs to
+</ParamField>
+
+<ParamField body="mode" type="string" required>
+The evaluation mode for the chain. Must be `"sequential"` or `"parallel"`.
+- **sequential**: Steps are evaluated in order — step N+1 only activates after step N is approved
+- **parallel**: All steps are active simultaneously
+</ParamField>
+
+<ParamField body="steps" type="array" required>
+Array of approval steps. At least one step is required.
+<Expandable title="Step Object">
+<ParamField body="step_order" type="integer" required>
+Position of this step in the chain (starting from 1)
+</ParamField>
+
+<ParamField body="approver_ids" type="array" required>
+Array of user IDs authorized to approve this step. At least one approver required.
+</ParamField>
+
+<ParamField body="require_all" type="boolean" optional default="false">
+When `true`, all approvers must approve. When `false`, any single approval is sufficient.
+</ParamField>
+</Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+Whether the request failed
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+Human-readable status message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+<Expandable title="data">
+<ResponseField name="approval_chain" type="object">
+The created approval chain object with all steps initialized to `pending` status.
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+## Examples
+
+<CodeGroup>
+
+```python Python
+import requests
+
+chain_data = {
+    "org_id": "64a1b2c3d4e5f6a7b8c9d0e1",
+    "mode": "sequential",
+    "steps": [
+        {
+            "step_order": 1,
+            "approver_ids": ["65b2c3d4e5f6a7b8c9d0e1f2"],
+            "require_all": False
+        },
+        {
+            "step_order": 2,
+            "approver_ids": [
+                "66c3d4e5f6a7b8c9d0e1f2a3",
+                "67d4e5f6a7b8c9d0e1f2a3b4"
+            ],
+            "require_all": True
+        }
+    ]
+}
+
+response = requests.post(
+    f"https://dev.api.hitl.sh/v1/requests/{request_id}/approval-chain",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=chain_data
+)
+```
+
+```javascript Node.js
+const chainData = {
+    org_id: "64a1b2c3d4e5f6a7b8c9d0e1",
+    mode: "sequential",
+    steps: [
+        {
+            step_order: 1,
+            approver_ids: ["65b2c3d4e5f6a7b8c9d0e1f2"],
+            require_all: false
+        },
+        {
+            step_order: 2,
+            approver_ids: [
+                "66c3d4e5f6a7b8c9d0e1f2a3",
+                "67d4e5f6a7b8c9d0e1f2a3b4"
+            ],
+            require_all: true
+        }
+    ]
+};
+
+const response = await axios.post(
+    `https://dev.api.hitl.sh/v1/requests/${requestId}/approval-chain`,
+    chainData,
+    { headers: { Authorization: `Bearer ${apiKey}` }}
+);
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/requests/{request_id}/approval-chain \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "org_id": "64a1b2c3d4e5f6a7b8c9d0e1",
+    "mode": "sequential",
+    "steps": [
+        {
+            "step_order": 1,
+            "approver_ids": ["65b2c3d4e5f6a7b8c9d0e1f2"],
+            "require_all": false
+        },
+        {
+            "step_order": 2,
+            "approver_ids": [
+                "66c3d4e5f6a7b8c9d0e1f2a3",
+                "67d4e5f6a7b8c9d0e1f2a3b4"
+            ],
+            "require_all": true
+        }
+    ]
+  }'
+```
+
+</CodeGroup>
+
+### Success Response (201)
+
+```json
+{
+  "error": false,
+  "msg": "Approval chain created successfully",
+  "data": {
+    "approval_chain": {
+      "id": "68e5f6a7b8c9d0e1f2a3b4c5",
+      "request_id": "64f1a2b3c4d5e6f7a8b9c0d1",
+      "org_id": "64a1b2c3d4e5f6a7b8c9d0e1",
+      "mode": "sequential",
+      "status": "pending",
+      "steps": [
+        {
+          "step_order": 1,
+          "approver_ids": ["65b2c3d4e5f6a7b8c9d0e1f2"],
+          "require_all": false,
+          "status": "pending",
+          "decisions": []
+        },
+        {
+          "step_order": 2,
+          "approver_ids": [
+              "66c3d4e5f6a7b8c9d0e1f2a3",
+              "67d4e5f6a7b8c9d0e1f2a3b4"
+          ],
+          "require_all": true,
+          "status": "pending",
+          "decisions": []
+        }
+      ],
+      "created_at": "2026-08-01T14:30:00Z"
+    }
+  }
+}
+```
+
+### Error Responses
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| `400` | Invalid request body | Missing or malformed fields |
+| `400` | Invalid request ID format | The `requestId` path parameter is not a valid ID |
+| `400` | At least one approval step is required | The `steps` array is empty |
+| `409` | Approval chain already exists for this request | A chain was already created for this request |

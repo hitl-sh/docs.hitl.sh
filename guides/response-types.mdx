@@ -95,6 +95,18 @@ For `single_select` and `multi_select` response types, you can use **two differe
 <br />
 **Returns**: Number value with optional validation
 </Card>
+
+<Card title="Boolean" icon="toggle-on">
+**Best for**: Binary approve/reject, yes/no decisions
+<br />
+**Returns**: Object with `boolean` (true/false) and `boolean_label`
+</Card>
+
+<Card title="Editable Text" icon="pen-to-square">
+**Best for**: AI draft refinement, translation review, copy editing
+<br />
+**Returns**: Object with `revised_text` and `was_edited` flag
+</Card>
 </CardGroup>
 
 ## Text Response
@@ -685,6 +697,223 @@ price_config = {
 </Accordion>
 </AccordionGroup>
 
+## Boolean Response
+
+Simple binary decisions with customizable labels and colors.
+
+### Configuration
+
+<CodeGroup>
+
+```json Basic Boolean
+{
+  "response_type": "boolean",
+  "response_config": {
+    "true_label": "Approve",
+    "false_label": "Reject",
+    "required": true
+  }
+}
+```
+
+```json Custom Labels & Colors
+{
+  "response_type": "boolean",
+  "response_config": {
+    "true_label": "✅ Go Live",
+    "false_label": "⏸️ Hold",
+    "true_color": "#16a34a",
+    "false_color": "#f59e0b",
+    "required": true
+  }
+}
+```
+
+</CodeGroup>
+
+### Configuration Options
+
+<ParamField body="true_label" type="string" optional default="True">
+  Display text for the true/yes option (max 100 chars)
+</ParamField>
+
+<ParamField body="false_label" type="string" optional default="False">
+  Display text for the false/no option (max 100 chars)
+</ParamField>
+
+<ParamField body="true_color" type="string" optional default="#16a34a">
+  Hex color for the true option
+</ParamField>
+
+<ParamField body="false_color" type="string" optional default="#dc2626">
+  Hex color for the false option
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+  Whether a decision is required
+</ParamField>
+
+### Use Cases & Examples
+
+<AccordionGroup>
+<Accordion title="Content Approval">
+```python
+approval_config = {
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "✅ Approve Post",
+        "false_label": "❌ Reject Post",
+        "true_color": "#16a34a",
+        "false_color": "#dc2626",
+        "required": True
+    }
+}
+
+# Example response: {"boolean": true, "boolean_label": "✅ Approve Post"}
+```
+</Accordion>
+
+<Accordion title="Feature Release Gate">
+```python
+release_config = {
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "🚀 GO - Deploy",
+        "false_label": "⏸️ NO-GO - Delay",
+        "required": True
+    }
+}
+
+# Example response: {"boolean": false, "boolean_label": "⏸️ NO-GO - Delay"}
+```
+</Accordion>
+
+<Accordion title="Safety Verification">
+```python
+safety_config = {
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "🟢 Safe",
+        "false_label": "🔴 Unsafe - Investigate",
+        "true_color": "#16a34a",
+        "false_color": "#dc2626",
+        "required": True
+    }
+}
+
+# Example response: {"boolean": true, "boolean_label": "🟢 Safe"}
+```
+</Accordion>
+</AccordionGroup>
+
+## Editable Text Response
+
+Pre-filled draft text that reviewers can edit and revise before submitting.
+
+### Configuration
+
+<CodeGroup>
+
+```json Basic Editable Text
+{
+  "response_type": "editable_text",
+  "response_config": {
+    "draft_text": "Your AI-generated draft content here...",
+    "max_length": 2000,
+    "required": true
+  }
+}
+```
+
+```json With Length Constraints
+{
+  "response_type": "editable_text",
+  "response_config": {
+    "draft_text": "Introducing our new product — designed for professionals who demand the best.",
+    "placeholder": "Enter revised text...",
+    "min_length": 50,
+    "max_length": 2000,
+    "required": true
+  }
+}
+```
+
+</CodeGroup>
+
+### Configuration Options
+
+<ParamField body="draft_text" type="string" required>
+  The initial text pre-filled for the reviewer to edit
+</ParamField>
+
+<ParamField body="max_length" type="integer" required>
+  Maximum character limit (1-5000)
+</ParamField>
+
+<ParamField body="placeholder" type="string" optional>
+  Placeholder text shown if the draft is cleared
+</ParamField>
+
+<ParamField body="min_length" type="integer" optional default="0">
+  Minimum character requirement
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+  Whether response is required
+</ParamField>
+
+### Use Cases & Examples
+
+<AccordionGroup>
+<Accordion title="Product Description Editing">
+```python
+product_config = {
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Experience crystal-clear audio with our premium wireless headphones. Featuring noise cancellation and 30-hour battery life.",
+        "min_length": 50,
+        "max_length": 2000,
+        "required": True
+    }
+}
+
+# Example response: {"revised_text": "Crystal-clear audio meets advanced noise cancellation...", "was_edited": true}
+```
+</Accordion>
+
+<Accordion title="Translation Review">
+```python
+translation_config = {
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Estimado cliente, estamos emocionados de anunciar nuestra nueva linea de productos.",
+        "min_length": 20,
+        "max_length": 1000,
+        "required": True
+    }
+}
+
+# Example response: {"revised_text": "Estimado cliente, nos complace anunciar...", "was_edited": true}
+```
+</Accordion>
+
+<Accordion title="Email Draft Refinement">
+```python
+email_config = {
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Hi Sarah,\n\nThank you for reaching out about your order. We've initiated a replacement shipment that will arrive within 3-5 business days.\n\nBest regards,\nSupport Team",
+        "min_length": 50,
+        "max_length": 3000,
+        "required": True
+    }
+}
+
+# Example response: {"revised_text": "Hi Sarah,\n\nThank you for contacting us...", "was_edited": true}
+```
+</Accordion>
+</AccordionGroup>
+
 ## Advanced Response Configurations
 
 ### Combining Multiple Response Types
@@ -813,6 +1042,10 @@ def validate_response_data(response_type, response_data, config):
 **Rating**: For quantitative assessment or when you need to compare/rank items
 
 **Number**: When you need specific measurements, counts, or calculations
+
+**Boolean**: For simple binary approve/reject or yes/no decisions
+
+**Editable Text**: When AI-generated content needs human refinement before use
 </Accordion>
 
 <Accordion title="Optimize for Mobile Experience">

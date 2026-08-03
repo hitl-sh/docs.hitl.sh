@@ -1,0 +1,168 @@
+---
+title: "Submit Decision"
+api: "POST https://dev.api.hitl.sh/v1/approval-chains/{chainId}/decide"
+description: "Submit an approve or reject decision for a step in an approval chain"
+---
+
+# Submit Decision
+
+Submit an approval or rejection decision for a specific step in an approval chain. The authenticated user must be listed in the step's `approver_ids`.
+
+## Path Parameters
+
+<ParamField path="chainId" type="string" required>
+The ID of the approval chain
+</ParamField>
+
+## Request Body
+
+<ParamField body="step_order" type="integer" required>
+The step number to submit a decision for
+</ParamField>
+
+<ParamField body="decision" type="string" required>
+The decision to submit. Must be `"approve"` or `"reject"`.
+</ParamField>
+
+<ParamField body="comment" type="string" optional>
+Optional comment explaining the decision. Visible to other approvers and stored in the audit log.
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+Whether the request failed
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+Human-readable status message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+<Expandable title="data">
+<ResponseField name="approval_chain" type="object">
+The updated approval chain object reflecting the new decision and any resulting status changes.
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+## Step Resolution Logic
+
+After a decision is submitted, the step is evaluated:
+
+- **Any rejection** immediately sets the step status to `rejected`
+- **With `require_all: true`**: The step is `approved` only when all approvers have approved
+- **With `require_all: false`**: The step is `approved` as soon as any one approver approves
+
+After a step resolves, the chain is re-evaluated:
+- **Sequential mode**: If the step was approved, the next step becomes active. If rejected, the chain is rejected.
+- **Parallel mode**: The chain resolves when all steps have completed.
+
+## Examples
+
+<CodeGroup>
+
+```python Python
+import requests
+
+# Approve step 1
+decision_data = {
+    "step_order": 1,
+    "decision": "approve",
+    "comment": "Content meets quality standards. Approved for next review."
+}
+
+response = requests.post(
+    f"https://dev.api.hitl.sh/v1/approval-chains/{chain_id}/decide",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=decision_data
+)
+
+chain = response.json()["data"]["approval_chain"]
+print(f"Chain status after decision: {chain['status']}")
+```
+
+```javascript Node.js
+// Reject step 2 with explanation
+const decisionData = {
+    step_order: 2,
+    decision: "reject",
+    comment: "The contract clause in Section 3.2 does not comply with our data retention policy."
+};
+
+const response = await axios.post(
+    `https://dev.api.hitl.sh/v1/approval-chains/${chainId}/decide`,
+    decisionData,
+    { headers: { Authorization: `Bearer ${apiKey}` }}
+);
+
+const chain = response.data.data.approval_chain;
+console.log(`Chain status after decision: ${chain.status}`);
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/approval-chains/{chain_id}/decide \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "step_order": 1,
+    "decision": "approve",
+    "comment": "Content meets quality standards."
+  }'
+```
+
+</CodeGroup>
+
+### Success Response (200)
+
+```json
+{
+  "error": false,
+  "msg": "Decision submitted successfully",
+  "data": {
+    "approval_chain": {
+      "id": "68e5f6a7b8c9d0e1f2a3b4c5",
+      "request_id": "64f1a2b3c4d5e6f7a8b9c0d1",
+      "org_id": "64a1b2c3d4e5f6a7b8c9d0e1",
+      "mode": "sequential",
+      "status": "pending",
+      "steps": [
+        {
+          "step_order": 1,
+          "approver_ids": ["65b2c3d4e5f6a7b8c9d0e1f2"],
+          "require_all": false,
+          "status": "approved",
+          "decisions": [
+            {
+              "user_id": "65b2c3d4e5f6a7b8c9d0e1f2",
+              "decision": "approve",
+              "comment": "Content meets quality standards.",
+              "decided_at": "2026-08-01T15:00:00Z"
+            }
+          ]
+        },
+        {
+          "step_order": 2,
+          "status": "pending",
+          "decisions": []
+        }
+      ],
+      "created_at": "2026-08-01T14:30:00Z"
+    }
+  }
+}
+```
+
+### Error Responses
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| `400` | Invalid chain ID format | The `chainId` path parameter is not a valid ID |
+| `400` | Invalid request body | Missing or malformed fields |
+| `400` | Decision must be 'approve' or 'reject' | Invalid decision value |
+| `400` | Approval chain is no longer pending | The chain has already been resolved |
+| `400` | Approval step is no longer pending | The step has already been resolved |
+| `403` | You are not an approver for this step | The authenticated user is not in `approver_ids` |
+| `404` | Approval chain not found | No chain exists with this ID |
+| `404` | Approval step not found | No step with the given `step_order` |
+| `409` | You have already submitted a decision | The user already decided on this step |

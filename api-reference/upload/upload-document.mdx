@@ -1,0 +1,193 @@
+---
+title: "Upload Document"
+api: "POST https://dev.api.hitl.sh/v1/upload/document"
+description: "Upload a document to HITL.sh hosting (S3-backed) for use in file content type requests"
+---
+
+# Upload Document
+
+Upload a document file to HITL.sh hosting. The returned URL, file type, and filename can be used when creating requests with `type: "file"`.
+
+## Request
+
+<ParamField body="file" type="file" required>
+Document file to upload. Must be one of the supported formats.
+</ParamField>
+
+### Supported Formats
+
+| Format | MIME Type |
+|--------|-----------|
+| PDF | `application/pdf` |
+| DOC | `application/msword` |
+| DOCX | `application/vnd.openxmlformats-officedocument.wordprocessingml.document` |
+| XLS | `application/vnd.ms-excel` |
+| XLSX | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
+| PPT | `application/vnd.ms-powerpoint` |
+| PPTX | `application/vnd.openxmlformats-officedocument.presentationml.presentation` |
+| CSV | `text/csv` |
+| TXT | `text/plain` |
+
+### Limits
+
+- **Maximum file size:** 50 MB
+- **Content-Type:** `multipart/form-data`
+
+## Response
+
+<ResponseField name="error" type="boolean">
+Whether the request failed
+</ResponseField>
+
+<ResponseField name="data" type="object">
+<Expandable title="data">
+<ResponseField name="url" type="string">
+The hosted URL for the uploaded document. Use this as `file_url` in your request.
+</ResponseField>
+
+<ResponseField name="file_type" type="string">
+Detected MIME type of the uploaded file (e.g., `"application/pdf"`)
+</ResponseField>
+
+<ResponseField name="file_name" type="string">
+Original filename of the uploaded file
+</ResponseField>
+
+<ResponseField name="size_bytes" type="integer">
+Size of the uploaded file in bytes
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+### Success Response
+
+```json
+{
+  "error": false,
+  "data": {
+    "url": "https://cdn.hitl.sh/uploads/docs/xyz789.pdf",
+    "file_type": "application/pdf",
+    "file_name": "vendor-agreement-2026.pdf",
+    "size_bytes": 204800
+  }
+}
+```
+
+## Examples
+
+<CodeGroup>
+
+```python Python
+import requests
+
+with open("vendor-agreement-2026.pdf", "rb") as f:
+    response = requests.post(
+        "https://dev.api.hitl.sh/v1/upload/document",
+        headers={"Authorization": f"Bearer {api_key}"},
+        files={"file": ("vendor-agreement-2026.pdf", f, "application/pdf")}
+    )
+
+upload = response.json()["data"]
+
+# Now create a request with the uploaded document
+request_data = {
+    "processing_type": "deferred",
+    "type": "file",
+    "priority": "medium",
+    "request_text": "Review Section 3 and flag any clauses requiring legal approval.",
+    "file_url": upload["url"],
+    "file_type": upload["file_type"],
+    "file_name": upload["file_name"],
+    "response_type": "text",
+    "response_config": {
+        "placeholder": "Describe any clauses that need review...",
+        "min_length": 20,
+        "max_length": 1000,
+        "required": True
+    },
+    "default_response": "No issues found",
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const FormData = require("form-data");
+const fs = require("fs");
+
+const form = new FormData();
+form.append("file", fs.createReadStream("vendor-agreement-2026.pdf"));
+
+const uploadResponse = await axios.post(
+    "https://dev.api.hitl.sh/v1/upload/document",
+    form,
+    {
+        headers: {
+            Authorization: `Bearer ${apiKey}`,
+            ...form.getHeaders()
+        }
+    }
+);
+
+const upload = uploadResponse.data.data;
+
+// Now create a request with the uploaded document
+const requestData = {
+    processing_type: "deferred",
+    type: "file",
+    priority: "medium",
+    request_text: "Review Section 3 and flag any clauses requiring legal approval.",
+    file_url: upload.url,
+    file_type: upload.file_type,
+    file_name: upload.file_name,
+    response_type: "text",
+    response_config: {
+        placeholder: "Describe any clauses that need review...",
+        min_length: 20,
+        max_length: 1000,
+        required: true
+    },
+    default_response: "No issues found",
+    platform: "api"
+};
+```
+
+```bash cURL
+# Upload the document
+curl -X POST https://dev.api.hitl.sh/v1/upload/document \
+  -H "Authorization: Bearer your_api_key" \
+  -F "file=@vendor-agreement-2026.pdf"
+
+# Response:
+# {
+#   "error": false,
+#   "data": {
+#     "url": "https://cdn.hitl.sh/uploads/docs/xyz789.pdf",
+#     "file_type": "application/pdf",
+#     "file_name": "vendor-agreement-2026.pdf",
+#     "size_bytes": 204800
+#   }
+# }
+
+# Use the returned fields in a request
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "file",
+    "file_url": "https://cdn.hitl.sh/uploads/docs/xyz789.pdf",
+    "file_type": "application/pdf",
+    "file_name": "vendor-agreement-2026.pdf",
+    "request_text": "Review Section 3 and flag any clauses requiring legal approval.",
+    "response_type": "text",
+    "response_config": {
+        "placeholder": "Describe any clauses that need review...",
+        "min_length": 20,
+        "max_length": 1000,
+        "required": true
+    },
+    "default_response": "No issues found",
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>

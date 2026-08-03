@@ -1,0 +1,143 @@
+---
+title: "Upload Image"
+api: "POST https://dev.api.hitl.sh/v1/upload/image"
+description: "Upload an image to HITL.sh hosting (S3-backed) for use in image content type requests"
+---
+
+# Upload Image
+
+Upload an image file to HITL.sh hosting. The returned URL can be used as the `image_url` field when creating requests with `type: "image"`.
+
+## Request
+
+<ParamField body="file" type="file" required>
+Image file to upload. Must be one of the supported formats.
+</ParamField>
+
+### Supported Formats
+
+| Format | MIME Type |
+|--------|-----------|
+| JPEG | `image/jpeg` |
+| PNG | `image/png` |
+| GIF | `image/gif` |
+| WebP | `image/webp` |
+
+### Limits
+
+- **Maximum file size:** 10 MB
+- **Content-Type:** `multipart/form-data`
+
+## Response
+
+<ResponseField name="error" type="boolean">
+Whether the request failed
+</ResponseField>
+
+<ResponseField name="data" type="object">
+<Expandable title="data">
+<ResponseField name="url" type="string">
+The hosted URL for the uploaded image. Use this as `image_url` in your request.
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+### Success Response
+
+```json
+{
+  "error": false,
+  "data": {
+    "url": "https://cdn.hitl.sh/uploads/img/abc123.jpg"
+  }
+}
+```
+
+## Examples
+
+<CodeGroup>
+
+```python Python
+import requests
+
+with open("product-photo.jpg", "rb") as f:
+    response = requests.post(
+        "https://dev.api.hitl.sh/v1/upload/image",
+        headers={"Authorization": f"Bearer {api_key}"},
+        files={"file": ("product-photo.jpg", f, "image/jpeg")}
+    )
+
+image_url = response.json()["data"]["url"]
+
+# Now create a request with the uploaded image
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "image",
+    "priority": "high",
+    "request_text": "Does this product photo meet our quality standards?",
+    "image_url": image_url,
+    "response_type": "boolean",
+    "response_config": {},
+    "default_response": False,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const FormData = require("form-data");
+const fs = require("fs");
+
+const form = new FormData();
+form.append("file", fs.createReadStream("product-photo.jpg"));
+
+const uploadResponse = await axios.post(
+    "https://dev.api.hitl.sh/v1/upload/image",
+    form,
+    {
+        headers: {
+            Authorization: `Bearer ${apiKey}`,
+            ...form.getHeaders()
+        }
+    }
+);
+
+const imageUrl = uploadResponse.data.data.url;
+
+// Now create a request with the uploaded image
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "image",
+    priority: "high",
+    request_text: "Does this product photo meet our quality standards?",
+    image_url: imageUrl,
+    response_type: "boolean",
+    response_config: {},
+    default_response: false,
+    platform: "api"
+};
+```
+
+```bash cURL
+# Upload the image
+curl -X POST https://dev.api.hitl.sh/v1/upload/image \
+  -H "Authorization: Bearer your_api_key" \
+  -F "file=@product-photo.jpg"
+
+# Response: { "error": false, "data": { "url": "https://cdn.hitl.sh/uploads/img/abc123.jpg" } }
+
+# Use the returned URL in a request
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "image",
+    "image_url": "https://cdn.hitl.sh/uploads/img/abc123.jpg",
+    "request_text": "Does this product photo meet our quality standards?",
+    "response_type": "boolean",
+    "response_config": {},
+    "default_response": false,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>

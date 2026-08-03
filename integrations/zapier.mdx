@@ -215,7 +215,41 @@ Simple yes/no decision:
 
 **Example Response:** `true`
 </Accordion>
+
+<Accordion title="Editable Text">
+Pre-filled draft text for human editing:
+
+**Configuration:**
+```json
+{
+  "response_type": "editable_text",
+  "response_config": {
+    "draft_text": "Your AI-generated draft text here...",
+    "placeholder": "Edit the text above...",
+    "min_length": 10,
+    "max_length": 2000,
+    "required": true
+  }
+}
+```
+
+**Example Response:** `{"revised_text": "The edited version of the text...", "was_edited": true}`
+</Accordion>
 </AccordionGroup>
+
+## Rich Content Types
+
+In addition to plain markdown text, you can send images, files, videos, and audio for review. Set the `type` field in your request configuration:
+
+| Type | URL Field | Description |
+|------|-----------|-------------|
+| `markdown` | — | Rich text in `request_text` (default) |
+| `image` | `image_url` | Inline image with zoom |
+| `file` | `file_url` | Document with PDF annotator |
+| `video` | `video_url` | Embedded video player |
+| `audio` | `audio_url` | Embedded audio player |
+
+See the [Rich Content Types guide](/guides/rich-content-types) for full details and examples.
 
 ## Request Configuration
 
@@ -230,7 +264,7 @@ Simple yes/no decision:
 </ParamField>
 
 <ParamField body="Response Type" type="select" required>
-  Choose from: text, single_select, multi_select, rating, number, boolean
+  Choose from: text, single_select, multi_select, rating, number, boolean, editable_text
 </ParamField>
 
 <ParamField body="Response Config" type="object" required>

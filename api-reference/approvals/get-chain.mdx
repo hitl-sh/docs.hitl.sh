@@ -1,0 +1,165 @@
+---
+title: "Get Approval Chain"
+api: "GET https://dev.api.hitl.sh/v1/requests/{requestId}/approval-chain"
+description: "Retrieve the approval chain and its current status for a request"
+---
+
+# Get Approval Chain
+
+Retrieve the approval chain attached to a request, including all steps, decisions, and the current chain status.
+
+## Path Parameters
+
+<ParamField path="requestId" type="string" required>
+The ID of the request to retrieve the approval chain for
+</ParamField>
+
+## Response
+
+<ResponseField name="error" type="boolean">
+Whether the request failed
+</ResponseField>
+
+<ResponseField name="msg" type="string">
+Human-readable status message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+<Expandable title="data">
+<ResponseField name="approval_chain" type="object">
+<Expandable title="approval_chain">
+<ResponseField name="id" type="string">
+Unique identifier for the approval chain
+</ResponseField>
+
+<ResponseField name="request_id" type="string">
+The request this chain is attached to
+</ResponseField>
+
+<ResponseField name="org_id" type="string">
+The organization this chain belongs to
+</ResponseField>
+
+<ResponseField name="mode" type="string">
+`"sequential"` or `"parallel"`
+</ResponseField>
+
+<ResponseField name="status" type="string">
+Overall chain status: `"pending"`, `"approved"`, `"rejected"`, or `"skipped"`
+</ResponseField>
+
+<ResponseField name="steps" type="array">
+Array of approval steps, each containing:
+- `step_order` (integer) — Position in the chain
+- `approver_ids` (array) — Authorized approver user IDs
+- `require_all` (boolean) — Whether all approvers must approve
+- `status` (string) — Step status
+- `decisions` (array) — Submitted decisions with `user_id`, `decision`, `comment`, `decided_at`
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+ISO 8601 timestamp of chain creation
+</ResponseField>
+
+<ResponseField name="resolved_at" type="string">
+ISO 8601 timestamp of chain resolution (only present when resolved)
+</ResponseField>
+</Expandable>
+</ResponseField>
+</Expandable>
+</ResponseField>
+
+## Examples
+
+<CodeGroup>
+
+```python Python
+import requests
+
+response = requests.get(
+    f"https://dev.api.hitl.sh/v1/requests/{request_id}/approval-chain",
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+
+chain = response.json()["data"]["approval_chain"]
+print(f"Chain status: {chain['status']}")
+for step in chain["steps"]:
+    print(f"  Step {step['step_order']}: {step['status']}")
+    for decision in step["decisions"]:
+        print(f"    {decision['user_id']}: {decision['decision']} — {decision.get('comment', '')}")
+```
+
+```javascript Node.js
+const response = await axios.get(
+    `https://dev.api.hitl.sh/v1/requests/${requestId}/approval-chain`,
+    { headers: { Authorization: `Bearer ${apiKey}` }}
+);
+
+const chain = response.data.data.approval_chain;
+console.log(`Chain status: ${chain.status}`);
+chain.steps.forEach(step => {
+    console.log(`  Step ${step.step_order}: ${step.status}`);
+    step.decisions.forEach(d => {
+        console.log(`    ${d.user_id}: ${d.decision} — ${d.comment || ""}`);
+    });
+});
+```
+
+```bash cURL
+curl https://dev.api.hitl.sh/v1/requests/{request_id}/approval-chain \
+  -H "Authorization: Bearer your_api_key"
+```
+
+</CodeGroup>
+
+### Success Response (200)
+
+```json
+{
+  "error": false,
+  "msg": "Approval chain retrieved successfully",
+  "data": {
+    "approval_chain": {
+      "id": "68e5f6a7b8c9d0e1f2a3b4c5",
+      "request_id": "64f1a2b3c4d5e6f7a8b9c0d1",
+      "org_id": "64a1b2c3d4e5f6a7b8c9d0e1",
+      "mode": "sequential",
+      "status": "pending",
+      "steps": [
+        {
+          "step_order": 1,
+          "approver_ids": ["65b2c3d4e5f6a7b8c9d0e1f2"],
+          "require_all": false,
+          "status": "approved",
+          "decisions": [
+            {
+              "user_id": "65b2c3d4e5f6a7b8c9d0e1f2",
+              "decision": "approve",
+              "comment": "Content meets quality standards.",
+              "decided_at": "2026-08-01T15:00:00Z"
+            }
+          ]
+        },
+        {
+          "step_order": 2,
+          "approver_ids": [
+              "66c3d4e5f6a7b8c9d0e1f2a3",
+              "67d4e5f6a7b8c9d0e1f2a3b4"
+          ],
+          "require_all": true,
+          "status": "pending",
+          "decisions": []
+        }
+      ],
+      "created_at": "2026-08-01T14:30:00Z"
+    }
+  }
+}
+```
+
+### Error Responses
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| `400` | Invalid request ID format | The `requestId` path parameter is not a valid ID |
+| `404` | Approval chain not found | No chain exists for this request |

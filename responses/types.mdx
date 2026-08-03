@@ -5,7 +5,7 @@ description: "Complete guide to all response types supported by HITL.sh - from s
 
 # Response Types
 
-HITL.sh supports five different response types that allow reviewers to provide structured feedback. Each response type has its own configuration options and validation rules, giving you flexibility to design the perfect review experience for your use case.
+HITL.sh supports seven different response types that allow reviewers to provide structured feedback. Each response type has its own configuration options and validation rules, giving you flexibility to design the perfect review experience for your use case.
 
 ## Overview
 
@@ -30,6 +30,14 @@ Numeric ratings with custom scales, steps, and labeled endpoints
 
 <Card title="Number" icon="hashtag">
 Numeric input with ranges, decimal places, and formatting
+</Card>
+
+<Card title="Boolean" icon="toggle-on">
+Binary true/false decisions with custom labels and colors
+</Card>
+
+<Card title="Editable Text" icon="pen-to-square">
+Pre-filled draft text that reviewers can edit and revise
 </Card>
 </CardGroup>
 
@@ -458,6 +466,218 @@ const requestData = {
 ```
 
 
+## Boolean Response
+
+Binary true/false decisions with customizable labels and visual styling. Perfect for approve/reject workflows and simple yes/no questions.
+
+### Configuration
+
+<ParamField body="true_label" type="string" optional default="True">
+Display text for the true/yes option (max 100 characters)
+</ParamField>
+
+<ParamField body="false_label" type="string" optional default="False">
+Display text for the false/no option (max 100 characters)
+</ParamField>
+
+<ParamField body="true_color" type="string" optional default="#16a34a">
+Hex color code for the true option visual styling
+</ParamField>
+
+<ParamField body="false_color" type="string" optional default="#dc2626">
+Hex color code for the false option visual styling
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a decision is mandatory for completion
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Does this user-generated post comply with our community guidelines?",
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "✅ Approve",
+        "false_label": "❌ Reject",
+        "true_color": "#16a34a",
+        "false_color": "#dc2626",
+        "required": True
+    },
+    "default_response": False,
+    "timeout_seconds": 1800,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "high",
+    request_text: "Does this user-generated post comply with our community guidelines?",
+    response_type: "boolean",
+    response_config: {
+        true_label: "✅ Approve",
+        false_label: "❌ Reject",
+        true_color: "#16a34a",
+        false_color: "#dc2626",
+        required: true
+    },
+    default_response: false,
+    timeout_seconds: 1800,
+    platform: "api"
+};
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "high",
+    "request_text": "Does this user-generated post comply with our community guidelines?",
+    "response_type": "boolean",
+    "response_config": {
+        "true_label": "✅ Approve",
+        "false_label": "❌ Reject",
+        "true_color": "#16a34a",
+        "false_color": "#dc2626",
+        "required": true
+    },
+    "default_response": false,
+    "timeout_seconds": 1800,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+### Response Format
+
+```json
+{
+  "response_data": {
+    "boolean": true,
+    "boolean_label": "✅ Approve"
+  }
+}
+```
+
+## Editable Text Response
+
+Pre-filled draft text that reviewers can edit and revise. Ideal for AI-generated content that needs human refinement before publishing.
+
+### Configuration
+
+<ParamField body="draft_text" type="string" required>
+The initial text presented to the reviewer for editing
+</ParamField>
+
+<ParamField body="placeholder" type="string" optional>
+Placeholder text shown if the draft is cleared
+</ParamField>
+
+<ParamField body="min_length" type="integer" optional default="0">
+Minimum number of characters required in the revised text
+</ParamField>
+
+<ParamField body="max_length" type="integer" required>
+Maximum number of characters allowed (1-5000)
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether the response is required
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Review and edit this AI-generated product description before publishing:",
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Introducing our premium wireless headphones. Experience crystal-clear audio with advanced noise cancellation technology. Featuring 30-hour battery life and ergonomic design for all-day comfort.",
+        "placeholder": "Enter the revised description...",
+        "min_length": 50,
+        "max_length": 2000,
+        "required": True
+    },
+    "default_response": "No edits provided",
+    "timeout_seconds": 3600,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "deferred",
+    type: "markdown",
+    priority: "medium",
+    request_text: "Review and edit this AI-generated product description before publishing:",
+    response_type: "editable_text",
+    response_config: {
+        draft_text: "Introducing our premium wireless headphones. Experience crystal-clear audio with advanced noise cancellation technology. Featuring 30-hour battery life and ergonomic design for all-day comfort.",
+        placeholder: "Enter the revised description...",
+        min_length: 50,
+        max_length: 2000,
+        required: true
+    },
+    default_response: "No edits provided",
+    timeout_seconds: 3600,
+    platform: "api"
+};
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Review and edit this AI-generated product description before publishing:",
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Introducing our premium wireless headphones. Experience crystal-clear audio with advanced noise cancellation technology. Featuring 30-hour battery life and ergonomic design for all-day comfort.",
+        "placeholder": "Enter the revised description...",
+        "min_length": 50,
+        "max_length": 2000,
+        "required": true
+    },
+    "default_response": "No edits provided",
+    "timeout_seconds": 3600,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+### Response Format
+
+```json
+{
+  "response_data": {
+    "revised_text": "Introducing our premium wireless headphones — crystal-clear audio meets advanced noise cancellation. With 30 hours of battery life and an ergonomic design built for all-day comfort, these headphones redefine your listening experience.",
+    "was_edited": true
+  }
+}
+```
+
 ## Validation Rules
 
 HITL.sh validates all responses against the configured rules:
@@ -493,6 +713,19 @@ HITL.sh validates all responses against the configured rules:
 - Negative numbers only allowed if allow_negative is true
 </Accordion>
 
+<Accordion title="Boolean Validation">
+- Response must contain a boolean field (true or false)
+- Required booleans cannot be null or undefined
+- Response includes the associated boolean_label
+</Accordion>
+
+<Accordion title="Editable Text Validation">
+- Response must be a string (the revised text)
+- Length must be within min_length and max_length bounds
+- Required responses cannot be empty strings
+- Response includes was_edited flag indicating if changes were made
+</Accordion>
+
 </AccordionGroup>
 
 ## Best Practices
@@ -518,6 +751,14 @@ Use ratings for quantitative assessments where you need to measure quality, sati
 
 <Step title="Number for Quantitative Input">
 Use number responses for pricing, quantities, measurements, or any numeric data that needs validation and formatting.
+</Step>
+
+<Step title="Boolean for Binary Decisions">
+Use boolean responses for simple approve/reject, yes/no, or go/no-go decisions with customizable labels and colors.
+</Step>
+
+<Step title="Editable Text for Draft Refinement">
+Use editable text responses when AI-generated content needs human editing before publishing — translations, product descriptions, or email drafts.
 </Step>
 
 </Steps>
@@ -580,6 +821,22 @@ def handle_response(request_id, response_data, response_type):
     elif response_type == "number":
         value = response_data
         update_pricing_model(request_id, value)
+
+    elif response_type == "boolean":
+        is_approved = response_data["boolean"]
+        label = response_data["boolean_label"]
+        if is_approved:
+            approve_content()
+        else:
+            reject_content()
+
+    elif response_type == "editable_text":
+        revised = response_data["revised_text"]
+        was_edited = response_data["was_edited"]
+        if was_edited:
+            publish_revised_content(revised)
+        else:
+            publish_original_content()
 ```
 
 ## Next Steps

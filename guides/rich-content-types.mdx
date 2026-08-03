@@ -1,0 +1,538 @@
+---
+title: "Rich Content Types"
+description: "Complete guide to the 5 content types supported by HITL.sh requests — markdown, image, file, video, and audio"
+---
+
+# Rich Content Types
+
+HITL.sh review requests support 5 content types that control how content is rendered for human reviewers on the web dashboard and mobile app. The `type` field on every request selects which renderer is used.
+
+## Overview
+
+<CardGroup cols={3}>
+<Card title="Markdown" icon="markdown">
+Rich text with headings, bold, code blocks, tables, and links
+</Card>
+
+<Card title="Image" icon="image">
+Inline image display with zoom support and optional S3 upload
+</Card>
+
+<Card title="File" icon="file">
+Document review with inline PDF annotator and download links
+</Card>
+
+<Card title="Video" icon="video">
+Embedded video player supporting YouTube, Vimeo, and direct files
+</Card>
+
+<Card title="Audio" icon="headphones">
+Embedded audio player supporting SoundCloud, Spotify, and direct files
+</Card>
+</CardGroup>
+
+## Content Type Comparison
+
+| Type | URL Field | Upload Available | Inline Render |
+|------|-----------|-----------------|---------------|
+| `markdown` | — (uses `request_text`) | — | Yes (markdown parser) |
+| `image` | `image_url` | Yes (S3, max 10 MB) | Yes (with zoom) |
+| `file` | `file_url` | Yes (S3, max 50 MB) | PDFs only (annotator) |
+| `video` | `video_url` | No (link only) | Yes (embedded player) |
+| `audio` | `audio_url` | No (link only) | Yes (embedded player) |
+
+## Markdown (Default)
+
+Render markdown-formatted text directly in `request_text`. This is the default type and requires no additional URL fields.
+
+<ParamField body="type" type="string" required>
+Set to `"markdown"`
+</ParamField>
+
+<ParamField body="request_text" type="string" required>
+The markdown content to display (max 2000 characters). Supports headings, bold, italic, code blocks, tables, lists, and links.
+</ParamField>
+
+### Example
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "## Content Review\n\nPlease review the following paragraph and flag any factual errors:\n\n> The Eiffel Tower was built in **1889** for the World's Fair.\n\nIs this accurate?",
+    "response_type": "boolean",
+    "response_config": {},
+    "default_response": False,
+    "platform": "api"
+}
+
+response = requests.post(
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=request_data
+)
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "deferred",
+    type: "markdown",
+    priority: "medium",
+    request_text: "## Content Review\n\nPlease review the following paragraph and flag any factual errors:\n\n> The Eiffel Tower was built in **1889** for the World's Fair.\n\nIs this accurate?",
+    response_type: "boolean",
+    response_config: {},
+    default_response: false,
+    platform: "api"
+};
+
+const response = await axios.post(
+    `https://dev.api.hitl.sh/v1/api/loops/${loopId}/requests`,
+    requestData,
+    { headers: { Authorization: `Bearer ${apiKey}` }}
+);
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "deferred",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "## Content Review\n\nPlease review the following paragraph and flag any factual errors:\n\n> The Eiffel Tower was built in **1889** for the World'"'"'s Fair.\n\nIs this accurate?",
+    "response_type": "boolean",
+    "response_config": {},
+    "default_response": false,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+## Image
+
+Display an externally-hosted image inline for visual review tasks such as content moderation, quality assessment, or labeling.
+
+<ParamField body="type" type="string" required>
+Set to `"image"`
+</ParamField>
+
+<ParamField body="image_url" type="string" required>
+Publicly accessible URL to the image
+</ParamField>
+
+<ParamField body="request_text" type="string" required>
+The question or instructions for the reviewer
+</ParamField>
+
+**Supported formats:** JPEG, PNG, GIF, WebP
+
+**Upload:** You can host images on HITL.sh using the [Upload Image](/api-reference/upload/upload-image) endpoint (S3-backed, max 10 MB). Use the returned URL as your `image_url`.
+
+**Rendering:** Displayed inline above the response form. Supports pinch-to-zoom on mobile and click-to-zoom on web.
+
+### Example
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "image",
+    "priority": "high",
+    "request_text": "Does this product photo meet our quality standards? Check for correct background, lighting, and framing.",
+    "image_url": "https://cdn.example.com/products/item-4521.jpg",
+    "timeout_seconds": 1800,
+    "response_type": "boolean",
+    "response_config": {},
+    "default_response": False,
+    "platform": "api",
+    "callback_url": "https://myapp.com/webhooks/hitl-response"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "image",
+    priority: "high",
+    request_text: "Does this product photo meet our quality standards? Check for correct background, lighting, and framing.",
+    image_url: "https://cdn.example.com/products/item-4521.jpg",
+    timeout_seconds: 1800,
+    response_type: "boolean",
+    response_config: {},
+    default_response: false,
+    platform: "api",
+    callback_url: "https://myapp.com/webhooks/hitl-response"
+};
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "image",
+    "priority": "high",
+    "request_text": "Does this product photo meet our quality standards?",
+    "image_url": "https://cdn.example.com/products/item-4521.jpg",
+    "timeout_seconds": 1800,
+    "response_type": "boolean",
+    "response_config": {},
+    "default_response": false,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+## File / Document
+
+Attach a document for reviewers to read or annotate. PDFs render with an inline annotator on the web dashboard; other file types provide a download link.
+
+<ParamField body="type" type="string" required>
+Set to `"file"`
+</ParamField>
+
+<ParamField body="file_url" type="string" required>
+Publicly accessible URL to the document
+</ParamField>
+
+<ParamField body="file_type" type="string" optional>
+MIME type of the document (e.g., `"application/pdf"`)
+</ParamField>
+
+<ParamField body="file_name" type="string" optional>
+Original filename shown to the reviewer (e.g., `"Q4-report.pdf"`)
+</ParamField>
+
+<ParamField body="request_text" type="string" required>
+The question or instructions for the reviewer
+</ParamField>
+
+**Supported upload formats:** PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, CSV, TXT (max 50 MB)
+
+**Upload:** Use the [Upload Document](/api-reference/upload/upload-document) endpoint to host files on HITL.sh.
+
+**Rendering:**
+- **PDFs:** Inline annotator on web dashboard with highlight and comment tools
+- **All other types:** Download link with filename and detected MIME type
+
+### PDF Annotations
+
+When the file is a PDF, the web dashboard activates an inline annotator. Reviewers can:
+
+- Highlight text passages
+- Add comment pins at specific positions
+- Draw freeform shapes over the document
+- Reply to other reviewers' annotations
+
+Annotations are saved alongside the reviewer's response and returned in the response payload.
+
+<Note>
+PDF annotations are only available on the web dashboard. The mobile app shows a download link for all file types including PDFs.
+</Note>
+
+### Example
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "deferred",
+    "type": "file",
+    "priority": "medium",
+    "request_text": "Please review Section 3 of this contract and flag any clauses that require legal approval before signing.",
+    "file_url": "https://cdn.example.com/contracts/vendor-agreement-2026.pdf",
+    "file_type": "application/pdf",
+    "file_name": "vendor-agreement-2026.pdf",
+    "response_type": "text",
+    "response_config": {
+        "placeholder": "Describe any clauses that need review...",
+        "min_length": 20,
+        "max_length": 1000,
+        "required": True
+    },
+    "default_response": "No issues found",
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "deferred",
+    type: "file",
+    priority: "medium",
+    request_text: "Please review Section 3 of this contract and flag any clauses that require legal approval before signing.",
+    file_url: "https://cdn.example.com/contracts/vendor-agreement-2026.pdf",
+    file_type: "application/pdf",
+    file_name: "vendor-agreement-2026.pdf",
+    response_type: "text",
+    response_config: {
+        placeholder: "Describe any clauses that need review...",
+        min_length: 20,
+        max_length: 1000,
+        required: true
+    },
+    default_response: "No issues found",
+    platform: "api"
+};
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "deferred",
+    "type": "file",
+    "priority": "medium",
+    "request_text": "Please review Section 3 of this contract.",
+    "file_url": "https://cdn.example.com/contracts/vendor-agreement-2026.pdf",
+    "file_type": "application/pdf",
+    "file_name": "vendor-agreement-2026.pdf",
+    "response_type": "text",
+    "response_config": {
+        "placeholder": "Describe any clauses that need review...",
+        "min_length": 20,
+        "max_length": 1000,
+        "required": true
+    },
+    "default_response": "No issues found",
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+## Video
+
+Embed a video player for reviewers to watch before responding. Supports major streaming platforms and direct video file links. No video hosting is provided — link to an externally-hosted video.
+
+<ParamField body="type" type="string" required>
+Set to `"video"`
+</ParamField>
+
+<ParamField body="video_url" type="string" required>
+URL to the video
+</ParamField>
+
+<ParamField body="request_text" type="string" required>
+The question or instructions for the reviewer
+</ParamField>
+
+**Supported platforms and formats:**
+
+| Source | Examples |
+|--------|---------|
+| YouTube | `https://www.youtube.com/watch?v=...` |
+| Vimeo | `https://vimeo.com/...` |
+| Direct MP4 | `https://cdn.example.com/video.mp4` |
+| Direct WebM | `https://cdn.example.com/video.webm` |
+| Direct MOV | `https://cdn.example.com/video.mov` |
+
+**Rendering:** YouTube and Vimeo use their native iframe embeds. Direct video files use the browser's native `<video>` element on both web and mobile.
+
+### Example
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "video",
+    "priority": "high",
+    "request_text": "Watch this product demo video (approx. 3 minutes) and rate it on clarity and professionalism.",
+    "video_url": "https://cdn.example.com/demos/product-v2.mp4",
+    "timeout_seconds": 7200,
+    "response_type": "rating",
+    "response_config": {
+        "scale_min": 1,
+        "scale_max": 5
+    },
+    "default_response": 3,
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "video",
+    priority: "high",
+    request_text: "Watch this product demo video (approx. 3 minutes) and rate it on clarity and professionalism.",
+    video_url: "https://cdn.example.com/demos/product-v2.mp4",
+    timeout_seconds: 7200,
+    response_type: "rating",
+    response_config: {
+        scale_min: 1,
+        scale_max: 5
+    },
+    default_response: 3,
+    platform: "api"
+};
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "video",
+    "priority": "high",
+    "request_text": "Watch this product demo video and rate it on clarity and professionalism.",
+    "video_url": "https://cdn.example.com/demos/product-v2.mp4",
+    "timeout_seconds": 7200,
+    "response_type": "rating",
+    "response_config": { "scale_min": 1, "scale_max": 5 },
+    "default_response": 3,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+## Audio
+
+Embed an audio player for reviewers to listen to before responding. Supports major streaming platforms and direct audio file links. No audio hosting is provided — link to an externally-hosted audio file.
+
+<ParamField body="type" type="string" required>
+Set to `"audio"`
+</ParamField>
+
+<ParamField body="audio_url" type="string" required>
+URL to the audio
+</ParamField>
+
+<ParamField body="request_text" type="string" required>
+The question or instructions for the reviewer
+</ParamField>
+
+**Supported platforms and formats:**
+
+| Source | Examples |
+|--------|---------|
+| SoundCloud | `https://soundcloud.com/...` |
+| Spotify | `https://open.spotify.com/track/...` |
+| Direct MP3 | `https://cdn.example.com/audio.mp3` |
+| Direct WAV | `https://cdn.example.com/audio.wav` |
+| Direct OGG | `https://cdn.example.com/audio.ogg` |
+| Direct M4A | `https://cdn.example.com/audio.m4a` |
+| Direct AAC | `https://cdn.example.com/audio.aac` |
+
+**Rendering:** SoundCloud and Spotify use their native iframe embeds. Direct audio files use the browser's native `<audio>` element on both web and mobile.
+
+### Example
+
+<CodeGroup>
+
+```python Python
+request_data = {
+    "processing_type": "deferred",
+    "type": "audio",
+    "priority": "low",
+    "request_text": "Listen to this customer support call recording and categorize the primary reason for the customer's complaint.",
+    "audio_url": "https://cdn.example.com/recordings/support-call-20260115.mp3",
+    "response_type": "single_select",
+    "response_config": {
+        "options": [
+            "Billing Issue",
+            "Technical Problem",
+            "Shipping Delay",
+            "Product Defect",
+            "Other"
+        ]
+    },
+    "default_response": "Other",
+    "platform": "api"
+}
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "deferred",
+    type: "audio",
+    priority: "low",
+    request_text: "Listen to this customer support call recording and categorize the primary reason for the customer's complaint.",
+    audio_url: "https://cdn.example.com/recordings/support-call-20260115.mp3",
+    response_type: "single_select",
+    response_config: {
+        options: [
+            "Billing Issue",
+            "Technical Problem",
+            "Shipping Delay",
+            "Product Defect",
+            "Other"
+        ]
+    },
+    default_response: "Other",
+    platform: "api"
+};
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "deferred",
+    "type": "audio",
+    "priority": "low",
+    "request_text": "Listen to this customer support call and categorize the complaint.",
+    "audio_url": "https://cdn.example.com/recordings/support-call-20260115.mp3",
+    "response_type": "single_select",
+    "response_config": {
+        "options": ["Billing Issue", "Technical Problem", "Shipping Delay", "Product Defect", "Other"]
+    },
+    "default_response": "Other",
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+## Rendering Behavior
+
+| Content Type | Web Dashboard | Mobile App |
+|-------------|--------------|------------|
+| `markdown` | Full markdown render (GFM) | Full markdown render |
+| `image` | Inline image, click to zoom | Inline image, pinch-to-zoom |
+| `file` (PDF) | Inline PDF annotator with highlight/comment tools | Download link |
+| `file` (other) | Download link with filename | Download link with filename |
+| `video` (YouTube/Vimeo) | Native iframe embed | Native iframe embed |
+| `video` (direct) | HTML5 `<video>` player | HTML5 `<video>` player |
+| `audio` (SoundCloud/Spotify) | Native iframe embed | Native iframe embed |
+| `audio` (direct) | HTML5 `<audio>` player | HTML5 `<audio>` player |
+
+## Required API Key Scopes
+
+- `request:write` — Create requests
+- `request:read` — Read request status and responses
+- `loop:read` — Access loop information
+- `upload:write` — Upload images and documents (upload endpoints only)
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Upload Image" icon="cloud-arrow-up" href="/api-reference/upload/upload-image">
+Host images on HITL.sh before creating image requests
+</Card>
+
+<Card title="Upload Document" icon="file-arrow-up" href="/api-reference/upload/upload-document">
+Host documents on HITL.sh before creating file requests
+</Card>
+
+<Card title="Response Types" icon="list" href="/responses/types">
+Choose the right response type for your content review workflow
+</Card>
+
+<Card title="Create Request" icon="rocket" href="/api-reference/requests/create-request">
+Start sending requests with rich content types
+</Card>
+</CardGroup>
