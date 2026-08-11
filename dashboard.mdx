@@ -1,142 +1,72 @@
 ---
-title: "Your Dashboard"
-description: "Navigate and understand your HITL.sh dashboard to manage loops, requests, and team members effectively"
+title: "Dashboard"
+description: "Your central hub for monitoring loops, usage, and integrations"
 ---
 
-# Your Dashboard
+# Dashboard
 
-The HITL.sh dashboard is your central command center for managing all aspects of your human-in-the-loop workflows. From here, you can monitor requests, manage loops, configure integrations, and track performance metrics.
+The HITL dashboard gives you an at-a-glance view of your loops, usage, and activity. It's the first thing you see after logging in at [my.hitl.sh](https://my.hitl.sh).
 
-## Dashboard Overview
+## Connect Your Automation
 
-<Frame>
-<img src="/images/dashboard.png" alt="HITL.sh dashboard showing main navigation and overview panels" />
-</Frame>
+At the top of the dashboard, you'll see integration buttons for connecting your preferred automation tools:
 
-The dashboard is organized into several key areas:
+- **n8n** — Workflow automation
+- **Zapier** — App integrations
+- **Make** — Visual automation
+- **MCP** — Model Context Protocol
 
-- **Navigation Sidebar**: Quick access to all major sections
-- **Overview Cards**: Real-time metrics and status information
-- **Recent Activity**: Latest requests and actions
-- **Quick Actions**: Common tasks and shortcuts
+Clicking any integration opens a setup guide with step-by-step instructions, API credentials, and configuration details — all without leaving the dashboard.
 
-## Main Navigation
+## Analytics
 
-### Loops Management
+The dashboard displays four key metric cards:
 
-The **Loops** section is where you create and configure your human-in-the-loop workflows:
+| Metric | Description |
+|--------|-------------|
+| **Teams** | Number of active teams in your organization |
+| **API Usage** | Requests used out of your plan limit, with a progress bar |
+| **Active Loops** | Currently active human-in-the-loop workflows |
+| **Total Members** | People across all your loops |
 
-<CardGroup cols={2}>
-<Card title="Active Loops" icon="workflow">
-View and manage all currently running loops in your system.
-</Card>
+### Charts
 
-<Card title="Loop Templates" icon="template">
-Create reusable loop configurations for common workflows.
-</Card>
-</CardGroup>
+Below the metric cards, you'll find:
 
-### Requests Overview
+- **Request Volume** — A 14-day area chart showing daily request trends
+- **Request Status** — A donut chart breaking down pending, completed, and expired requests
+- **Sources** — A breakdown of where requests originate (API, n8n, Zapier, Make, web portal, MCP)
 
-Monitor all incoming and pending requests in real-time:
+## API Usage
 
-- **Pending**: Requests waiting for human review
-- **In Progress**: Requests currently being reviewed
-- **Completed**: Successfully processed requests
-- **Failed**: Requests that encountered errors
+The API Usage card shows your current consumption against your plan limit. The progress bar indicates how much of your request bucket you've used.
+
+When your requests run out, you're automatically charged for a fresh bucket at your plan's rate. See [Billing](/billing) for details on plans and pricing.
 
 <Info>
-Requests are automatically categorized by status, making it easy to identify bottlenecks or issues in your workflow.
+If you have a pending plan downgrade, the usage bar turns amber and shows which plan you'll switch to on your next auto-charge.
 </Info>
 
-### Team Management
+## Navigation
 
-Manage your human reviewers and their assignments:
+The sidebar provides quick access to all sections:
 
-- **Reviewers**: Add, remove, and configure team members
-- **Skills**: Assign expertise areas to reviewers
-- **Schedules**: Set availability and response time expectations
-- **Performance**: Track response times and decision accuracy
-
-## Key Metrics
-
-Your dashboard displays essential performance indicators:
-
-<AccordionGroup>
-<Accordion title="Response Time Metrics">
-- **Average Response Time**: How quickly reviewers respond to requests
-- **95th Percentile**: Response time for 95% of requests
-- **Escalation Rate**: Percentage of requests that require escalation
-</Accordion>
-
-<Accordion title="Quality Metrics">
-- **Decision Accuracy**: How often human decisions align with expected outcomes
-- **Inter-rater Reliability**: Consistency between different reviewers
-- **Feedback Quality**: Quality of human feedback for AI improvement
-</Accordion>
-
-<Accordion title="Volume Metrics">
-- **Requests per Day**: Total number of requests processed
-- **Peak Load Times**: When your system experiences highest demand
-- **Loop Utilization**: How efficiently each loop is being used
-</Accordion>
-</AccordionGroup>
-
-## Quick Actions
-
-Access common tasks directly from your dashboard:
-
-<Steps>
-<Step title="Create New Loop">
-Click the "Create Loop" button to set up a new human-in-the-loop workflow.
-</Step>
-
-<Step title="Invite Reviewers">
-Add team members to handle requests in your loops.
-</Step>
-
-<Step title="View Analytics">
-Access detailed performance reports and insights.
-</Step>
-
-<Step title="Configure Integrations">
-Set up connections to your existing systems and tools.
-</Step>
-</Steps>
-
-## Dashboard Customization
-
-Personalize your dashboard experience:
-
-- **Widget Layout**: Rearrange overview cards to match your priorities
-- **Notification Preferences**: Configure alerts for important events
-- **Default Views**: Set your preferred default dashboard view
-- **Theme Options**: Choose between light and dark themes
-
-<Warning>
-Dashboard customizations are user-specific and won't affect other team members' views.
-</Warning>
-
-## Mobile Dashboard
-
-Access your dashboard on the go with our mobile-optimized interface:
-
-<Card title="Mobile App" icon="smartphone" href="/mobile/home-screen">
-Download our mobile app for iOS and Android to manage your loops from anywhere.
-</Card>
-
-The mobile dashboard provides essential functionality while maintaining the same intuitive interface you're familiar with from the web version.
+- **Dashboard** — Overview and analytics
+- **Loops** — Create and manage workflows
+- **Inbox** — Review pending requests
+- **API Keys** — Manage your API credentials
+- **Enterprise** — Organization management (paid plans)
+- **Billing** — Usage and plan management
+- **Settings** — Profile, preferences, and linked devices
 
 ## Next Steps
 
-Now that you understand your dashboard, you're ready to:
-
 <CardGroup cols={2}>
-<Card title="Set Up API Keys" icon="key" href="/api-keys">
-Configure authentication for your integrations.
+<Card title="Create Your First Loop" icon="plus" href="/first-loop">
+Set up a human-in-the-loop workflow.
 </Card>
 
-<Card title="Create Your First Loop" icon="rocket" href="/first-loop">
-Build your first human-in-the-loop workflow.
+<Card title="Billing & Plans" icon="credit-card" href="/billing">
+Understand usage-based pricing and manage your plan.
 </Card>
 </CardGroup>

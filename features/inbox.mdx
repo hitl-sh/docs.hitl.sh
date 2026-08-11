@@ -1,239 +1,66 @@
 ---
-title: "Agent Inbox"
-description: "Centralized dashboard for managing all AI agent review requests. Organize, filter, and process reviews efficiently."
+title: "Inbox"
+description: "Review and respond to pending requests from your loops in real time"
 ---
 
-## Agent Inbox
+# Inbox
 
-The Agent Inbox is the central hub where reviewers access and manage all pending review requests from your AI workflows. It provides a unified interface for handling human-in-the-loop processes across your entire organization.
+The Inbox is where you review and respond to pending requests from all your loops. It provides a real-time view of everything waiting for your attention.
 
 ## Overview
 
-The Agent Inbox consolidates all review requests into a single, organized dashboard, making it easy for reviewers to:
+When you navigate to **Inbox** in the sidebar, you'll see:
 
-- **View all pending reviews** in one place
-- **Filter and sort** by various criteria
-- **Process reviews efficiently** with bulk actions
-- **Track progress** across multiple workflows
-- **Collaborate** with team members
+- **Pending requests** sorted by most recent, grouped by loop
+- **Real-time badge** in the sidebar showing the count of pending requests (updates live)
+- **Request details** with the full request text, media, and response interface
+- **Your Loops** listed on the right for quick navigation
 
-## Key Features
+## Responding to Requests
 
-### Unified Dashboard
+Click any pending request to open its detail panel. Depending on the response type configured for the request, you'll see one of:
 
-<Card
-  title="Dashboard Overview"
-  icon="chart-bar"
-  href="/features/dashboard"
->
-  Learn about the main dashboard and its components.
-</Card>
+- **Text** — Free-form text input
+- **Single Select** — Choose one option from a list
+- **Multi Select** — Choose multiple options
+- **Boolean** — Yes/No toggle
+- **Rating** — Star or numeric rating
+- **Number** — Numeric input
+- **Editable Text** — Pre-filled text you can modify
 
-**Centralized view:**
-- All review requests from all AI workflows
-- Real-time updates and notifications
-- Consistent interface across different review types
-- Mobile-responsive design for on-the-go reviews
+After reviewing the request content, submit your response. The request moves from pending to completed and the result is sent back to the originating system via the API or webhook.
 
-### Smart Filtering
+## Real-Time Updates
 
-Organize your reviews with powerful filtering options:
+The Inbox updates in real time:
 
-**Filter by:**
-- **Status**: Pending, in progress, completed, rejected
-- **Priority**: High, medium, low
-- **Assignee**: Individual team members or teams
-- **Template**: Review type or category
-- **Date**: Created, due, or updated
-- **Workflow**: Source AI system or process
+- New requests appear automatically without refreshing
+- The red badge in the sidebar reflects the current pending count
+- Completed requests disappear from the pending view
 
-**Sort options:**
-- **Priority**: Most important reviews first
-- **Due date**: Time-sensitive items prioritized
-- **Created date**: Newest or oldest first
-- **Assignee**: Group by team member
+## Request Details
 
-### Bulk Operations
+Each request card shows:
 
-Process multiple reviews efficiently:
+- **Loop name** and icon
+- **Request text** (supports markdown)
+- **Media attachments** — Images, documents, audio, or video if included
+- **Priority level**
+- **Time received**
+- **Response type** expected
 
-- **Bulk approve/reject**: Handle multiple similar reviews at once
-- **Bulk assign**: Reassign multiple reviews to different team members
-- **Bulk export**: Download review data for analysis
-- **Bulk delete**: Remove completed or obsolete reviews
+## Mobile
 
-## Review Management
-
-### Review States
-
-Each review goes through different states in the inbox:
-
-```
-Created → Assigned → In Progress → Completed/Rejected
-```
-
-**State descriptions:**
-- **Created**: Review request received, waiting for assignment
-- **Assigned**: Assigned to specific reviewer(s)
-- **In Progress**: Reviewer has started the review
-- **Completed**: Review finished with approval
-- **Rejected**: Review finished with rejection
-- **Expired**: Review not completed within time limit
-
-### Assignment Options
-
-**Automatic assignment:**
-- Round-robin distribution
-- Load balancing based on reviewer capacity
-- Skill-based matching using tags
-- Priority-based assignment
-
-**Manual assignment:**
-- Direct assignment by workflow owners
-- Self-assignment by available reviewers
-- Reassignment during review process
-- Escalation to senior reviewers
-
-### Review Queue
-
-**Queue management:**
-- **Personal queue**: Reviews assigned to you
-- **Team queue**: Reviews assigned to your team
-- **Unassigned queue**: Reviews waiting for assignment
-- **Escalation queue**: Reviews requiring attention
-
-## Collaboration Features
-
-### Team Coordination
-
-**Team features:**
-- **Shared inboxes**: View team member workloads
-- **Review handoffs**: Transfer reviews between team members
-- **Collaborative reviews**: Multiple reviewers on complex items
-- **Review comments**: Internal notes and discussions
-
-### Communication
-
-**Built-in communication:**
-- **Review notes**: Add internal comments and context
-- **@mentions**: Notify specific team members
-- **Status updates**: Keep stakeholders informed
-- **Integration chat**: Connect with Slack, Teams, or Discord
-
-## Mobile Experience
-
-### Mobile-First Design
-
-The Agent Inbox is optimized for mobile devices:
-
-**Mobile features:**
-- **Touch-friendly interface**: Large buttons and swipe gestures
-- **Offline support**: Queue reviews when offline
-- **Push notifications**: Instant alerts for new assignments
-- **Responsive layout**: Adapts to any screen size
-
-### Mobile Workflows
-
-**On-the-go review:**
-- **Quick actions**: Approve/reject with minimal taps
-- **Voice input**: Dictate review comments
-- **Photo capture**: Add visual context to reviews
-- **Location awareness**: Context-aware review assignments
-
-## Integration & Automation
-
-### Workflow Integration
-
-**Seamless connections:**
-- **Real-time sync**: Instant updates from AI workflows
-- **Bidirectional communication**: Send and receive data
-- **Error handling**: Graceful fallbacks for integration issues
-- **Performance monitoring**: Track integration health
-
-### Automation Rules
-
-**Smart automation:**
-- **Auto-assignment**: Rules-based review distribution
-- **Escalation**: Automatic escalation for overdue reviews
-- **Routing**: Intelligent routing based on content type
-- **Scheduling**: Time-based review assignments
-
-## Performance & Analytics
-
-### Review Metrics
-
-**Key performance indicators:**
-- **Review completion time**: Average time to complete reviews
-- **Reviewer productivity**: Reviews completed per reviewer
-- **Quality metrics**: Approval rates and feedback scores
-- **Workflow efficiency**: Impact on overall process speed
-
-### Analytics Dashboard
-
-**Insights and reporting:**
-- **Review volume**: Trends and patterns over time
-- **Bottleneck identification**: Find process inefficiencies
-- **Team performance**: Individual and team productivity
-- **Workflow optimization**: Data-driven improvements
-
-## Security & Access Control
-
-### Role-Based Access
-
-**Permission levels:**
-- **Reviewers**: Can view and complete assigned reviews
-- **Team leads**: Can manage team assignments and workflows
-- **Workflow owners**: Can create and monitor specific workflows
-- **Administrators**: Full system access and configuration
-
-### Data Protection
-
-**Security features:**
-- **Encrypted storage**: All data encrypted at rest
-- **Access logging**: Complete audit trail of all actions
-- **Data retention**: Configurable data retention policies
-- **Compliance**: GDPR and CCPA compliant
-
-## Best Practices
-
-### Inbox Organization
-
-**Efficient workflows:**
-- **Regular cleanup**: Archive completed reviews regularly
-- **Priority management**: Use priority levels effectively
-- **Team coordination**: Establish clear assignment protocols
-- **Performance monitoring**: Track and optimize review times
-
-### Reviewer Experience
-
-**User experience tips:**
-- **Custom views**: Create personal dashboard layouts
-- **Keyboard shortcuts**: Learn productivity shortcuts
-- **Batch processing**: Group similar reviews together
-- **Template familiarity**: Understand common review types
+The Inbox is fully responsive. On mobile devices, you'll see the request list first, then tap into individual requests to respond. The mobile app also supports push notifications for new requests.
 
 ## Next Steps
 
-<Card
-  title="Review Templates"
-  icon="file-text"
-  href="/templates/overview"
->
-  Learn how to create effective review templates for your workflows.
+<CardGroup cols={2}>
+<Card title="Response Types" icon="list" href="/responses/types">
+Learn about the different response types available.
 </Card>
 
-<Card
-  title="Notifications"
-  icon="bell"
-  href="/features/notifications"
->
-  Configure notifications and alerts for your review processes.
+<Card title="Create a Loop" icon="plus" href="/first-loop">
+Set up a loop to start receiving requests.
 </Card>
-
-<Card
-  title="Team Management"
-  icon="users"
-  href="/features/teams"
->
-  Set up teams and manage reviewer assignments effectively.
-</Card>
+</CardGroup>

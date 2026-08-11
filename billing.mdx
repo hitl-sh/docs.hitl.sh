@@ -1,0 +1,103 @@
+---
+title: "Billing & Plans"
+description: "Usage-based pricing, plan details, upgrades, downgrades, and auto-charge"
+---
+
+# Billing & Plans
+
+HITL uses **usage-based billing** — you're charged when your requests run out, not on a monthly cycle. You only pay for what you use.
+
+## Plans
+
+| Plan | Price | Requests | Best For |
+|------|-------|----------|----------|
+| **Free** | $0 | 100 | Getting started — no credit card required |
+| **Starter** | $9.99 | 300 | Small projects, auto-renews so you're never locked out |
+| **Pro** | $29.99 | 1,000 | Professionals and growing teams |
+| **Max** | $99.99 | 5,000 | Large teams with high-volume needs |
+| **Enterprise** | $299.99 | 15,000 | Full org management, compliance, and dedicated support |
+
+<Info>
+Prices are per request bucket, not per month. You're only charged when your current bucket runs out.
+</Info>
+
+## How It Works
+
+### Auto-Charge
+
+When your requests run out, HITL automatically charges your saved payment method for a fresh bucket at your current plan's rate. Your usage counter resets and you can continue immediately.
+
+```
+Requests exhausted → Auto-charge → Bucket refilled → Continue working
+```
+
+No downtime, no manual action needed.
+
+### Free Plan
+
+Free users get 100 requests to try the platform. Once exhausted, you'll need to upgrade to a paid plan to continue. No credit card is required to start.
+
+## Upgrading
+
+Click **Upgrade** on any plan card in the Billing page. 
+
+- **Free to paid**: You'll be redirected to Stripe Checkout to enter payment details.
+- **Paid to higher tier**: Your plan upgrades immediately. Your remaining requests are kept, and your next auto-charge will be at the new rate.
+
+## Downgrading
+
+Downgrades are **deferred** — you keep your current plan and remaining requests until they run out.
+
+<Steps>
+<Step title="Choose a lower plan">
+Click **Downgrade** on the plan you want to switch to.
+</Step>
+
+<Step title="Confirm the downgrade">
+Review what will happen: you keep your remaining requests, and your next auto-charge will be at the lower rate.
+</Step>
+
+<Step title="Use your remaining requests">
+Continue using your current plan until your requests are exhausted.
+</Step>
+
+<Step title="Auto-charge at the new rate">
+When your requests run out, you're charged at the new (lower) plan's rate and receive that plan's request bucket.
+</Step>
+</Steps>
+
+<Info>
+You can cancel a pending downgrade at any time from the Billing page. You'll stay on your current plan.
+</Info>
+
+## Usage Tab
+
+The Usage tab on the Billing page shows:
+
+- **Requests used** — Current count vs. your plan limit
+- **Progress bar** — Visual indicator of consumption
+- **Plan name** — Your current active plan
+- **Auto-renew info** — What happens when requests run out
+
+If you have a pending downgrade, the Usage tab shows an amber banner indicating which plan you're switching to, and the progress bar turns amber.
+
+## Managing Your Billing
+
+Navigate to **Billing** in the sidebar to:
+
+- View your current usage and remaining requests
+- Compare and switch between plans
+- See pending downgrades and cancel them
+- Manage payment methods (for legacy subscribers)
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="API Keys" icon="key" href="/api-keys">
+Set up API keys to start sending requests.
+</Card>
+
+<Card title="Create Your First Loop" icon="plus" href="/first-loop">
+Build your first human-in-the-loop workflow.
+</Card>
+</CardGroup>
