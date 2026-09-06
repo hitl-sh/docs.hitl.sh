@@ -1,103 +1,70 @@
 ---
 title: "Billing & Plans"
-description: "Usage-based pricing, plan details, upgrades, downgrades, and auto-charge"
+description: "HITL.sh pricing: Free and Enterprise plans"
 ---
 
 # Billing & Plans
 
-HITL uses **usage-based billing** — you're charged when your requests run out, not on a monthly cycle. You only pay for what you use.
+HITL.sh offers two plans: a generous free tier to get started, and a custom Enterprise plan for teams that need more.
 
 ## Plans
 
-| Plan | Price | Requests | Best For |
-|------|-------|----------|----------|
-| **Free** | $0 | 100 | Getting started — no credit card required |
-| **Starter** | $9.99 | 300 | Small projects, auto-renews so you're never locked out |
-| **Pro** | $29.99 | 1,000 | Professionals and growing teams |
-| **Max** | $99.99 | 5,000 | Large teams with high-volume needs |
-| **Enterprise** | $299.99 | 15,000 | Full org management, compliance, and dedicated support |
+| Plan | Price | Responses | Resets | Best For |
+|------|-------|-----------|--------|----------|
+| **Free** | $0 | 500 / month | Monthly | Getting started, small projects, individual use |
+| **Enterprise** | Custom | Custom | Custom | Teams, high volume, dedicated support, compliance |
 
 <Info>
-Prices are per request bucket, not per month. You're only charged when your current bucket runs out.
+The Free plan resets every month. You get 500 responses per month at no cost, no credit card required.
 </Info>
 
-## How It Works
+## Free Plan
 
-### Auto-Charge
+The Free plan includes:
 
-When your requests run out, HITL automatically charges your saved payment method for a fresh bucket at your current plan's rate. Your usage counter resets and you can continue immediately.
+- **500 responses per month** -- resets on the first of each month
+- Full access to the workflow designer
+- All node types (trigger, human review, AI, condition, transform, action)
+- Unlimited workflows
+- Humans management (Universe, Groups, People)
+- Mobile app access
+- Community support via Discord
 
-```
-Requests exhausted → Auto-charge → Bucket refilled → Continue working
-```
+No credit card is required. Sign up at [my.hitl.sh](https://my.hitl.sh) and start building workflows immediately.
 
-No downtime, no manual action needed.
+## Enterprise Plan
 
-### Free Plan
+For teams that need higher volume, dedicated support, or compliance features, contact us for a custom Enterprise plan.
 
-Free users get 100 requests to try the platform. Once exhausted, you'll need to upgrade to a paid plan to continue. No credit card is required to start.
+Enterprise includes everything in Free, plus:
 
-## Upgrading
+- **Custom response volume** tailored to your needs
+- **Organization management** with roles and permissions
+- **Priority support** with dedicated account manager
+- **Custom audit retention** for compliance requirements
+- **SLA guarantees** for uptime and response times
+- **SSO / SAML** integration
 
-Click **Upgrade** on any plan card in the Billing page. 
+<Card title="Contact Us" icon="envelope" href="mailto:team@hitl.sh">
+Reach out to team@hitl.sh to discuss Enterprise pricing for your team.
+</Card>
 
-- **Free to paid**: You'll be redirected to Stripe Checkout to enter payment details.
-- **Paid to higher tier**: Your plan upgrades immediately. Your remaining requests are kept, and your next auto-charge will be at the new rate.
+## Checking Your Usage
 
-## Downgrading
+Navigate to **Billing** in the dashboard sidebar to see:
 
-Downgrades are **deferred** — you keep your current plan and remaining requests until they run out.
-
-<Steps>
-<Step title="Choose a lower plan">
-Click **Downgrade** on the plan you want to switch to.
-</Step>
-
-<Step title="Confirm the downgrade">
-Review what will happen: you keep your remaining requests, and your next auto-charge will be at the lower rate.
-</Step>
-
-<Step title="Use your remaining requests">
-Continue using your current plan until your requests are exhausted.
-</Step>
-
-<Step title="Auto-charge at the new rate">
-When your requests run out, you're charged at the new (lower) plan's rate and receive that plan's request bucket.
-</Step>
-</Steps>
-
-<Info>
-You can cancel a pending downgrade at any time from the Billing page. You'll stay on your current plan.
-</Info>
-
-## Usage Tab
-
-The Usage tab on the Billing page shows:
-
-- **Requests used** — Current count vs. your plan limit
-- **Progress bar** — Visual indicator of consumption
-- **Plan name** — Your current active plan
-- **Auto-renew info** — What happens when requests run out
-
-If you have a pending downgrade, the Usage tab shows an amber banner indicating which plan you're switching to, and the progress bar turns amber.
-
-## Managing Your Billing
-
-Navigate to **Billing** in the sidebar to:
-
-- View your current usage and remaining requests
-- Compare and switch between plans
-- See pending downgrades and cancel them
-- Manage payment methods (for legacy subscribers)
+- **Responses used** this month vs. your plan limit
+- **Progress bar** showing consumption
+- **Reset date** for when your monthly count resets
 
 ## Next Steps
 
 <CardGroup cols={2}>
 <Card title="API Keys" icon="key" href="/api-keys">
-Set up API keys to start sending requests.
+Set up API keys to start triggering workflows.
 </Card>
 
-<Card title="Create Your First Loop" icon="plus" href="/first-loop">
-Build your first human-in-the-loop workflow.
+<Card title="Create Your First Workflow" icon="plus" href="/first-workflow">
+Build your first workflow in the visual designer.
 </Card>
 </CardGroup>

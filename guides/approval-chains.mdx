@@ -1,471 +1,166 @@
 ---
-title: "Approval Chains"
-description: "Set up multi-step approval workflows with sequential or parallel modes, configurable approvers, and audit logging"
+title: "Endorsement Reviews"
+description: "Configure human review nodes to require multiple approvals before a workflow execution continues"
 ---
 
-# Approval Chains
+# Endorsement Reviews
 
-Approval chains add multi-step approval workflows to HITL.sh requests. They're designed for enterprise organizations that need structured sign-off processes — for example, requiring both a team lead and a compliance officer to approve before a decision is finalized.
+Endorsement is a review mode available on human review nodes in the workflow designer. It requires a minimum number of reviewers to reach the same decision before the workflow execution continues. Use endorsement when a single reviewer's opinion is not sufficient -- for example, requiring 3 out of 5 reviewers to approve content before it is published.
 
-<Note>
-Approval chains are available on the **Enterprise** plan. Organizations on the Business plan can upgrade to access this feature.
-</Note>
-
-## How Approval Chains Work
-
-An approval chain is a sequence of steps attached to a request. Each step has one or more designated approvers who must submit a decision (approve or reject) before the chain progresses.
+## How Endorsement Works
 
 <Steps>
-<Step title="Create Request">
-Create a request in a loop as usual via the API.
+<Step title="Configure the human review node">
+In the workflow designer, select a human review node and set the review mode to **Endorsement**.
 </Step>
 
-<Step title="Attach Approval Chain">
-Create an approval chain for the request, specifying the mode, steps, and approvers.
+<Step title="Set the threshold">
+Specify the minimum number of matching responses required. For example, "3 of 5 must approve."
 </Step>
 
-<Step title="Approvers Decide">
-Each approver reviews the request and submits their decision with an optional comment.
+<Step title="Assign reviewers">
+Select a group from your Humans directory. All members of that group receive the review request.
 </Step>
 
-<Step title="Chain Resolves">
-Once all steps are resolved, the chain status updates to `approved` or `rejected`.
+<Step title="Reviewers respond">
+Each reviewer submits their decision independently. They do not see other reviewers' responses.
+</Step>
+
+<Step title="Threshold reached">
+Once the required number of matching responses is received, the node resolves and the workflow continues. If the threshold cannot be reached (e.g., too many rejections), the node resolves with a rejection.
 </Step>
 </Steps>
 
-## Approval Modes
+## Endorsement vs. Fan-Out
 
-Approval chains support two modes that control how steps are evaluated:
+Human review nodes support two multi-reviewer modes:
 
-<CardGroup cols={2}>
-<Card title="Sequential" icon="arrow-right">
-Steps are evaluated in order. Step 2 only becomes active after Step 1 is approved. If any step is rejected, the chain is rejected.
-</Card>
+| Feature | Fan-Out | Endorsement |
+|---------|---------|-------------|
+| **Purpose** | Collect all responses | Reach consensus |
+| **Resolution** | Waits for all reviewers | Resolves when threshold is met |
+| **Output** | Array of all responses | The consensus decision |
+| **Best for** | Collecting ratings, gathering feedback | Approval gates, compliance sign-off |
 
-<Card title="Parallel" icon="arrows-split-up-and-left">
-All steps are active simultaneously. Approvers in any step can submit decisions at any time. The chain resolves when all steps complete.
-</Card>
-</CardGroup>
+## Configuration
 
-### When to Use Each Mode
+### Review Mode Settings
 
-| Mode | Best For | Example |
-|------|----------|---------|
-| `sequential` | Hierarchical sign-off where earlier approvals inform later ones | Team lead approves, then compliance officer reviews |
-| `parallel` | Independent reviews where order doesn't matter | Legal, finance, and engineering each review independently |
-
-## Chain Statuses
-
-Both chains and individual steps use the same status values:
-
-| Status | Description |
-|--------|-------------|
-| `pending` | Waiting for approver decisions |
-| `approved` | All required approvals received |
-| `rejected` | At least one approver rejected |
-| `skipped` | Step was skipped (e.g., earlier step in sequential chain was rejected) |
-
-## Step Configuration
-
-Each step in a chain has:
-
-<ParamField body="step_order" type="integer" required>
-The position of this step in the chain (starting from 1). In sequential mode, steps are evaluated in this order.
+<ParamField body="mode" type="string" required>
+Set to `"endorsement"` to enable endorsement mode.
 </ParamField>
 
-<ParamField body="approver_ids" type="array" required>
-Array of user IDs who are authorized to submit decisions for this step. At least one approver is required.
+<ParamField body="threshold" type="integer" required>
+The minimum number of matching responses required for the node to resolve as approved. Must be less than or equal to the number of assigned reviewers.
 </ParamField>
 
-<ParamField body="require_all" type="boolean" optional default="false">
-When `true`, **all** approvers in `approver_ids` must approve for the step to pass. When `false`, **any single** approval is sufficient.
+<ParamField body="reviewers" type="string" required>
+A group from your Humans directory, or a list of individual people.
 </ParamField>
 
-## API Reference
-
-### Create an Approval Chain
-
-Attach an approval chain to an existing request.
-
-```
-POST /v1/requests/{requestId}/approval-chain
-```
-
-<CodeGroup>
-
-```python Python
-import requests
-
-chain_data = {
-    "org_id": "64a1b2c3d4e5f6a7b8c9d0e1",
-    "mode": "sequential",
-    "steps": [
-        {
-            "step_order": 1,
-            "approver_ids": ["65b2c3d4e5f6a7b8c9d0e1f2"],
-            "require_all": False
-        },
-        {
-            "step_order": 2,
-            "approver_ids": [
-                "66c3d4e5f6a7b8c9d0e1f2a3",
-                "67d4e5f6a7b8c9d0e1f2a3b4"
-            ],
-            "require_all": True
-        }
-    ]
-}
-
-response = requests.post(
-    f"https://dev.api.hitl.sh/v1/requests/{request_id}/approval-chain",
-    headers={"Authorization": f"Bearer {api_key}"},
-    json=chain_data
-)
-```
-
-```javascript Node.js
-const chainData = {
-    org_id: "64a1b2c3d4e5f6a7b8c9d0e1",
-    mode: "sequential",
-    steps: [
-        {
-            step_order: 1,
-            approver_ids: ["65b2c3d4e5f6a7b8c9d0e1f2"],
-            require_all: false
-        },
-        {
-            step_order: 2,
-            approver_ids: [
-                "66c3d4e5f6a7b8c9d0e1f2a3",
-                "67d4e5f6a7b8c9d0e1f2a3b4"
-            ],
-            require_all: true
-        }
-    ]
-};
-
-const response = await axios.post(
-    `https://dev.api.hitl.sh/v1/requests/${requestId}/approval-chain`,
-    chainData,
-    { headers: { Authorization: `Bearer ${apiKey}` }}
-);
-```
-
-```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/requests/{request_id}/approval-chain \
-  -H "Authorization: Bearer your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "org_id": "64a1b2c3d4e5f6a7b8c9d0e1",
-    "mode": "sequential",
-    "steps": [
-        {
-            "step_order": 1,
-            "approver_ids": ["65b2c3d4e5f6a7b8c9d0e1f2"],
-            "require_all": false
-        },
-        {
-            "step_order": 2,
-            "approver_ids": [
-                "66c3d4e5f6a7b8c9d0e1f2a3",
-                "67d4e5f6a7b8c9d0e1f2a3b4"
-            ],
-            "require_all": true
-        }
-    ]
-  }'
-```
-
-</CodeGroup>
-
-#### Response
-
-```json
-{
-  "error": false,
-  "msg": "Approval chain created successfully",
-  "data": {
-    "approval_chain": {
-      "id": "68e5f6a7b8c9d0e1f2a3b4c5",
-      "request_id": "64f1a2b3c4d5e6f7a8b9c0d1",
-      "org_id": "64a1b2c3d4e5f6a7b8c9d0e1",
-      "mode": "sequential",
-      "status": "pending",
-      "steps": [
-        {
-          "step_order": 1,
-          "approver_ids": ["65b2c3d4e5f6a7b8c9d0e1f2"],
-          "require_all": false,
-          "status": "pending",
-          "decisions": []
-        },
-        {
-          "step_order": 2,
-          "approver_ids": [
-              "66c3d4e5f6a7b8c9d0e1f2a3",
-              "67d4e5f6a7b8c9d0e1f2a3b4"
-          ],
-          "require_all": true,
-          "status": "pending",
-          "decisions": []
-        }
-      ],
-      "created_at": "2026-08-01T14:30:00Z"
-    }
-  }
-}
-```
-
-### Get Approval Chain
-
-Retrieve the current state of an approval chain for a request.
-
-```
-GET /v1/requests/{requestId}/approval-chain
-```
-
-<CodeGroup>
-
-```python Python
-response = requests.get(
-    f"https://dev.api.hitl.sh/v1/requests/{request_id}/approval-chain",
-    headers={"Authorization": f"Bearer {api_key}"}
-)
-
-chain = response.json()["data"]["approval_chain"]
-print(f"Chain status: {chain['status']}")
-for step in chain["steps"]:
-    print(f"  Step {step['step_order']}: {step['status']} ({len(step['decisions'])} decisions)")
-```
-
-```javascript Node.js
-const response = await axios.get(
-    `https://dev.api.hitl.sh/v1/requests/${requestId}/approval-chain`,
-    { headers: { Authorization: `Bearer ${apiKey}` }}
-);
-
-const chain = response.data.data.approval_chain;
-console.log(`Chain status: ${chain.status}`);
-chain.steps.forEach(step => {
-    console.log(`  Step ${step.step_order}: ${step.status} (${step.decisions.length} decisions)`);
-});
-```
-
-```bash cURL
-curl https://dev.api.hitl.sh/v1/requests/{request_id}/approval-chain \
-  -H "Authorization: Bearer your_api_key"
-```
-
-</CodeGroup>
-
-### Submit a Decision
-
-Submit an approve or reject decision for a specific step in the chain.
-
-```
-POST /v1/approval-chains/{chainId}/decide
-```
-
-<ParamField body="step_order" type="integer" required>
-The step number to submit a decision for
+<ParamField body="timeout_seconds" type="integer">
+How long to wait for responses before using the default response (60-86400 seconds).
 </ParamField>
 
-<ParamField body="decision" type="string" required>
-Either `"approve"` or `"reject"`
+<ParamField body="default_response" type="varies">
+The fallback value used if the timeout is reached before the threshold is met.
 </ParamField>
 
-<ParamField body="comment" type="string" optional>
-Optional comment explaining the decision
-</ParamField>
+### Example Configuration
 
-<CodeGroup>
+A content publishing workflow that requires 3 out of 5 editors to approve:
 
-```python Python
-decision_data = {
-    "step_order": 1,
-    "decision": "approve",
-    "comment": "Content meets quality standards. Approved for next review."
-}
-
-response = requests.post(
-    f"https://dev.api.hitl.sh/v1/approval-chains/{chain_id}/decide",
-    headers={"Authorization": f"Bearer {api_key}"},
-    json=decision_data
-)
+```
+Node: Human Review - "Editorial Approval"
+  Response Type: Single Select
+  Options: Approve, Reject
+  Review Mode: Endorsement
+  Threshold: 3
+  Reviewers: "Editorial Team" (5 members)
+  Timeout: 86400 seconds (24 hours)
+  Default Response: Reject
 ```
 
-```javascript Node.js
-const decisionData = {
-    step_order: 1,
-    decision: "approve",
-    comment: "Content meets quality standards. Approved for next review."
-};
+## Use Cases
 
-const response = await axios.post(
-    `https://dev.api.hitl.sh/v1/approval-chains/${chainId}/decide`,
-    decisionData,
-    { headers: { Authorization: `Bearer ${apiKey}` }}
-);
+### Content Publishing Gate
+
+Require multiple editors to approve an article before it is published:
+
+- **Reviewers**: Editorial Team (5 people)
+- **Threshold**: 3 approvals
+- **Response type**: Single Select (Approve / Reject)
+- **Timeout**: 24 hours with "Reject" as default
+
+### Compliance Sign-Off
+
+Require sign-off from multiple compliance officers:
+
+- **Reviewers**: Compliance Team (3 people)
+- **Threshold**: 2 approvals
+- **Response type**: Single Select (Approve / Reject / Escalate)
+- **Timeout**: 4 hours with "Escalate" as default
+
+### Multi-Department Approval
+
+For cross-functional approvals, use multiple human review nodes in sequence instead of endorsement. Each node is assigned to a different group:
+
+```
+Trigger
+  +-- Human Review: "Legal Review" (Legal Team, first response wins)
+  +-- Human Review: "Finance Review" (Finance Team, first response wins)
+  +-- Human Review: "Engineering Review" (Engineering Team, first response wins)
+  +-- Action: Proceed with approved item
 ```
 
-```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/approval-chains/{chain_id}/decide \
-  -H "Authorization: Bearer your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "step_order": 1,
-    "decision": "approve",
-    "comment": "Content meets quality standards. Approved for next review."
-  }'
-```
-
-</CodeGroup>
-
-#### Decision Response
-
-The response includes the updated chain with the new decision recorded:
-
-```json
-{
-  "error": false,
-  "msg": "Decision submitted successfully",
-  "data": {
-    "approval_chain": {
-      "id": "68e5f6a7b8c9d0e1f2a3b4c5",
-      "status": "pending",
-      "steps": [
-        {
-          "step_order": 1,
-          "status": "approved",
-          "decisions": [
-            {
-              "user_id": "65b2c3d4e5f6a7b8c9d0e1f2",
-              "decision": "approve",
-              "comment": "Content meets quality standards. Approved for next review.",
-              "decided_at": "2026-08-01T15:00:00Z"
-            }
-          ]
-        },
-        {
-          "step_order": 2,
-          "status": "pending",
-          "decisions": []
-        }
-      ]
-    }
-  }
-}
-```
-
-## Error Handling
-
-The approval chain API returns specific errors for common scenarios:
-
-| Error | Status | Description |
-|-------|--------|-------------|
-| Approval chain already exists | `409 Conflict` | A chain already exists for this request |
-| Approval chain not found | `404 Not Found` | No chain exists for the given request |
-| Chain is no longer pending | `400 Bad Request` | The chain has already been resolved |
-| Step is no longer pending | `400 Bad Request` | The step has already been resolved |
-| Not an approver | `403 Forbidden` | The authenticated user is not in the step's approver list |
-| Already decided | `409 Conflict` | The user has already submitted a decision for this step |
-
-## Use Case Examples
-
-### Sequential: Content Publishing Pipeline
-
-A two-step approval where the editor reviews first, then the compliance team signs off:
-
-```python
-# Step 1: Editor reviews content quality
-# Step 2: Compliance team verifies regulatory requirements (both must approve)
-chain_data = {
-    "org_id": org_id,
-    "mode": "sequential",
-    "steps": [
-        {
-            "step_order": 1,
-            "approver_ids": [editor_id],
-            "require_all": False
-        },
-        {
-            "step_order": 2,
-            "approver_ids": [compliance_lead_id, compliance_backup_id],
-            "require_all": True
-        }
-    ]
-}
-```
-
-### Parallel: Cross-Functional Review
-
-Three departments review independently — all must approve:
-
-```python
-# Legal, finance, and engineering review in parallel
-chain_data = {
-    "org_id": org_id,
-    "mode": "parallel",
-    "steps": [
-        {
-            "step_order": 1,
-            "approver_ids": [legal_counsel_id],
-            "require_all": False
-        },
-        {
-            "step_order": 2,
-            "approver_ids": [finance_director_id],
-            "require_all": False
-        },
-        {
-            "step_order": 3,
-            "approver_ids": [engineering_lead_id, cto_id],
-            "require_all": False
-        }
-    ]
-}
-```
+This is the workflow equivalent of a sequential approval chain.
 
 ## Best Practices
 
 <AccordionGroup>
-<Accordion title="Keep Chains Short">
-Limit chains to 2-3 steps. Longer chains slow down resolution and increase the chance of bottlenecks. If you need more steps, consider whether some reviews can happen in parallel.
+<Accordion title="Set realistic thresholds">
+Do not require all reviewers to respond. A threshold of 3 out of 5 is more practical than 5 out of 5, since one unavailable reviewer would block the entire workflow.
 </Accordion>
 
-<Accordion title="Use require_all Sparingly">
-Only set `require_all: true` when every approver's sign-off is genuinely required (e.g., compliance scenarios). For most steps, a single approval is sufficient and faster.
+<Accordion title="Use appropriate timeouts">
+Set timeouts based on the urgency of the review. Short timeouts (1-4 hours) for time-sensitive content, longer timeouts (24-48 hours) for compliance reviews.
 </Accordion>
 
-<Accordion title="Choose the Right Mode">
-Use **sequential** when earlier steps inform later ones (e.g., technical review before legal review). Use **parallel** when reviews are independent and order doesn't matter.
+<Accordion title="Choose safe defaults">
+The default response should be the most conservative option. For approval gates, use "Reject" as the default so that content is not published if reviewers do not respond in time.
 </Accordion>
 
-<Accordion title="Include Backup Approvers">
-Add multiple approver IDs to each step so that the chain doesn't stall if one approver is unavailable. With `require_all: false`, any one of them can unblock the step.
-</Accordion>
-
-<Accordion title="Monitor Chain Status">
-Poll the chain status or use webhooks to detect when chains are resolved. Stale pending chains may indicate an approver bottleneck.
+<Accordion title="Keep reviewer groups sized appropriately">
+Endorsement works best with 3-7 reviewers. Too few and a single absence blocks the workflow. Too many and you are waiting for responses that may never come.
 </Accordion>
 </AccordionGroup>
+
+## Migrating from Approval Chains
+
+If you previously used the approval chains feature, endorsement reviews are the replacement:
+
+- **Sequential approval chains** become multiple human review nodes connected in sequence in your workflow
+- **Parallel approval chains** become a single human review node in endorsement mode
+- **`require_all` steps** become endorsement with a threshold equal to the number of reviewers
+
+See the [Migration Guide](/guides/migration) for more details.
 
 ## Next Steps
 
 <CardGroup cols={2}>
-<Card title="Organizations" icon="building" href="/guides/organizations">
-Set up an organization to use approval chains
+<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
+Configure human review nodes in the visual designer
 </Card>
 
-<Card title="Roles & Permissions" icon="shield-halved" href="/guides/roles-permissions">
-Understand who can approve — role-based access control
+<Card title="Humans" icon="users" href="/concepts/humans">
+Set up reviewer groups for endorsement
 </Card>
 
-<Card title="Create Request" icon="rocket" href="/api-reference/requests/create-request">
-Create a request to attach an approval chain to
+<Card title="Workflows" icon="workflow" href="/concepts/workflows">
+Learn how workflows orchestrate human review
 </Card>
 
-<Card title="Webhooks" icon="webhook" href="/api-reference/webhooks">
-Get notified when approval chains resolve
+<Card title="Migration Guide" icon="arrow-right" href="/guides/migration">
+Migrate from approval chains to endorsement reviews
 </Card>
 </CardGroup>

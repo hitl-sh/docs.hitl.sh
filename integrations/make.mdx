@@ -1,14 +1,14 @@
 ---
 title: "Make Integration"
-description: "Build powerful visual automation scenarios with Make.com and HITL.sh, featuring real-time webhook triggers and advanced routing"
+description: "Trigger HITL.sh workflows and receive responses using Make.com modules with webhook support"
 ---
 
 # Make Integration
 
-Integrate HITL.sh with Make.com (formerly Integromat) to create sophisticated automation scenarios with visual workflow design and real-time webhook triggers.
+Integrate HITL.sh with Make.com (formerly Integromat) to add human decision-making to your automation scenarios. The HITL.sh plugin provides modules to trigger workflows via webhook and receive responses in real time.
 
 <Frame>
-<img src="/images/integrations/make-pics/google-forms-submission.png" alt="Make.com scenario with HITL.sh and Google Forms" />
+<img src="/images/integrations/make-pics/google-forms-submission.png" alt="Make.com scenario with HITL.sh" />
 </Frame>
 
 ## Why Use Make with HITL.sh?
@@ -19,7 +19,7 @@ Design complex automation with an intuitive drag-and-drop visual interface
 </Card>
 
 <Card title="Real-Time Webhooks" icon="bolt">
-Unique webhook trigger module for instant notifications when reviews complete
+Receive instant notifications when human reviews complete using the webhook trigger module
 </Card>
 
 <Card title="Advanced Data Mapping" icon="code">
@@ -33,11 +33,11 @@ Connect with Google Workspace, databases, CRMs, and countless other services
 
 ## Available Modules
 
-HITL.sh provides four powerful modules in Make.com:
+HITL.sh provides three modules in Make.com:
 
 <AccordionGroup>
-<Accordion title="Create Request">
-Submit content for human review:
+<Accordion title="Trigger Workflow">
+Send a JSON payload to your HITL.sh workflow's webhook URL to start an execution. The module waits for the human review response and returns it to your Make scenario.
 
 **Use Cases:**
 - Content moderation workflows
@@ -46,108 +46,60 @@ Submit content for human review:
 - Escalation routing
 
 **Required Fields:**
-- Loop ID
-- Request Text
-- Response Type
-- Response Config
-
-**Optional Fields:**
-- Processing Type
-- Priority
-- Timeout
-- Context
-- Callback URL
+- Webhook URL (from your HITL.sh workflow Settings tab)
+- Payload (JSON data to send)
 </Accordion>
 
-<Accordion title="Get Request Status">
-Retrieve current status and response data:
+<Accordion title="Get Response">
+Retrieve the status and response data of a workflow execution by its execution ID.
 
 **Use Cases:**
 - Polling for completed reviews
 - Status monitoring
-- Progress tracking
 - Data synchronization
 
 **Required Fields:**
-- Request ID
-
-**Returns:**
-- Status (pending, completed, timeout, cancelled)
-- Response data
-- Reviewer information
-- Timestamps
+- Execution ID
 </Accordion>
 
-<Accordion title="Make an API Call">
-Direct access to HITL.sh API endpoints:
-
-**Use Cases:**
-- Advanced custom operations
-- Loop management
-- Bulk operations
-- Custom integrations
-
-**Features:**
-- Full API access
-- Custom headers
-- Query parameters
-- Request body customization
-</Accordion>
-
-<Accordion title="Watch Responses (Webhook)">
-Real-time trigger when requests complete:
+<Accordion title="Watch Responses (Webhook Trigger)">
+A real-time trigger module that fires when a human review response is submitted in any of your HITL.sh workflows. No polling required.
 
 **Use Cases:**
 - Instant notification workflows
 - Real-time dashboards
 - Immediate action routing
-- Live status updates
 
-**Advantages:**
-- No polling required
-- Instant execution
-- Lower operation usage
-- Better performance
+**How it works:**
+1. Add the Watch Responses module as your scenario trigger
+2. Make generates a unique webhook URL
+3. Configure that URL as the callback in your HITL.sh workflow's action node
+4. The scenario fires automatically when a reviewer submits a response
 
 <Warning>
-This is a unique feature not available in other integration platforms!
+This is a unique feature not available in other integration platforms.
 </Warning>
 </Accordion>
 </AccordionGroup>
 
-## Module Comparison
-
-Choose the right module for your use case:
-
-| Feature | Create Request | Get Status | API Call | Watch Responses |
-|---------|---------------|------------|----------|-----------------|
-| **Submit Reviews** | ✅ | ❌ | ✅ | ❌ |
-| **Check Status** | ❌ | ✅ | ✅ | ✅ |
-| **Real-Time** | ❌ | ❌ | ❌ | ✅ |
-| **Custom Operations** | ❌ | ❌ | ✅ | ❌ |
-| **Ease of Use** | Easy | Easy | Advanced | Medium |
-| **Best For** | Creating requests | Status polling | Advanced use | Real-time triggers |
-
 ## Setting Up Authentication
-
-Connect your HITL.sh account to Make:
 
 <Steps>
 <Step title="Add HITL.sh Module">
 Add any HITL.sh module to your scenario
-</Step>
-
-<Step title="Create Connection">
-Click "Add" next to the Connection field
 
 <Frame>
 <img src="/images/integrations/make-pics/authentication-connection.png" alt="Setting up HITL.sh connection in Make" />
 </Frame>
 </Step>
 
+<Step title="Create Connection">
+Click "Add" next to the Connection field
+</Step>
+
 <Step title="Enter API Key">
 1. Go to your [HITL.sh dashboard](https://my.hitl.sh)
-2. Navigate to Settings → API Keys
+2. Navigate to Settings -> API Keys
 3. Copy your API key
 4. Paste it into the Make connection dialog
 </Step>
@@ -159,68 +111,37 @@ Save the connection and test with a simple scenario
 
 ## Module Configuration
 
-### Create Request Module
+### Trigger Workflow Module
 
 <Frame>
-<img src="/images/integrations/make-pics/create-request.png" alt="Create Request module configuration in Make" />
+<img src="/images/integrations/make-pics/create-request.png" alt="Trigger Workflow module configuration in Make" />
 </Frame>
 
-**Configuration Fields:**
-
-<ParamField body="Loop ID" type="string" required>
-  Your HITL loop identifier from the dashboard
+<ParamField body="Webhook URL" type="string" required>
+The webhook URL from your HITL.sh workflow's Settings tab
 </ParamField>
 
-<ParamField body="Request Text" type="string" required>
-  Content or question for reviewers to evaluate
+<ParamField body="Payload" type="json" required>
+JSON data to send to the workflow. This data is available to all nodes in the HITL.sh workflow.
 </ParamField>
 
-<ParamField body="Response Type" type="select" required>
-  text | single_select | multi_select | rating | number | boolean
-</ParamField>
+The response type, options, reviewers, and timeout are all configured in the HITL.sh workflow designer -- not in the Make module.
 
-<ParamField body="Response Config" type="json" required>
-  JSON configuration for the response type
-</ParamField>
-
-<ParamField body="Processing Type" type="select">
-  time-sensitive (default) | deferred
-</ParamField>
-
-<ParamField body="Priority" type="select">
-  low | medium (default) | high | critical
-</ParamField>
-
-<ParamField body="Timeout Seconds" type="number">
-  60-86400 seconds (required for time-sensitive)
-</ParamField>
-
-<ParamField body="Default Response" type="varies">
-  Fallback value matching response type format
-</ParamField>
-
-<ParamField body="Context" type="json">
-  Additional metadata as JSON object
-</ParamField>
-
-### Get Request Status Module
+### Get Response Module
 
 <Frame>
-<img src="/images/integrations/make-pics/get-request-status.png" alt="Get Request Status module configuration in Make" />
+<img src="/images/integrations/make-pics/get-request-status.png" alt="Get Response module configuration in Make" />
 </Frame>
 
-**Configuration Fields:**
-
-<ParamField body="Request ID" type="string" required>
-  The ID returned when creating a request
+<ParamField body="Execution ID" type="string" required>
+The execution ID returned when triggering a workflow
 </ParamField>
 
 **Returns:**
 ```json
 {
-  "request_id": "65f1234567890abcdef12348",
+  "execution_id": "exec_abc123",
   "status": "completed",
-  "priority": "high",
   "response_data": "approve",
   "response_by_user": {
     "id": "65f1234567890abcdef12350",
@@ -229,34 +150,8 @@ Save the connection and test with a simple scenario
   },
   "response_time_seconds": 145.5,
   "created_at": "2024-03-15T10:30:00Z",
-  "updated_at": "2024-03-15T10:32:25Z"
+  "completed_at": "2024-03-15T10:32:25Z"
 }
-```
-
-### Make an API Call Module
-
-<Frame>
-<img src="/images/integrations/make-pics/make-api-call.png" alt="Make an API Call module for advanced operations" />
-</Frame>
-
-**Use this for:**
-- Custom API operations
-- Loop management (create, update, delete)
-- Batch operations
-- Advanced queries
-
-**Example - List All Loops:**
-```
-URL: /api/loops
-Method: GET
-Headers: Authorization: Bearer {{API_KEY}}
-```
-
-**Example - Cancel Request:**
-```
-URL: /api/requests/{{request_id}}
-Method: DELETE
-Headers: Authorization: Bearer {{API_KEY}}
 ```
 
 ### Watch Responses Module (Webhook Trigger)
@@ -264,8 +159,6 @@ Headers: Authorization: Bearer {{API_KEY}}
 <Frame>
 <img src="/images/integrations/make-pics/Trigger-Module.png" alt="Watch Responses webhook trigger module" />
 </Frame>
-
-**How it Works:**
 
 <Steps>
 <Step title="Add Webhook Module">
@@ -276,21 +169,21 @@ Add "HITL.sh > Watch Responses" as your scenario trigger
 Make generates a unique webhook URL for this scenario
 </Step>
 
-<Step title="Configure in HITL Request">
-When creating requests, include the webhook URL as callback_url
+<Step title="Configure in HITL.sh">
+Add an Action node in your HITL.sh workflow that sends a webhook to this URL when the execution completes
 </Step>
 
 <Step title="Automatic Triggering">
-Scenario automatically runs when reviewer completes the request
+Scenario automatically runs when a reviewer completes a response
 </Step>
 </Steps>
 
 **Webhook Payload:**
 ```json
 {
-  "event": "request.completed",
-  "request_id": "65f1234567890abcdef12348",
-  "loop_id": "65f1234567890abcdef12345",
+  "event": "execution.completed",
+  "execution_id": "exec_abc123",
+  "workflow_id": "wf_def456",
   "status": "completed",
   "response_data": "approve",
   "response_by_user": {
@@ -303,185 +196,43 @@ Scenario automatically runs when reviewer completes the request
 }
 ```
 
-## Supported Response Types
-
-### Text Response
-```json
-{
-  "response_type": "text",
-  "response_config": {
-    "placeholder": "Enter feedback...",
-    "min_length": 10,
-    "max_length": 1000,
-    "required": true
-  }
-}
-```
-**Returns:** String value
-
-### Single Select
-```json
-{
-  "response_type": "single_select",
-  "response_config": {
-    "options": ["Approve", "Reject", "Revise"]
-  }
-}
-```
-**Returns:** Single string value (e.g., "approve")
-
-### Multi Select
-```json
-{
-  "response_type": "multi_select",
-  "response_config": {
-    "options": ["Accuracy", "Tone", "Grammar"],
-    "max_selections": 3
-  }
-}
-```
-**Returns:** Array of strings (e.g., ["accuracy", "grammar"])
-
-### Rating
-```json
-{
-  "response_type": "rating",
-  "response_config": {
-    "scale_min": 1,
-    "scale_max": 10,
-    "scale_step": 0.5
-  }
-}
-```
-**Returns:** Number value (e.g., 7.5)
-
-### Number
-```json
-{
-  "response_type": "number",
-  "response_config": {
-    "min_value": 0,
-    "max_value": 1000,
-    "decimal_places": 2
-  }
-}
-```
-**Returns:** Number value (e.g., 149.99)
-
-### Boolean
-```json
-{
-  "response_type": "boolean",
-  "response_config": {
-    "true_label": "Yes, Approved",
-    "false_label": "No, Rejected"
-  }
-}
-```
-**Returns:** Boolean value (true/false)
-
 ## Example Scenarios
 
 ### Google Forms Approval Workflow
 
-**Scenario Flow:**
 1. **Trigger:** New Google Forms Response
 2. **Filter:** Check if requires approval
-3. **HITL Create Request:** Send for human review
+3. **HITL.sh Trigger Workflow:** Send form data to workflow webhook URL
 4. **Router:** Route based on response
-   - Approved → Update Google Sheet, Send email
-   - Rejected → Archive response, Notify submitter
-   - Escalate → Create ticket, Notify manager
+   - Approved: Update Google Sheet, send email
+   - Rejected: Archive response, notify submitter
+   - Escalate: Create ticket, notify manager
 
-### Real-Time Content Moderation
+### Real-Time Content Moderation (using Webhook)
 
-**Scenario Flow (using Webhook):**
-1. **Trigger:** HITL Watch Responses (Webhook)
+1. **Trigger:** HITL.sh Watch Responses (Webhook)
 2. **Switch:** Based on response_data
-   - "approve" → Post to social media, Log to database
-   - "reject" → Send rejection notice, Archive content
-   - "flag" → Create moderation ticket, Alert team
+   - "approve": Post to social media, log to database
+   - "reject": Send rejection notice, archive content
+   - "flag": Create moderation ticket, alert team
 
 ### Customer Support Escalation
 
-**Scenario Flow:**
 1. **Trigger:** New Zendesk Ticket
 2. **Filter:** Priority = High or Urgent
-3. **HITL Create Request:** Route to support manager
-4. **Wait for Response:** Poll status every 5 minutes
-5. **Action:** Based on decision
-   - Assign to specialist team
-   - Escalate to executive
-   - Resolve with template
-
-## Advanced Techniques
-
-### Data Transformation
-
-Map form data to HITL request format:
-
-```javascript
-// Set multiple variables
-{
-  "loop_id": "{{1.loop_id}}",
-  "request_text": formatString(
-    "Review submission from {name}\nEmail: {email}\nMessage: {message}",
-    {{1.name}},
-    {{1.email}},
-    {{1.message}}
-  ),
-  "priority": {{1.amount}} > 1000 ? "high" : "medium"
-}
-```
-
-### Conditional Routing
-
-Use routers to handle different response types:
-
-```
-Router
-├─ Path 1: response_data = "approve"
-│  └─ Send approval email
-│  └─ Update CRM
-│  └─ Post to Slack
-│
-├─ Path 2: response_data = "reject"
-│  └─ Send rejection notice
-│  └─ Archive submission
-│
-└─ Path 3: response_data = "escalate"
-   └─ Create high-priority ticket
-   └─ Notify management
-   └─ Schedule follow-up
-```
-
-### Error Handling
-
-Add error handlers to your scenarios:
-
-<Steps>
-<Step title="Enable Error Handling">
-Right-click any module → Add error handler
-</Step>
-
-<Step title="Configure Fallback">
-Choose action: Ignore, Resume, Commit, or Rollback
-</Step>
-
-<Step title="Add Notification">
-Send error notifications to your team
-</Step>
-</Steps>
+3. **HITL.sh Trigger Workflow:** Send ticket data to workflow webhook
+4. **Wait for Response:** The module polls until the reviewer responds
+5. **Action:** Route based on decision
 
 ## Best Practices
 
 <CardGroup cols={2}>
 <Card title="Use Webhooks" icon="bolt">
-Prefer Watch Responses over polling Get Status for better performance
+Prefer Watch Responses over polling Get Response for better performance and lower operation usage
 </Card>
 
 <Card title="Data Validation" icon="shield-check">
-Validate data before sending to HITL to prevent errors
+Validate data before sending to HITL.sh to prevent errors
 </Card>
 
 <Card title="Error Handling" icon="triangle-exclamation">
@@ -501,56 +252,47 @@ Run scenarios with test data before activating
 - Verify API key is correct
 - Check API key permissions
 - Regenerate API key if needed
-- Test connection with simple request
-</Accordion>
-
-<Accordion title="Invalid Response Config">
-**Solution:**
-- Verify JSON syntax is correct
-- Match response_config to response_type
-- Check required fields are present
-- Review example configurations above
 </Accordion>
 
 <Accordion title="Webhook Not Triggering">
 **Solution:**
-- Verify webhook URL in callback_url
-- Check webhook is active in Make
-- Test with manual webhook call
+- Verify the workflow is activated in HITL.sh
+- Check the webhook URL is correctly configured in the HITL.sh workflow's action node
+- Test with a manual webhook call
 - Review Make scenario execution logs
 </Accordion>
 
-<Accordion title="Request Timeout">
+<Accordion title="No Response Received">
 **Solution:**
-- Increase timeout_seconds value
-- Verify loop has active reviewers
-- Check notification settings
-- Consider using deferred processing
+- Verify the HITL.sh workflow has active reviewers assigned
+- Check the webhook URL is correct
+- Ensure the workflow is activated
+- Check reviewer notification settings
 </Accordion>
 </AccordionGroup>
 
 ## Pricing & Operations
 
 <Note>
-Each module execution counts as one operation. Using webhooks (Watch Responses) is more efficient than polling (Get Status) as it only triggers when there's actual data.
+Each module execution counts as one Make operation. Using webhooks (Watch Responses) is more efficient than polling (Get Response) as it only triggers when there's actual data.
 </Note>
 
 ## Next Steps
 
 <CardGroup cols={2}>
 <Card title="n8n Integration" icon="workflow" href="/integrations/n8n">
-  Explore n8n for open-source automation
+Explore n8n for open-source automation
 </Card>
 
 <Card title="Zapier Integration" icon="zap" href="/integrations/zapier">
-  Learn about Zapier for simpler workflows
+Learn about Zapier for simpler workflows
 </Card>
 
-<Card title="API Reference" icon="code" href="/api-reference/requests/create-request">
-  View complete API documentation
+<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
+Configure your HITL.sh workflows
 </Card>
 
 <Card title="Community" icon="users" href="https://discord.gg/jYVrpmnMP9">
-  Join Discord for scenario templates and support
+Join Discord for scenario templates and support
 </Card>
 </CardGroup>

@@ -1,0 +1,174 @@
+---
+title: "Workflows"
+description: "Learn about workflows - the visual automation builder in HITL.sh that connects triggers, AI, human review, and actions into executable pipelines"
+---
+
+# Workflows
+
+Workflows are the core building block of HITL.sh. A workflow is a visual pipeline that defines how data flows from a trigger through processing steps -- including human review -- to produce a result. You build workflows in the workflow designer using a drag-and-drop canvas.
+
+## What is a Workflow?
+
+A workflow in HITL.sh is a directed graph of nodes that:
+
+- **Starts with a trigger**: Receives data via a webhook URL
+- **Processes data through nodes**: AI, human review, conditions, transforms, and actions
+- **Produces responses**: Human decisions captured during execution
+- **Tracks executions**: Every run is logged with its inputs, outputs, and status
+
+<Info>
+Workflows replace the previous loop + API request model. Instead of creating loops and sending requests via code, you design a visual workflow in the dashboard and trigger it with a webhook.
+</Info>
+
+## Node Types
+
+Every workflow is built from these node types:
+
+<AccordionGroup>
+<Accordion title="Trigger">
+The entry point for every workflow. Each workflow has a unique webhook URL. When you send a JSON payload to that URL, a new execution starts.
+
+- Automatically generated when you create a workflow
+- Accepts any JSON body -- the payload is available to all downstream nodes
+- Supports optional authentication headers
+</Accordion>
+
+<Accordion title="Human Review">
+Pauses execution and sends the item to human reviewers for a decision. This is the core of HITL.sh.
+
+- **Response types**: text, single select, multi select, rating, number, boolean, editable text
+- **Reviewers**: Assign individuals or groups from your Humans directory
+- **Fan-out mode**: Send to multiple reviewers in parallel and collect all responses
+- **Endorsement mode**: Require a minimum number of approvals before proceeding
+- **Timeout**: Set a deadline with a default response as fallback
+</Accordion>
+
+<Accordion title="AI">
+Runs an AI prompt against the execution data. Use this for classification, summarization, extraction, or any LLM task before or after human review.
+
+- Configure a system prompt and user prompt with template variables
+- Select a model (GPT-4o, Claude, etc.)
+- Output is added to the execution context for downstream nodes
+</Accordion>
+
+<Accordion title="Condition">
+Branches execution based on data values. Supports two modes:
+
+- **If/Else**: Evaluate a single boolean expression and branch into two paths
+- **Switch**: Match a value against multiple cases, each with its own downstream path
+
+Use conditions to route data to different reviewers, skip steps, or handle edge cases.
+</Accordion>
+
+<Accordion title="Transform">
+Modify or reshape data between nodes. Use transforms to:
+
+- Extract fields from the trigger payload
+- Format text for human reviewers
+- Combine outputs from multiple nodes
+- Map data into the shape expected by an action node
+</Accordion>
+
+<Accordion title="Action">
+Performs a side effect at the end of a branch -- sending an email, calling an external API, updating a database, or posting to Slack. Actions are the "output" of your workflow.
+</Accordion>
+</AccordionGroup>
+
+## How Workflows Execute
+
+When a webhook payload hits your workflow's trigger URL, HITL.sh creates an **execution** and processes nodes in order:
+
+<Steps>
+<Step title="Trigger fires">
+The incoming JSON payload is captured and the execution begins.
+</Step>
+
+<Step title="Nodes run in sequence">
+Each node processes its input and passes output to connected downstream nodes. AI nodes run automatically; human review nodes pause and wait.
+</Step>
+
+<Step title="Human review pauses execution">
+When a human review node is reached, the assigned reviewers receive a notification on the mobile app and web dashboard. The execution waits until a response is submitted (or the timeout is reached).
+</Step>
+
+<Step title="Execution completes">
+Once all branches have resolved, the execution is marked as completed. Results are available in the Executions tab and via the API.
+</Step>
+</Steps>
+
+## Webhook Triggers
+
+Every workflow has a unique webhook URL in this format:
+
+```
+https://api.hitl.sh/v1/workflows/{workflow_id}/trigger
+```
+
+Send a POST request with a JSON body to start an execution:
+
+```bash
+curl -X POST https://api.hitl.sh/v1/workflows/wf_abc123/trigger \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "user_456",
+    "content": "Please review this comment for policy compliance.",
+    "category": "moderation"
+  }'
+```
+
+The JSON body is available to all nodes in the workflow as the trigger payload.
+
+## Workflow States
+
+Workflows have two states:
+
+<CardGroup cols={2}>
+<Card title="Draft" icon="pencil">
+The workflow is being designed. You can edit nodes, connections, and settings. It will not respond to webhook triggers.
+</Card>
+
+<Card title="Active" icon="circle-check">
+The workflow is live. Webhook triggers create new executions. Editing is locked until you deactivate.
+</Card>
+</CardGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+<Card title="Start Simple" icon="seedling">
+Begin with a trigger, one human review node, and one action. Add complexity only when needed.
+</Card>
+
+<Card title="Use Conditions for Routing" icon="split">
+Route high-priority items to senior reviewers and low-priority items to standard reviewers using condition nodes.
+</Card>
+
+<Card title="Set Timeouts" icon="clock">
+Always configure timeouts on human review nodes with safe default responses to prevent executions from stalling.
+</Card>
+
+<Card title="Test Before Activating" icon="flask">
+Use the workflow designer's test mode to send sample payloads and verify your pipeline end-to-end before going live.
+</Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Create Your First Workflow" icon="plus" href="/first-workflow">
+Step-by-step guide to building and activating your first workflow
+</Card>
+
+<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
+Learn the designer interface -- canvas, nodes, and configuration
+</Card>
+
+<Card title="Responses" icon="message-circle" href="/concepts/responses">
+Understand how human review responses work within workflows
+</Card>
+
+<Card title="Humans" icon="users" href="/concepts/humans">
+Set up your Universe, Groups, and People for reviewer assignment
+</Card>
+</CardGroup>

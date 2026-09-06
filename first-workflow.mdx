@@ -1,0 +1,182 @@
+---
+title: "Creating Your First Workflow"
+description: "Step-by-step guide to build, activate, and trigger your first HITL.sh workflow"
+---
+
+# Creating Your First Workflow
+
+This guide walks you through creating a workflow that receives content via a webhook, sends it to a human reviewer for approval, and returns the decision. You will have a working workflow in under 10 minutes.
+
+<Info>
+By the end of this guide, you will have an active workflow with a webhook URL that you can trigger from any application, integration, or cURL command.
+</Info>
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- A HITL.sh account ([sign up at my.hitl.sh](https://my.hitl.sh))
+- At least one person added to your Humans directory (you can add yourself)
+- The HITL.sh mobile app installed ([App Store](https://apps.apple.com/us/app/hitl-human-in-the-loop/id6752878072) | [Google Play](https://play.google.com/store/apps/details?id=hitl.sh.app))
+
+<Card title="Generate API Key" icon="key" href="/api-keys">
+If you plan to trigger the workflow programmatically, generate an API key first.
+</Card>
+
+## Step 1: Create the Workflow
+
+<Steps>
+<Step title="Open the Dashboard">
+Navigate to [my.hitl.sh](https://my.hitl.sh) and sign in.
+</Step>
+
+<Step title="Click New Workflow">
+In the sidebar, click **Workflows**, then click the **New Workflow** button. Give it a name like "Content Moderation" and an optional description.
+</Step>
+
+<Step title="Open the Designer">
+You are now in the workflow designer. The canvas shows a **Trigger** node already placed -- this is the entry point for your workflow.
+</Step>
+</Steps>
+
+## Step 2: Add a Human Review Node
+
+<Steps>
+<Step title="Open the Node Palette">
+Click the **+** button on the canvas or drag from the node palette on the left.
+</Step>
+
+<Step title="Select Human Review">
+Choose **Human Review** from the node list. A new node appears on the canvas connected to the trigger.
+</Step>
+
+<Step title="Configure the Node">
+Click the human review node to open its settings panel:
+
+- **Response type**: Select "Single Select"
+- **Options**: Add "Approve", "Reject", and "Escalate"
+- **Reviewers**: Select a group from your Humans directory (or choose Universe for all reviewers)
+- **Timeout**: Set to 3600 seconds (1 hour)
+- **Default response**: Set to "Reject" as a safe fallback
+</Step>
+</Steps>
+
+## Step 3: Save and Activate
+
+<Steps>
+<Step title="Save the Workflow">
+Click **Save** in the top-right corner. Your workflow is saved as a draft.
+</Step>
+
+<Step title="Activate">
+Click the **Activate** toggle. The workflow is now live and listening for webhook triggers. You will see the webhook URL displayed at the top of the designer.
+</Step>
+
+<Step title="Copy the Webhook URL">
+Copy the webhook URL. It looks like this:
+
+```
+https://api.hitl.sh/v1/workflows/wf_abc123/trigger
+```
+</Step>
+</Steps>
+
+## Step 4: Trigger the Workflow
+
+Send a POST request to your webhook URL to create an execution:
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.hitl.sh/v1/workflows/wf_abc123/trigger \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Please review this user comment: Great product, highly recommend!",
+    "user_id": "user_123",
+    "category": "comment"
+  }'
+```
+
+```python Python
+import requests
+
+webhook_url = "https://api.hitl.sh/v1/workflows/wf_abc123/trigger"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+payload = {
+    "content": "Please review this user comment: Great product, highly recommend!",
+    "user_id": "user_123",
+    "category": "comment"
+}
+
+response = requests.post(webhook_url, headers=headers, json=payload)
+execution = response.json()
+
+print(f"Execution started: {execution['data']['execution_id']}")
+```
+
+```javascript Node.js
+const axios = require('axios');
+
+const response = await axios.post(
+  'https://api.hitl.sh/v1/workflows/wf_abc123/trigger',
+  {
+    content: 'Please review this user comment: Great product, highly recommend!',
+    user_id: 'user_123',
+    category: 'comment'
+  },
+  {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    }
+  }
+);
+
+console.log('Execution started:', response.data.data.execution_id);
+```
+
+</CodeGroup>
+
+## Step 5: Respond to the Review
+
+Once the workflow is triggered:
+
+1. The assigned reviewers receive a push notification on the HITL.sh mobile app
+2. Open the app and tap on the pending review
+3. Select one of the options (Approve, Reject, or Escalate)
+4. Submit the response
+
+The workflow execution completes and the response is recorded.
+
+## Step 6: View the Execution
+
+Go back to the workflow designer and click the **Executions** tab. You will see your execution with:
+
+- The trigger payload
+- The human review response
+- The total execution time
+- The reviewer who responded
+
+## What's Next
+
+<CardGroup cols={2}>
+<Card title="Workflow Designer Guide" icon="pen-ruler" href="/guides/workflow-designer">
+Learn about all node types, canvas controls, and advanced configuration
+</Card>
+
+<Card title="Response Types" icon="list" href="/responses/types">
+Explore all seven response types and their configurations
+</Card>
+
+<Card title="Humans" icon="users" href="/concepts/humans">
+Set up groups and people for reviewer assignment
+</Card>
+
+<Card title="Integrations" icon="plug" href="/integrations/overview">
+Connect your workflow to n8n, Zapier, Make, and more
+</Card>
+</CardGroup>

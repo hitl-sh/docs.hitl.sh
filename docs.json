@@ -29,7 +29,7 @@
               "dashboard",
               "api-keys",
               "billing",
-              "first-loop",
+              "first-workflow",
               "sdks"
             ]
           },
@@ -46,16 +46,23 @@
             "pages": [
               "guides/organizations",
               "guides/roles-permissions",
-              "guides/approval-chains"
+              "guides/approval-chains",
+              "guides/migration"
+            ]
+          },
+          {
+            "group": "Workflow Design",
+            "pages": [
+              "guides/workflow-designer"
             ]
           },
           {
             "group": "Core Concepts",
             "pages": [
               "concepts",
-              "concepts/loops",
-              "concepts/requests",
+              "concepts/workflows",
               "concepts/responses",
+              "concepts/humans",
               "concepts/sessions",
               "concepts/integrations",
               "concepts/ai-agents"
@@ -241,6 +248,18 @@
     {
       "source": "/api",
       "destination": "/api-keys"
+    },
+    {
+      "source": "/concepts/loops",
+      "destination": "/concepts/workflows"
+    },
+    {
+      "source": "/concepts/requests",
+      "destination": "/concepts/responses"
+    },
+    {
+      "source": "/first-loop",
+      "destination": "/first-workflow"
     }
   ],
   "footer": {

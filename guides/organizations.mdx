@@ -1,11 +1,11 @@
 ---
 title: "Organizations"
-description: "Create and manage organizations to centralize team workflows, scope loops, and configure enterprise settings"
+description: "Manage your team with organizations on the Enterprise plan"
 ---
 
 # Organizations
 
-Organizations let you group team members, scope loops, and manage settings in one place. They're designed for teams that need centralized control over their HITL.sh workflows.
+Organizations let you group team members, scope workflows, and manage settings in one place. They're available on the Enterprise plan for teams that need centralized control over their HITL.sh workflows.
 
 ## What Are Organizations?
 
@@ -13,34 +13,21 @@ An organization is a shared workspace where team members collaborate on review w
 
 <CardGroup cols={2}>
 <Card title="Centralized Management" icon="building">
-Manage all team members, loops, and settings from a single dashboard
+Manage all team members, workflows, and settings from a single dashboard
 </Card>
 
-<Card title="Org-Scoped Loops" icon="circle-nodes">
-Create loops that belong to the organization rather than individual users
+<Card title="Org-Scoped Workflows" icon="circle-nodes">
+Create workflows that belong to the organization rather than individual users
 </Card>
 
 <Card title="Role-Based Access" icon="shield-halved">
 Assign roles (owner, admin, member, viewer) to control who can do what
 </Card>
 
-<Card title="Enterprise Settings" icon="gear">
-Configure approval chains, escalation policies, and audit retention
+<Card title="Humans Management" icon="users">
+Organize reviewers into a shared Universe with Groups and People across the organization
 </Card>
 </CardGroup>
-
-## Organization Plans
-
-Organizations are available on two plan tiers:
-
-| Feature | Business | Enterprise |
-|---------|----------|------------|
-| Team members | Unlimited | Unlimited |
-| Org-scoped loops | Yes | Yes |
-| Role-based access control | Yes | Yes |
-| Approval chains | — | Yes |
-| Escalation policies | — | Yes |
-| Custom audit retention | 90 days | Configurable |
 
 ## Creating an Organization
 
@@ -50,11 +37,11 @@ Navigate to [my.hitl.sh](https://my.hitl.sh) and sign in to your account.
 </Step>
 
 <Step title="Create Organization">
-Click the organization switcher in the sidebar and select **Create Organization**. Enter a name for your organization — a URL-friendly slug will be generated automatically.
+Click the organization switcher in the sidebar and select **Create Organization**. Enter a name for your organization -- a URL-friendly slug will be generated automatically.
 </Step>
 
-<Step title="Choose a Plan">
-Select either **Business** or **Enterprise** depending on your needs. You can upgrade later.
+<Step title="Contact Us for Enterprise">
+Organizations are available on the Enterprise plan. Contact [team@hitl.sh](mailto:team@hitl.sh) to set up Enterprise billing for your organization.
 </Step>
 
 <Step title="Invite Members">
@@ -78,66 +65,36 @@ Every organization has a list of members, each with an assigned role:
 
 See [Roles & Permissions](/guides/roles-permissions) for details on the 4-tier role model.
 
+### Humans Directory
+
+Organizations have a shared Humans directory:
+
+- **Universe**: The default group containing all people in the organization
+- **Groups**: Create groups like "Content Moderators", "Legal Team", or "Senior Reviewers" and assign them to workflow human review nodes
+- **People**: Invite individuals by email -- they join the organization and appear in the shared Universe
+
+See [Humans](/concepts/humans) for details on managing reviewers.
+
 ### Settings
 
 Organization settings control enterprise features:
 
-<ParamField body="require_approval_chains" type="boolean" default="false">
-When enabled, all requests in the organization must go through an approval chain before being finalized. Enterprise plan only.
-</ParamField>
-
 <ParamField body="escalation_enabled" type="boolean" default="false">
-When enabled, requests can be escalated to higher-level reviewers when not resolved within a configurable timeframe. Enterprise plan only.
+When enabled, response requests can be escalated to higher-level reviewers when not resolved within a configurable timeframe.
 </ParamField>
 
 <ParamField body="audit_retention_days" type="integer" default="90">
 Number of days to retain audit logs for organization activity. Enterprise plans can configure this value.
 </ParamField>
 
-## Org-Scoped Loops
+## Org-Scoped Workflows
 
-Loops created within an organization are scoped to that organization. This means:
+Workflows created within an organization are scoped to that organization. This means:
 
-- All organization members with appropriate roles can access the loop
-- Requests in org-scoped loops respect the organization's settings (e.g., approval chains)
-- Loop analytics roll up to the organization's dashboard
-- The `X-Org-ID` header can be used to filter inbox items by organization
-
-### Creating an Org-Scoped Loop
-
-When creating a loop via the API, include the organization ID:
-
-<CodeGroup>
-
-```python Python
-request_data = {
-    "name": "Content Review Queue",
-    "description": "Review AI-generated content before publishing",
-    "org_id": "64a1b2c3d4e5f6a7b8c9d0e1"
-}
-
-response = requests.post(
-    "https://dev.api.hitl.sh/v1/api/loops",
-    headers={"Authorization": f"Bearer {api_key}"},
-    json=request_data
-)
-```
-
-```javascript Node.js
-const requestData = {
-    name: "Content Review Queue",
-    description: "Review AI-generated content before publishing",
-    org_id: "64a1b2c3d4e5f6a7b8c9d0e1"
-};
-
-const response = await axios.post(
-    "https://dev.api.hitl.sh/v1/api/loops",
-    requestData,
-    { headers: { Authorization: `Bearer ${apiKey}` }}
-);
-```
-
-</CodeGroup>
+- All organization members with appropriate roles can access the workflow
+- Workflow executions respect the organization's settings
+- Execution analytics roll up to the organization's dashboard
+- The Humans directory is shared across all workflows in the organization
 
 ## Invite Codes
 
@@ -169,8 +126,9 @@ Invite links work across platforms:
 
 If you belong to multiple organizations, the sidebar in the web dashboard includes an organization switcher. Switching organizations updates:
 
-- The loops visible in the sidebar
-- The inbox filter to show only that organization's requests
+- The workflows visible in the sidebar
+- The inbox filter to show only that organization's response requests
+- The Humans directory to show that organization's groups and people
 - The settings page to show that organization's configuration
 - Analytics and usage data scoped to the selected organization
 
@@ -181,12 +139,12 @@ If you belong to multiple organizations, the sidebar in the web dashboard includ
 Assign roles intentionally from day one. Use **viewer** for stakeholders who need visibility, **member** for active reviewers, **admin** for team leads, and reserve **owner** for the account holder.
 </Accordion>
 
-<Accordion title="Use Org-Scoped Loops">
-Create loops within the organization rather than under individual accounts. This ensures continuity if team members leave and keeps analytics centralized.
+<Accordion title="Use Org-Scoped Workflows">
+Create workflows within the organization rather than under individual accounts. This ensures continuity if team members leave and keeps analytics centralized.
 </Accordion>
 
-<Accordion title="Configure Audit Retention Early">
-If your organization has compliance requirements, set the audit retention period during setup. Audit logs cannot be recovered after they expire.
+<Accordion title="Organize Your Humans Directory">
+Create purposeful groups in your Humans directory that map to review responsibilities. Assign these groups to human review nodes in your workflows for clear routing.
 </Accordion>
 
 <Accordion title="Use Invite Codes for Onboarding">
@@ -201,12 +159,12 @@ For teams with frequent turnover, use invite codes instead of individual email i
 Understand the 4-tier role model and what each role can do
 </Card>
 
-<Card title="Approval Chains" icon="list-check" href="/guides/approval-chains">
-Set up multi-step approval workflows for enterprise organizations
+<Card title="Humans" icon="users" href="/concepts/humans">
+Set up your Universe, Groups, and People for reviewer management
 </Card>
 
-<Card title="Create a Loop" icon="circle-plus" href="/api-reference/loops/create-loop">
-Create your first org-scoped loop via the API
+<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
+Build workflows within your organization
 </Card>
 
 <Card title="Dashboard" icon="gauge" href="/dashboard">

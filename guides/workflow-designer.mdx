@@ -1,0 +1,210 @@
+---
+title: "Workflow Designer"
+description: "Build and configure workflows using the visual designer -- canvas, nodes, connections, and testing"
+---
+
+# Workflow Designer
+
+The workflow designer is where you build, configure, and test your HITL.sh workflows. It provides a visual canvas for connecting nodes into executable pipelines.
+
+## Designer Tabs
+
+The designer has four tabs:
+
+<CardGroup cols={2}>
+<Card title="Canvas" icon="pen-ruler">
+The visual editor where you place nodes, draw connections, and configure each step of your workflow.
+</Card>
+
+<Card title="Executions" icon="list-check">
+A log of every workflow run, showing trigger payloads, responses, timing, and status.
+</Card>
+
+<Card title="Members" icon="users">
+Manage who has access to view and edit this workflow within your organization.
+</Card>
+
+<Card title="Settings" icon="gear">
+Workflow-level configuration: name, description, webhook URL, activation status, and notification preferences.
+</Card>
+</CardGroup>
+
+## Canvas
+
+### Node Palette
+
+The left sidebar shows available node types. Drag a node onto the canvas or click the **+** button on an existing node to add a connected node:
+
+- **Trigger** (automatically placed, one per workflow)
+- **Human Review**
+- **AI**
+- **Condition**
+- **Transform**
+- **Action**
+
+### Connecting Nodes
+
+Draw connections by dragging from a node's output handle to another node's input handle. Connections define the data flow: output from one node becomes input to the next.
+
+- Each node can have multiple outgoing connections (for branching)
+- Condition nodes have labeled outputs (e.g., "if true" / "if false" or case labels)
+- Delete a connection by selecting it and pressing Delete/Backspace
+
+### Canvas Controls
+
+- **Zoom**: Scroll wheel or pinch gesture
+- **Pan**: Click and drag on empty canvas space
+- **Select**: Click a node to select it and open its configuration panel
+- **Multi-select**: Shift+click or drag a selection box
+- **Delete**: Select a node or connection and press Delete/Backspace
+
+## Configuring Nodes
+
+Click any node to open its configuration panel on the right side of the canvas.
+
+### Human Review Node
+
+The most important node type. Configuration options:
+
+<AccordionGroup>
+<Accordion title="Response Type">
+Choose how reviewers will respond:
+
+- **Text**: Free-form text input with optional character limits
+- **Single Select**: Choose one option from a list you define
+- **Multi Select**: Choose multiple options with min/max selection limits
+- **Rating**: Numeric scale with configurable min, max, and step
+- **Number**: Numeric input with validation
+- **Boolean**: Simple yes/no toggle
+- **Editable Text**: Pre-filled draft that reviewers can modify
+</Accordion>
+
+<Accordion title="Reviewers">
+Assign who receives the review request:
+
+- **Universe**: All people in your account
+- **Group**: A specific group from your Humans directory
+- **Individuals**: Named people
+</Accordion>
+
+<Accordion title="Review Mode">
+Choose how multiple reviewers are handled:
+
+- **First response wins**: The first reviewer to respond provides the answer (default)
+- **Fan-out**: Send to all assigned reviewers and collect every response
+- **Endorsement**: Require a minimum number of matching responses (e.g., 3 of 5 must approve)
+</Accordion>
+
+<Accordion title="Timeout">
+Set a deadline for the review:
+
+- **Timeout seconds**: How long to wait (60 to 86400 seconds)
+- **Default response**: The fallback value used if no reviewer responds in time
+</Accordion>
+
+<Accordion title="Content Template">
+Define what the reviewer sees. Use template variables from the trigger payload or upstream nodes:
+
+```
+Review this {{trigger.category}}: "{{trigger.content}}"
+
+Submitted by user: {{trigger.user_id}}
+```
+</Accordion>
+</AccordionGroup>
+
+### Condition Node
+
+Branch execution based on data values. Two modes:
+
+<Tabs>
+<Tab title="If/Else">
+Evaluate a boolean expression and branch into two paths:
+
+- **Condition**: A JavaScript-like expression (e.g., `trigger.amount > 500`)
+- **True path**: Connected to nodes that run when the condition is true
+- **False path**: Connected to nodes that run when the condition is false
+</Tab>
+
+<Tab title="Switch">
+Match a value against multiple cases:
+
+- **Value**: The field to match (e.g., `humanReview.response`)
+- **Cases**: Define named cases (e.g., "approve", "reject", "escalate") each with their own downstream path
+- **Default**: An optional fallback path if no case matches
+</Tab>
+</Tabs>
+
+### AI Node
+
+Run an LLM prompt against the execution data:
+
+- **System prompt**: Set the AI's role and instructions
+- **User prompt**: Template with variables from trigger data or upstream outputs
+- **Model**: Select which model to use
+- **Output variable**: Name the output so downstream nodes can reference it
+
+### Transform Node
+
+Reshape data between nodes:
+
+- **Expression**: A mapping expression that produces new data from existing context
+- **Output variable**: Name for the transformed data
+
+### Action Node
+
+Perform a side effect:
+
+- **Type**: HTTP request, email, Slack message, or webhook
+- **Configuration**: URL, headers, body template, recipient, etc.
+
+## Testing Workflows
+
+Before activating a workflow, test it:
+
+<Steps>
+<Step title="Click Test">
+In the canvas toolbar, click the **Test** button.
+</Step>
+
+<Step title="Enter a sample payload">
+Provide a JSON object that simulates a real trigger payload.
+</Step>
+
+<Step title="Step through nodes">
+The designer highlights each node as it executes. Human review nodes pause and let you submit a test response directly in the designer.
+</Step>
+
+<Step title="Review results">
+The test execution appears in the Executions tab with full details.
+</Step>
+</Steps>
+
+## Activating and Deactivating
+
+- **Activate**: Toggle the activation switch in the Settings tab or the canvas toolbar. The webhook URL starts accepting requests.
+- **Deactivate**: Toggle off to stop accepting new triggers. In-progress executions continue to completion.
+
+<Warning>
+You cannot edit the canvas while a workflow is active. Deactivate the workflow, make your changes, then reactivate.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Workflows Concept" icon="workflow" href="/concepts/workflows">
+Understand the conceptual model behind workflows
+</Card>
+
+<Card title="Humans" icon="users" href="/concepts/humans">
+Set up groups and people for reviewer assignment
+</Card>
+
+<Card title="Response Types" icon="list" href="/responses/types">
+Configure each of the seven response types
+</Card>
+
+<Card title="First Workflow" icon="plus" href="/first-workflow">
+Quick walkthrough to create your first workflow
+</Card>
+</CardGroup>

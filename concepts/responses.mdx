@@ -1,483 +1,143 @@
 ---
 title: "Responses"
-description: "Understand how human reviewers provide structured responses and how to configure and process them in your applications"
+description: "Understand how human review responses work in HITL.sh workflows -- from request creation to structured response collection"
 ---
 
 # Responses
 
-Responses are the structured decisions and feedback that human reviewers provide when completing HITL.sh requests. The response system supports five different types, each designed for specific use cases and providing different levels of structure and validation.
+When a workflow execution reaches a human review node, it creates a **response request** -- a structured prompt sent to one or more reviewers. The reviewer's answer is the **response**. Responses are the primary output of human review in HITL.sh.
 
-## What is a Response?
-
-A response in HITL.sh represents the human reviewer's decision and contains:
-
-- **Response Data**: The actual decision or feedback in a structured format
-- **Response Type**: Which of the six supported response types was used
-- **Reviewer Information**: Who provided the response and when
-- **Validation Status**: Whether the response meets the configured requirements
-- **Processing Metadata**: Response time, platform used, and other tracking data
-
-<Info>
-Responses are collected via the HITL mobile app and made available to your applications via API polling or webhooks. Each response type has its own data structure and validation rules.
-</Info>
-
-## Response Types Overview
-
-HITL.sh supports five distinct response types, each optimized for different decision-making scenarios:
-
-<CardGroup cols={2}>
-<Card title="Text Response" icon="message">
-**Free-form feedback** with character limits
-- Detailed explanations and qualitative feedback
-- Configurable length requirements
-- Perfect for open-ended reviews
-</Card>
-
-<Card title="Single Select" icon="circle-dot">
-**One choice** from predefined options
-- Clear decision workflows  
-- Visual options with colors and descriptions
-- Ideal for approve/reject scenarios
-</Card>
-
-<Card title="Multi Select" icon="check-square">
-**Multiple choices** from option lists
-- Issue identification and categorization
-- Configurable selection limits
-- Great for checklists and audits
-</Card>
-
-<Card title="Rating Response" icon="star">
-**Numeric ratings** on custom scales
-- Quality assessments and scoring
-- Custom labels and step increments
-- Perfect for performance evaluation
-</Card>
-
-<Card title="Number Response" icon="hashtag">
-**Numeric input** with validation
-- Pricing, quantities, measurements
-- Formatting with prefixes and suffixes
-- Range validation and decimal control
-</Card>
-
-</CardGroup>
-
-## Response Configuration
-
-When creating requests, you specify how reviewers should respond by setting the `response_type` and `response_config`:
-
-### Text Responses
-
-For detailed feedback and explanations:
-
-```python
-"response_type": "text",
-"response_config": {
-    "placeholder": "Explain your reasoning...",
-    "min_length": 20,
-    "max_length": 500,
-    "required": True
-}
-```
-
-**Response Format:**
-```json
-{
-  "response_data": "The content violates guideline 3.2 regarding promotional language. The phrase 'everyone should try it' is too promotional. Suggest rephrasing to 'this worked well for me' instead."
-}
-```
-
-### Single Select Responses
-
-For structured decisions with predefined options:
-
-```python
-"response_type": "single_select",
-"response_config": {
-    "options": [
-        "Approve",
-        "Reject",
-        "Escalate"
-    ]
-    # required defaults to false
-    # Simple strings automatically converted to rich SelectOption objects
-}
-```
-
-**Response Format:**
-```json
-{
-  "response_data": {
-    "selected_value": "reject",
-    "selected_label": "❌ Reject Content"
-  }
-}
-```
-
-### Multi Select Responses
-
-For identifying multiple issues or aspects:
-
-```python
-"response_type": "multi_select",
-"response_config": {
-    "options": [
-        "Spam Content",
-        "Inappropriate Language",
-        "Misleading Claims"
-    ],
-    "max_selections": 3
-    # min_selections defaults to 1
-    # Simple strings automatically converted to rich SelectOption objects
-}
-```
-
-**Response Format:**
-```json
-{
-  "response_data": {
-    "selected_values": ["spam", "misleading"],
-    "selected_labels": ["🚫 Spam Content", "❌ Misleading Claims"]
-  }
-}
-```
-
-### Rating Responses
-
-For quality assessments and scoring:
-
-```python
-"response_type": "rating",
-"response_config": {
-    "scale_min": 1,
-    "scale_max": 10,
-    "scale_step": 0.5,
-    "labels": {
-        "1": "Poor Quality",
-        "5": "Average",
-        "10": "Excellent"
-    },
-    "required": True
-}
-```
-
-**Response Format:**
-```json
-{
-  "response_data": {
-    "rating": 7.5,
-    "rating_label": "Good Quality"
-  }
-}
-```
-
-### Number Responses
-
-For quantitative input with validation:
-
-```python
-"response_type": "number",
-"response_config": {
-    "min_value": 0,
-    "max_value": 1000
-    # decimal_places defaults to 2 (perfect for currency)
-    # allow_negative defaults to false
-}
-```
-
-**Response Format:**
-```json
-{
-  "response_data": {
-    "number": 299.99,
-    "formatted_value": "$299.99 USD"
-  }
-}
-```
-
-
-## Response Processing
-
-### Accessing Response Data
-
-Once a reviewer completes a request, you can access the response data via API:
-
-```python
-import requests
-
-# Get completed request with response
-response = requests.get(
-    f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
-    headers={"Authorization": f"Bearer {api_key}"}
-)
-
-request_data = response.json()["data"]["request"]
-
-if request_data["status"] == "completed":
-    # Extract response information
-    response_data = request_data["response_data"]
-    response_type = request_data["response_type"]
-    reviewer = request_data["response_by_user"]
-    response_time = request_data["response_time_seconds"]
-    
-    print(f"Response Type: {response_type}")
-    print(f"Response Data: {response_data}")
-    print(f"Completed by: {reviewer['name']} in {response_time:.1f}s")
-    
-    # Process based on response type
-    process_response(response_type, response_data)
-```
-
-### Response Processing Patterns
-
-Handle different response types appropriately in your application:
-
-```python
-def process_response(response_type, response_data):
-    """Process responses based on their type"""
-    
-    if response_type == "text":
-        # Process free-form feedback
-        feedback = response_data
-        save_feedback_for_review(feedback)
-        
-    elif response_type == "single_select":
-        # Handle structured decision
-        decision = response_data["selected_value"]
-        if decision == "approve":
-            approve_content()
-        elif decision == "reject":
-            reject_content()
-        elif decision == "escalate":
-            escalate_to_senior_team()
-            
-    elif response_type == "multi_select":
-        # Handle multiple issues identified
-        issues = response_data["selected_values"]
-        for issue in issues:
-            handle_content_issue(issue)
-            
-    elif response_type == "rating":
-        # Handle quality score
-        score = response_data["rating"]
-        if score >= 8:
-            mark_as_high_quality()
-        elif score <= 3:
-            flag_for_improvement()
-        else:
-            mark_as_acceptable()
-            
-    elif response_type == "number":
-        # Handle numeric input
-        value = response_data["number"]
-        update_pricing_model(value)
-        
-```
-
-## Response Validation
-
-HITL.sh automatically validates responses against the configured rules:
-
-### Validation Rules by Type
-
-<AccordionGroup>
-<Accordion title="Text Validation">
-- Response must be a non-empty string (if required)
-- Character count must be within min_length and max_length bounds
-- Cannot contain only whitespace if required
-</Accordion>
-
-<Accordion title="Select Validation">
-- Selected values must exist in the configured options array
-- Single select allows exactly one selection
-- Multi select respects min_selections and max_selections limits
-- No duplicate selections allowed in multi select
-</Accordion>
-
-<Accordion title="Rating Validation">
-- Value must be within scale_min and scale_max bounds
-- Must align with scale_step increments (e.g., only .0 and .5 for step=0.5)
-- Cannot be null if required
-</Accordion>
-
-<Accordion title="Number Validation">
-- Value must be within min_value and max_value bounds
-- Decimal places cannot exceed configured limit
-- Negative numbers only allowed if allow_negative is true
-</Accordion>
-
-</AccordionGroup>
-
-### Handling Validation Errors
-
-The mobile app prevents invalid responses, but you should handle edge cases:
-
-```python
-def validate_response_before_processing(request, response_data):
-    """Additional validation before processing responses"""
-    
-    response_type = request["response_type"]
-    response_config = request["response_config"]
-    
-    try:
-        if response_type == "rating":
-            rating = response_data["rating"]
-            min_val = response_config["scale_min"]
-            max_val = response_config["scale_max"]
-            
-            if not (min_val <= rating <= max_val):
-                log_validation_error(f"Rating {rating} outside range [{min_val}, {max_val}]")
-                return False
-                
-        elif response_type == "single_select":
-            selected = response_data["selected_value"]
-            valid_options = [opt["value"] for opt in response_config["options"]]
-            
-            if selected not in valid_options:
-                log_validation_error(f"Invalid selection: {selected}")
-                return False
-                
-        return True
-        
-    except KeyError as e:
-        log_validation_error(f"Missing required field: {e}")
-        return False
-```
-
-## Response Analytics
-
-### Tracking Response Patterns
-
-Monitor response patterns to improve your workflows:
-
-```python
-def analyze_response_patterns(loop_id, days=30):
-    """Analyze response patterns for a loop"""
-    
-    # Get recent requests for this loop
-    response = requests.get(
-        f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
-        headers={"Authorization": f"Bearer {api_key}"}
-    )
-    
-    requests_data = response.json()["data"]["requests"]
-    completed_requests = [r for r in requests_data if r["status"] == "completed"]
-    
-    # Analyze by response type
-    response_type_counts = {}
-    avg_response_times = {}
-    
-    for request in completed_requests:
-        resp_type = request["response_type"]
-        response_type_counts[resp_type] = response_type_counts.get(resp_type, 0) + 1
-        
-        if request.get("response_time_seconds"):
-            if resp_type not in avg_response_times:
-                avg_response_times[resp_type] = []
-            avg_response_times[resp_type].append(request["response_time_seconds"])
-    
-    # Calculate averages
-    for resp_type, times in avg_response_times.items():
-        avg_time = sum(times) / len(times)
-        print(f"{resp_type}: {response_type_counts[resp_type]} responses, avg {avg_time:.1f}s")
-```
-
-### Response Quality Metrics
-
-Track response quality and consistency:
-
-```python
-def analyze_response_quality(requests_data):
-    """Analyze quality metrics for responses"""
-    
-    # Group by response type
-    by_type = {}
-    for request in requests_data:
-        if request["status"] != "completed":
-            continue
-            
-        resp_type = request["response_type"]
-        if resp_type not in by_type:
-            by_type[resp_type] = []
-        by_type[resp_type].append(request)
-    
-    # Analyze each type
-    for resp_type, requests in by_type.items():
-        print(f"\n{resp_type.upper()} Responses:")
-        print(f"  Total: {len(requests)}")
-        
-        # Response time analysis
-        times = [r["response_time_seconds"] for r in requests if r.get("response_time_seconds")]
-        if times:
-            print(f"  Avg response time: {sum(times)/len(times):.1f}s")
-            print(f"  Response time range: {min(times):.1f}s - {max(times):.1f}s")
-        
-        # Type-specific analysis
-        if resp_type == "single_select":
-            analyze_single_select_distribution(requests)
-        elif resp_type == "rating":
-            analyze_rating_distribution(requests)
-```
-
-## Best Practices
-
-### Choosing Response Types
+## How Responses Work
 
 <Steps>
-<Step title="Match Complexity to Need">
-Use simple response types (single select) for straightforward decisions. Reserve complex types (multi select, text) for situations requiring nuanced evaluation.
+<Step title="Execution hits a human review node">
+The workflow pauses and creates a response request based on the node's configuration (response type, reviewer assignment, timeout).
 </Step>
 
-<Step title="Consider Reviewer Experience">
-Remember that reviewers interact with responses on mobile devices. Keep options concise and touch-friendly.
+<Step title="Reviewers are notified">
+Assigned reviewers receive push notifications on the mobile app and see the item in their web dashboard inbox.
 </Step>
 
-<Step title="Balance Structure and Flexibility">
-Structured responses (select, rating, number) are easier to process, but text responses provide richer feedback when needed.
+<Step title="Reviewer submits a response">
+The reviewer reads the content, makes a decision, and submits their structured response (e.g., selecting an option, entering text, or providing a rating).
 </Step>
 
-<Step title="Plan for Scale">
-Consider how you'll process and analyze responses when choosing types. Structured responses are easier to aggregate and analyze.
+<Step title="Execution continues">
+The response data is added to the execution context and the workflow continues to the next node.
 </Step>
 </Steps>
 
-### Response Design Tips
+## Response Types
 
-<CardGroup cols={2}>
-<Card title="Clear Options" icon="eye">
-For select responses, use descriptive labels and include helpful descriptions. Consider adding colors for visual clarity.
+HITL.sh supports seven response types. Each human review node is configured with one:
+
+<CardGroup cols={3}>
+<Card title="Text" icon="message">
+Free-form text input with character limits
 </Card>
 
-<Card title="Reasonable Limits" icon="shield-check">
-Set appropriate character limits for text, selection limits for multi select, and ranges for numeric inputs.
+<Card title="Single Select" icon="circle-dot">
+Choose one option from a list
 </Card>
 
-<Card title="Meaningful Defaults" icon="settings">
-Always provide sensible default responses that represent safe outcomes when requests timeout.
+<Card title="Multi Select" icon="check-square">
+Choose multiple options from a list
 </Card>
 
-<Card title="Consistent Language" icon="message">
-Use consistent terminology across response options to avoid confusion and improve decision quality.
+<Card title="Rating" icon="star">
+Numeric rating on a custom scale
+</Card>
+
+<Card title="Number" icon="hashtag">
+Enter a specific numeric value
+</Card>
+
+<Card title="Boolean" icon="toggle-on">
+Simple yes/no decision
+</Card>
+
+<Card title="Editable Text" icon="pen">
+Pre-filled draft text the reviewer can modify
 </Card>
 </CardGroup>
+
+See the [Response Types reference](/responses/types) for configuration details and examples for each type.
+
+## Responses and Executions
+
+Responses are grouped by **execution**. Each execution represents a single run of a workflow, and it may produce one or more responses if the workflow contains multiple human review nodes or uses fan-out mode.
+
+```
+Workflow Execution #42
+  +-- Human Review Node "Content Check"
+  |     Response: "approve" by Sarah (2m 15s)
+  |
+  +-- Human Review Node "Legal Review"
+        Response: "approved with edits" by James (8m 30s)
+```
+
+You can view all responses for an execution in the **Executions** tab of the workflow designer.
+
+## Fan-Out and Endorsement
+
+Human review nodes support two multi-reviewer modes:
+
+<CardGroup cols={2}>
+<Card title="Fan-Out" icon="arrows-split-up-and-left">
+Send the review to multiple reviewers in parallel. All responses are collected and available downstream. Use this when you need multiple perspectives (e.g., collecting ratings from 5 reviewers).
+</Card>
+
+<Card title="Endorsement" icon="thumbs-up">
+Require a minimum number of matching responses before the execution continues. For example, require 3 out of 5 reviewers to approve before proceeding. If the threshold is not met, the node resolves with a rejection.
+</Card>
+</CardGroup>
+
+## Response Status
+
+Each response request has a status:
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Waiting for a reviewer to respond |
+| `completed` | Reviewer submitted their response |
+| `timeout` | No response received before the deadline; default response used |
+| `cancelled` | The execution was cancelled before a response was submitted |
+
+## Timeout and Default Responses
+
+Every human review node should have a timeout and a default response configured. If no reviewer responds within the timeout period, the default response is used and the execution continues.
+
+```
+Timeout: 3600 seconds (1 hour)
+Default Response: "reject"
+```
+
+This prevents executions from stalling indefinitely.
+
+## Viewing Responses
+
+You can view responses in several places:
+
+- **Executions tab**: See all responses for a specific workflow execution
+- **Inbox**: Reviewers see pending response requests and can submit responses
+- **API**: Query execution results programmatically
 
 ## Next Steps
 
 <CardGroup cols={2}>
-<Card title="Response Types Guide" icon="list" href="/responses/types">
-Detailed documentation of all five response types with examples
+<Card title="Response Types Reference" icon="list" href="/responses/types">
+Detailed configuration for each of the seven response types
 </Card>
 
-<Card title="Request Creation" icon="plus" href="/api-reference/requests/create-request">
-Learn how to configure responses when creating requests
+<Card title="Workflows" icon="workflow" href="/concepts/workflows">
+Learn how workflows orchestrate human review
 </Card>
 
-<Card title="Mobile App Guide" icon="mobile" href="/mobile/responding">
-See how reviewers interact with different response types
+<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
+Configure human review nodes in the visual designer
 </Card>
 
-<Card title="Simple Integration" icon="puzzle" href="/guides/simple-integration">
-Learn how to integrate HITL.sh into your application with practical examples
+<Card title="Humans" icon="users" href="/concepts/humans">
+Set up reviewers and groups for assignment
 </Card>
 </CardGroup>

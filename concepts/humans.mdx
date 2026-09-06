@@ -1,0 +1,156 @@
+---
+title: "Humans"
+description: "Manage your reviewers with the Humans system -- Universe, Groups, and People"
+---
+
+# Humans
+
+The Humans system is how you manage the people who review items in your HITL.sh workflows. It provides a structured way to organize reviewers into groups and assign them to human review nodes.
+
+## Core Concepts
+
+The Humans system has three layers:
+
+<CardGroup cols={3}>
+<Card title="Universe" icon="globe">
+Your default group. Every person you add to HITL.sh is automatically part of your Universe.
+</Card>
+
+<Card title="Groups" icon="users">
+Named collections of people. Groups can be nested inside other groups, and a person can belong to multiple groups.
+</Card>
+
+<Card title="People" icon="user">
+Individual reviewers. Each person has an email address, name, and optional metadata.
+</Card>
+</CardGroup>
+
+## Universe
+
+The Universe is the top-level group that contains all of your people. You do not need to create it -- it exists automatically for every account.
+
+When you assign a human review node to "Universe," every person in your account is eligible to receive and respond to that review request. This is useful for small teams or when any reviewer can handle any request.
+
+## People
+
+People are the individual humans who review items in your workflows. You add people by inviting them via email.
+
+### Adding People
+
+<Steps>
+<Step title="Navigate to Humans">
+Open the **Humans** section in your dashboard sidebar.
+</Step>
+
+<Step title="Invite by email">
+Click **Add Person** and enter their email address. They will receive an invitation to join HITL.sh.
+</Step>
+
+<Step title="They accept the invite">
+The person creates an account (or logs in if they already have one), downloads the mobile app, and is ready to receive review requests.
+</Step>
+</Steps>
+
+### Person Properties
+
+Each person has:
+
+- **Email**: Their unique identifier and login
+- **Name**: Display name shown in the dashboard and mobile app
+- **Groups**: Which groups they belong to (they are always in the Universe)
+- **Status**: Active, pending (invited but not yet accepted), or deactivated
+
+## Groups
+
+Groups let you organize people by team, function, skill, or any other dimension. When you assign a human review node to a group, only members of that group receive the review request.
+
+### Creating Groups
+
+<Steps>
+<Step title="Navigate to Humans">
+Open the **Humans** section in your dashboard.
+</Step>
+
+<Step title="Create a group">
+Click **New Group**, give it a name and optional description.
+</Step>
+
+<Step title="Add members">
+Add people to the group. You can also add existing groups as sub-groups.
+</Step>
+</Steps>
+
+### Nesting Groups
+
+Groups can contain other groups. For example:
+
+```
+Engineering
+  +-- Frontend Team
+  +-- Backend Team
+  +-- QA Team
+
+Content
+  +-- Writers
+  +-- Editors
+```
+
+When you assign a human review node to "Engineering," all members of Frontend Team, Backend Team, and QA Team are eligible reviewers.
+
+### Multi-Membership
+
+A person can belong to multiple groups simultaneously. For example, a team lead might be in both "Engineering" and "Managers." They will receive review requests assigned to either group.
+
+## Using Groups in Workflows
+
+When configuring a human review node in the workflow designer, you select which group (or individual people) should receive the review request:
+
+- **Universe**: Anyone in your account
+- **Specific group**: Only members of that group
+- **Individual people**: Specific named reviewers
+
+This is how you control who reviews what. For example:
+
+- Content moderation requests go to the "Content Moderators" group
+- Legal review requests go to the "Legal Team" group
+- Sensitive escalations go to specific senior reviewers by name
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Keep groups purpose-driven">
+Create groups that map to review responsibilities, not organizational charts. A "Content Moderators" group is more useful than a "Marketing Department" group for assigning reviews.
+</Accordion>
+
+<Accordion title="Use nesting for hierarchy">
+Nest sub-teams inside broader groups so you can assign reviews at the right level of granularity. Assign to the parent group when any sub-team member can handle it.
+</Accordion>
+
+<Accordion title="Ensure adequate coverage">
+Each group that receives review requests should have at least 3 active members to ensure timely responses during off-hours or vacations.
+</Accordion>
+
+<Accordion title="Review membership regularly">
+Remove people who are no longer active reviewers. Stale memberships lead to unread notifications and slower response times.
+</Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Workflows" icon="workflow" href="/concepts/workflows">
+Learn how workflows use groups for reviewer assignment
+</Card>
+
+<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
+Configure human review nodes with group assignment
+</Card>
+
+<Card title="Responses" icon="message-circle" href="/concepts/responses">
+Understand how responses are collected from reviewers
+</Card>
+
+<Card title="Organizations" icon="building" href="/guides/organizations">
+Enterprise organization management
+</Card>
+</CardGroup>

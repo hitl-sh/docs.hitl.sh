@@ -1,0 +1,139 @@
+---
+title: "Migrating from Loops to Workflows"
+description: "What changed, how existing loops are handled, and what you need to do to move to the new workflow system"
+---
+
+# Migrating from Loops to Workflows
+
+HITL.sh has replaced the loop-based model with a workflow-based system. This guide explains what changed and how to migrate.
+
+## What Changed
+
+| Before (Loops) | After (Workflows) |
+|----------------|-------------------|
+| Create a loop via API, then send requests to it | Design a workflow in the visual designer, trigger it via webhook |
+| Loops are groups of reviewers | Reviewers are managed in the Humans system (Universe, Groups, People) |
+| Requests are created with API calls specifying response type, options, timeout, etc. | Human review nodes are configured in the workflow designer; the webhook just sends data |
+| Approval chains are a separate Enterprise feature | Endorsement mode is built into human review nodes |
+| API-first configuration | Visual designer with webhook trigger |
+| Teams and organizations manage reviewer access | Groups in the Humans system manage reviewer assignment |
+
+## How Existing Loops Are Handled
+
+Existing loops have been automatically converted to workflows:
+
+- Each loop becomes a workflow with a **Trigger** node and a **Human Review** node
+- The loop's reviewers are added to your Humans directory and assigned to the human review node
+- The loop's invite code and QR code are no longer active -- reviewers are now managed through the Humans section of the dashboard
+- Your existing API key continues to work, but you will need to use the new webhook URL to trigger executions
+
+<Info>
+Your old loop API endpoints will continue to work for a transition period, but they create executions in the converted workflow behind the scenes. We recommend migrating to webhook triggers as soon as possible.
+</Info>
+
+## Migration Steps
+
+<Steps>
+<Step title="Review your converted workflows">
+Log in to [my.hitl.sh](https://my.hitl.sh) and navigate to **Workflows**. You will see your converted workflows listed with a "Migrated" badge.
+</Step>
+
+<Step title="Check your Humans directory">
+Navigate to **Humans** and verify that your reviewers are present and assigned to the correct groups.
+</Step>
+
+<Step title="Update your webhook URLs">
+Each workflow has a unique webhook URL. Copy it from the workflow's Settings tab and update your integrations to use it instead of the old loop API endpoint.
+
+**Before:**
+```
+POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests
+```
+
+**After:**
+```
+POST https://api.hitl.sh/v1/workflows/{workflow_id}/trigger
+```
+</Step>
+
+<Step title="Simplify your trigger payload">
+With workflows, you no longer need to specify `response_type`, `response_config`, `timeout_seconds`, etc. in your API call. These are configured in the workflow designer. Your webhook payload only needs the data that the workflow uses:
+
+**Before:**
+```json
+{
+  "processing_type": "time-sensitive",
+  "type": "markdown",
+  "priority": "medium",
+  "request_text": "Review this comment",
+  "response_type": "single_select",
+  "response_config": {
+    "options": ["Approve", "Reject"]
+  },
+  "default_response": "Reject",
+  "timeout_seconds": 3600,
+  "platform": "api"
+}
+```
+
+**After:**
+```json
+{
+  "content": "Review this comment",
+  "user_id": "user_123"
+}
+```
+</Step>
+
+<Step title="Update integration plugins">
+If you use n8n, Zapier, or Make, update your plugin configuration to use the workflow webhook URL. See the updated integration guides for details.
+</Step>
+
+<Step title="Test and activate">
+Use the workflow designer's test mode to verify everything works, then activate the workflow.
+</Step>
+</Steps>
+
+## Approval Chain Migration
+
+If you used approval chains, the equivalent in workflows is the **endorsement** review mode on human review nodes:
+
+- **Sequential approval chains** become multiple human review nodes connected in sequence, each assigned to a different reviewer group
+- **Parallel approval chains** become a single human review node in fan-out or endorsement mode with multiple reviewer groups
+
+## Billing Changes
+
+The billing model has also been simplified:
+
+- **Free plan**: 500 responses per month (increased from 100 requests), resets monthly
+- **Enterprise plan**: Custom pricing, contact us
+
+Intermediate tiers (Starter, Pro, Max) have been removed. If you were on a paid plan, your remaining balance carries over. See the [Billing page](/billing) for details.
+
+## Getting Help
+
+If you encounter issues during migration:
+
+- Check the [Workflows documentation](/concepts/workflows) for the new concepts
+- Join our [Discord community](https://discord.gg/jYVrpmnMP9) for help
+- Contact [team@hitl.sh](mailto:team@hitl.sh) for migration support
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Workflows" icon="workflow" href="/concepts/workflows">
+Learn the new workflow system
+</Card>
+
+<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
+Build and configure workflows visually
+</Card>
+
+<Card title="Humans" icon="users" href="/concepts/humans">
+Set up your reviewer groups
+</Card>
+
+<Card title="First Workflow" icon="plus" href="/first-workflow">
+Create your first workflow from scratch
+</Card>
+</CardGroup>
