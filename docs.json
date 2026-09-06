@@ -154,6 +154,12 @@
   "contextual": {
     "options": ["copy", "chatgpt", "claude", "cursor", "vscode"]
   },
+  "redirects": [
+    {
+      "source": "/api",
+      "destination": "/api-keys"
+    }
+  ],
   "footer": {
     "socials": {
       "x": "https://x.com/hitlsh",
