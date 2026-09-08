@@ -145,7 +145,7 @@
             ]
           },
           {
-            "group": "Loops",
+            "group": "Workflows",
             "pages": [
               "api-reference/loops/create-loop",
               "api-reference/loops/get-loops",
@@ -156,7 +156,7 @@
             ]
           },
           {
-            "group": "Requests",
+            "group": "Responses",
             "pages": [
               "api-reference/requests/create-request",
               "api-reference/requests/get-requests",
@@ -185,14 +185,6 @@
             "pages": [
               "api-reference/upload/upload-image",
               "api-reference/upload/upload-document"
-            ]
-          },
-          {
-            "group": "Approval Chains",
-            "pages": [
-              "api-reference/approvals/create-chain",
-              "api-reference/approvals/get-chain",
-              "api-reference/approvals/submit-decision"
             ]
           },
           {
