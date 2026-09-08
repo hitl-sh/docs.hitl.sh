@@ -5,17 +5,17 @@ description: "Generate and manage API keys to securely integrate HITL.sh with yo
 
 # API Keys
 
-API keys are your secure credentials for integrating HITL.sh with your applications, workflows, and third-party tools. They authenticate your requests and ensure only authorized systems can interact with your loops.
+API keys are your secure credentials for integrating HITL.sh with your applications, workflows, and third-party tools. They authenticate your requests and ensure only authorized systems can interact with your workflows.
 
 ## Understanding API Keys
 
 API keys in HITL.sh provide secure access to:
 
-- **Loop Management** — Create, read, update, and delete loops
-- **Request Operations** — Submit requests and retrieve responses
-- **Loop Members** — Add and remove reviewers from loops
+- **Workflow Management** — Create, read, update, and delete workflows
+- **Response Operations** — Submit items and retrieve responses
+- **Workflow Members** — Add and remove reviewers from workflows
 - **Webhook Configuration** — Set up event notifications
-- **Request Feedback** — Add feedback to completed requests
+- **Response Feedback** — Add feedback to completed responses
 
 <Warning>
 Keep your API keys secure and never expose them in client-side code or public repositories. Treat them like passwords.
@@ -91,7 +91,7 @@ console.log(data);
 
 API keys have rate limits to ensure fair usage:
 
-- **100 requests per hour** per API key
+- **100 API calls per hour** per API key
 - Rate limits reset at the top of each hour
 - Rate limit info is included in response headers
 
@@ -127,11 +127,11 @@ Regenerate your key periodically to minimize the impact of potential leaks.
 ## Next Steps
 
 <CardGroup cols={2}>
-<Card title="Create Your First Loop" icon="plus" href="/first-loop">
+<Card title="Create Your First Workflow" icon="plus" href="/first-workflow">
 Build your first human-in-the-loop workflow.
 </Card>
 
 <Card title="Billing & Plans" icon="credit-card" href="/billing">
-Understand usage-based pricing.
+Understand Free + Enterprise plans.
 </Card>
 </CardGroup>

@@ -116,15 +116,27 @@ def get_response(request_id):
 
 ## Request Content Types
 
-HITL.sh supports two content types for human review:
+HITL.sh supports five content types for human review:
 
-<CardGroup cols={2}>
-<Card title="Markdown Requests" icon="file-text">
+<CardGroup cols={3}>
+<Card title="Markdown" icon="file-text">
 Review text-based content like comments, posts, articles, or documents formatted in markdown
 </Card>
 
-<Card title="Image Requests" icon="image">
+<Card title="Image" icon="image">
 Review visual content like photos, graphics, or screenshots requiring human evaluation
+</Card>
+
+<Card title="File" icon="file">
+Review documents and files requiring human evaluation
+</Card>
+
+<Card title="Video" icon="video">
+Review video content for quality, compliance, or moderation
+</Card>
+
+<Card title="Audio" icon="volume-2">
+Review audio content for quality, transcription, or moderation
 </Card>
 </CardGroup>
 
@@ -178,7 +190,7 @@ Every request must include these essential elements:
   "type": "markdown|image",
   "priority": "low|medium|high|critical",
   "request_text": "string",
-  "response_type": "text|single_select|multi_select|rating|number",
+  "response_type": "text|single_select|multi_select|rating|number|boolean|editable_text",
   "response_config": "object",
   "default_response": "varies by response_type",
   "platform": "api"
@@ -499,11 +511,11 @@ See the complete API documentation for creating requests with all parameters and
 </Card>
 
 <Card title="Response Types" icon="message-circle" href="/responses/types">
-Learn about the 5 response types you can use to collect structured feedback from reviewers.
+Learn about the 7 response types you can use to collect structured feedback from reviewers.
 </Card>
 
-<Card title="Create Your First Loop" icon="users" href="/first-loop">
-Set up a loop with reviewers to process your requests.
+<Card title="Create Your First Workflow" icon="users" href="/first-workflow">
+Set up a workflow with reviewers to process your responses.
 </Card>
 
 <Card title="Mobile App Guide" icon="mobile" href="/mobile/responding">

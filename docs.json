@@ -46,7 +46,6 @@
             "pages": [
               "guides/organizations",
               "guides/roles-permissions",
-              "guides/approval-chains",
               "guides/migration"
             ]
           },
@@ -82,7 +81,7 @@
             "pages": ["features/inbox"]
           },
           {
-            "group": "Requests",
+            "group": "Responses",
             "pages": ["requests/introduction"]
           },
           {

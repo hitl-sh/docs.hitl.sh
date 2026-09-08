@@ -5,7 +5,7 @@ description: "Complete API documentation for HITL.sh. Integrate human oversight 
 
 ## HITL.sh API Reference
 
-The HITL.sh API provides a RESTful interface for integrating human supervision into your AI workflows. Create loops, manage requests, and route decisions to human reviewers with our comprehensive API.
+The HITL.sh API provides a RESTful interface for integrating human supervision into your AI workflows. Create workflows, manage responses, and route decisions to human reviewers with our comprehensive API.
 
 ## Base URL
 
@@ -174,6 +174,14 @@ User provides free-form text response.
 <Card title="Number" icon="hash" href="/responses/number">
 User provides a numerical value.
 </Card>
+
+<Card title="Boolean" icon="toggle-on" href="/responses/boolean">
+User makes a simple yes/no or true/false decision.
+</Card>
+
+<Card title="Editable Text" icon="pencil" href="/responses/editable-text">
+User edits and refines provided text content.
+</Card>
 </CardGroup>
 
 ### Processing Types
@@ -290,8 +298,8 @@ Set up webhooks to receive real-time notifications when requests are completed:
   Learn about API keys and security best practices.
 </Card>
 
-<Card title="Create Your First Loop" icon="plus" href="/api-reference/loops/create-loop">
-  Start by creating a loop to organize your human reviewers.
+<Card title="Create Your First Workflow" icon="plus" href="/api-reference/loops/create-loop">
+  Start by creating a workflow to organize your human reviewers.
 </Card>
 
 <Card title="Webhooks & Callbacks" icon="webhook" href="/api-reference/webhooks">

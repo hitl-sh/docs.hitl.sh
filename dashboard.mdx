@@ -1,11 +1,11 @@
 ---
 title: "Dashboard"
-description: "Your central hub for monitoring loops, usage, and integrations"
+description: "Your central hub for monitoring workflows, usage, and integrations"
 ---
 
 # Dashboard
 
-The HITL dashboard gives you an at-a-glance view of your loops, usage, and activity. It's the first thing you see after logging in at [my.hitl.sh](https://my.hitl.sh).
+The HITL dashboard gives you an at-a-glance view of your workflows, usage, and activity. It's the first thing you see after logging in at [my.hitl.sh](https://my.hitl.sh).
 
 ## Connect Your Automation
 
@@ -24,49 +24,44 @@ The dashboard displays four key metric cards:
 
 | Metric | Description |
 |--------|-------------|
-| **Teams** | Number of active teams in your organization |
-| **API Usage** | Requests used out of your plan limit, with a progress bar |
-| **Active Loops** | Currently active human-in-the-loop workflows |
-| **Total Members** | People across all your loops |
+| **API Usage** | Responses used out of your plan limit, with a progress bar |
+| **Active Workflows** | Currently active human-in-the-loop workflows |
+| **Total Members** | People across all your workflows |
 
 ### Charts
 
 Below the metric cards, you'll find:
 
-- **Request Volume** — A 14-day area chart showing daily request trends
-- **Request Status** — A donut chart breaking down pending, completed, and expired requests
-- **Sources** — A breakdown of where requests originate (API, n8n, Zapier, Make, web portal, MCP)
+- **Response Volume** — A 14-day area chart showing daily response trends
+- **Response Status** — A donut chart breaking down pending, completed, and expired responses
+- **Sources** — A breakdown of where responses originate (API, n8n, Zapier, Make, web portal, MCP)
 
 ## API Usage
 
-The API Usage card shows your current consumption against your plan limit. The progress bar indicates how much of your request bucket you've used.
+The API Usage card shows your current consumption against your plan limit. The progress bar indicates how much of your monthly allowance you've used.
 
-When your requests run out, you're automatically charged for a fresh bucket at your plan's rate. See [Billing](/billing) for details on plans and pricing.
-
-<Info>
-If you have a pending plan downgrade, the usage bar turns amber and shows which plan you'll switch to on your next auto-charge.
-</Info>
+Free plans include 500 responses per month. Enterprise plans include unlimited responses. See [Billing](/billing) for details on plans and pricing.
 
 ## Navigation
 
 The sidebar provides quick access to all sections:
 
 - **Dashboard** — Overview and analytics
-- **Loops** — Create and manage workflows
-- **Inbox** — Review pending requests
+- **Workflows** — Create and manage workflows
+- **Inbox** — Review pending responses
 - **API Keys** — Manage your API credentials
-- **Enterprise** — Organization management (paid plans)
+- **Enterprise** — Organization management (Enterprise plan)
 - **Billing** — Usage and plan management
 - **Settings** — Profile, preferences, and linked devices
 
 ## Next Steps
 
 <CardGroup cols={2}>
-<Card title="Create Your First Loop" icon="plus" href="/first-loop">
+<Card title="Create Your First Workflow" icon="plus" href="/first-workflow">
 Set up a human-in-the-loop workflow.
 </Card>
 
 <Card title="Billing & Plans" icon="credit-card" href="/billing">
-Understand usage-based pricing and manage your plan.
+Understand Free + Enterprise plans and manage your plan.
 </Card>
 </CardGroup>
