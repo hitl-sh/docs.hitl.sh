@@ -7,9 +7,9 @@ This repository contains the documentation for [HITL.sh](https://hitl.sh), a hum
 HITL.sh (Human in the Loop) is a mobile-first platform that adds human oversight to AI workflows. It acts as a bridge between your AI systems and human reviewers, providing:
 
 - **Review Templates**: Customizable interfaces for human review
-- **Agent Inbox**: Centralized dashboard for managing review requests
+- **Agent Inbox**: Centralized dashboard for managing responses
 - **Smart Notifications**: Email, Slack, and custom notification channels
-- **Workflow Control**: Multi-step review processes and manual triggers
+- **Workflow Control**: Checkpoints, branching logic, and manual triggers
 - **API Integration**: SDKs and REST API for seamless integration
 
 ## Documentation Structure
@@ -21,7 +21,7 @@ HITL.sh (Human in the Loop) is a mobile-first platform that adds human oversight
 - **Templates & UI**: Review template creation and customization
 
 ### API Reference
-- **Core API**: Reviews, templates, teams, and authentication
+- **Core API**: Reviews, templates, Humans (Groups + People), and authentication
 - **Webhooks**: Real-time event notifications and payload handling
 
 ### Examples
@@ -126,7 +126,7 @@ We welcome contributions to improve our documentation! Here's how you can help:
 ### Security Features
 - **API Key Authentication**: Secure access to all endpoints
 - **Webhook Signatures**: Verified payload delivery
-- **Role-Based Access**: Granular permission control
+- **Role-Based Access**: Granular permission control per Group and Person
 - **Data Encryption**: All data encrypted in transit and at rest
 - **Audit Logging**: Complete history of all actions
 
