@@ -255,10 +255,14 @@ Set up webhooks to receive real-time notifications when requests are completed:
 
 ## SDKs and Integration
 
-### Official Libraries
-- **Python**: `pip install hitl-python` (coming soon)
-- **Node.js**: `npm install @hitl/node` (coming soon)
-- **Go**: `go get github.com/hitl-sh/go-client` (coming soon)
+### npm Packages
+
+Two packages are available today (MIT, Node 20+, source at [github.com/hitl-sh/cli.hitl.sh](https://github.com/hitl-sh/cli.hitl.sh)):
+
+- **MCP server** (`@hitl-sh/mcp`): `npx -y @hitl-sh/mcp` — stdio MCP server for Claude Desktop, Claude Code, and Cursor. See the [CLI integration guide](/integrations/cli) or the [Core Concepts: Integrations](/concepts/integrations) page.
+- **CLI** (`@hitl-sh/cli`): `npm i -g @hitl-sh/cli` — installs the `hitl` command for loops, requests, and the MCP server from any terminal. See the [CLI integration guide](/integrations/cli).
+
+Language-specific client SDKs (Python, Go) are not yet published.
 
 ### No-Code Integrations
 - **n8n**: Available in the n8n community library
