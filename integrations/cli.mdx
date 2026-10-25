@@ -1,0 +1,136 @@
+---
+title: "HITL CLI"
+description: "Install the hitl command to manage loops and requests from any terminal, run the MCP server for Claude Desktop or Cursor, and edit a workflow live with the HITL editor"
+icon: "terminal"
+---
+
+# HITL CLI
+
+The `@hitl-sh/cli` npm package installs the `hitl` command (MIT, Node 20+, source at [github.com/hitl-sh/cli.hitl.sh](https://github.com/hitl-sh/cli.hitl.sh/tree/main/packages/cli)).
+
+<Note>
+Before using the CLI, install the HITL mobile app ([App Store](https://apps.apple.com/us/app/hitl-human-in-the-loop/id6752878072) | [Google Play](https://play.google.com/store/apps/details?id=hitl.sh.app)) so your reviewers can respond to requests.
+</Note>
+
+## Installation
+
+Run without installing:
+
+```sh
+npx @hitl-sh/cli <command>
+```
+
+Install globally so `hitl` is always on your PATH:
+
+```sh
+npm install -g @hitl-sh/cli
+```
+
+## Authentication
+
+Log in with an API key from [my.hitl.sh/settings](https://my.hitl.sh/settings):
+
+```sh
+npx @hitl-sh/cli login --api-key hitl_live_xxx
+```
+
+The key is saved to `~/.config/hitl/config.json` (mode 0600; `$XDG_CONFIG_HOME` is honoured). To skip the saved key in a script, set the `HITL_API_KEY` environment variable instead — it always wins.
+
+```sh
+hitl whoami    # verify the saved key
+```
+
+## Commands
+
+### Loops
+
+```sh
+hitl loops list              # list all loops you have access to
+hitl loops list --json       # machine-readable output
+```
+
+### Requests
+
+```sh
+hitl requests list                     # list recent requests
+hitl requests list --status pending    # filter by status
+hitl requests get <requestId>          # get a single request
+hitl requests cancel <requestId>       # cancel a pending request
+hitl requests list --json              # machine-readable output
+```
+
+### MCP server
+
+```sh
+hitl mcp
+```
+
+Starts the HITL MCP server over stdio. All nine tools are available: `list_loops`, `create_request`, `list_requests`, `get_request`, `update_request`, `cancel_request`, `add_request_feedback`, `list_images`, `get_image`. Requests carry the MCP client's name as their source so reviewers see "via Claude Code" or similar.
+
+**Claude Code:**
+
+```sh
+claude mcp add hitl -e HITL_API_KEY=hitl_live_xxx -- npx -y @hitl-sh/cli mcp
+```
+
+**Claude Desktop / Cursor (`claude_desktop_config.json` or `.mcp.json`):**
+
+```json
+{
+  "mcpServers": {
+    "hitl": {
+      "command": "npx",
+      "args": ["-y", "@hitl-sh/cli", "mcp"],
+      "env": { "HITL_API_KEY": "hitl_live_xxx" }
+    }
+  }
+}
+```
+
+The same MCP server is also published as the standalone package [`@hitl-sh/mcp`](https://www.npmjs.com/package/@hitl-sh/mcp) (`npx -y @hitl-sh/mcp`). Use either — they expose the same tools.
+
+### Workflow editor integration
+
+The HITL workflow editor's **Connect Claude** dialog prints a `hitl workflow` command. Pass it to the CLI to stream and apply live edits:
+
+```sh
+hitl workflow '<url from Connect Claude dialog>'
+```
+
+Run `hitl workflow --help` for the full list of sub-commands (`show`, `add-step`, `update-step`, `remove-step`, `connect`, `disconnect`, `set-workflow`, `log`).
+
+## Environment variables
+
+| Variable | Description |
+|---|---|
+| `HITL_API_KEY` | API key. Overrides the saved key in `~/.config/hitl/config.json`. |
+| `HITL_API_BASE` | Override the API base URL (default `https://api.hitl.sh/v1`). The key is only ever sent to `hitl.sh` hosts; set `HITL_ALLOW_HOSTS=localhost` to open a host for local development. |
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | Success |
+| 1 | Usage error |
+| 2 | Request failed |
+| 3 | No API key or key rejected |
+
+## Related
+
+<CardGroup cols={2}>
+<Card title="MCP Server (`@hitl-sh/mcp`)" icon="server" href="/concepts/integrations">
+Zero-config standalone stdio MCP server — same tools, smaller install.
+</Card>
+
+<Card title="Remote MCP server" icon="cloud" href="https://mcp.hitl.sh">
+Zero-install hosted server with OAuth at mcp.hitl.sh/mcp.
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/introduction">
+Build custom integrations directly against the REST API.
+</Card>
+
+<Card title="Loops" icon="loop" href="/concepts/loops">
+Understand loops before creating your first request.
+</Card>
+</CardGroup>

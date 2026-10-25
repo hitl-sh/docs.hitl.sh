@@ -281,13 +281,10 @@ Build complex automation scenarios with Make:
 
 ### MCP Server Integration
 
-Connect HITL.sh with AI assistants using Model Context Protocol:
+Connect HITL.sh with AI assistants using the Model Context Protocol. There are two options: a local stdio server (via npm) or a hosted remote server with OAuth.
 
-<Card title="MCP Server Features" icon="server">
-- **AI Assistant Integration**: Connect Claude, GPT, and other AI assistants
-- **Human-in-the-Loop Workflows**: Add human oversight to AI agent workflows
-- **Context Management**: Share context between AI and human reviewers
-- **Seamless Handoff**: Smooth transition from AI to human decision-making
+<Card title="MCP Tools" icon="server">
+Nine tools: `list_loops`, `create_request`, `list_requests`, `get_request`, `update_request`, `cancel_request`, `add_request_feedback`, `list_images`, `get_image`. Requests carry the MCP client's name as their source so reviewers see where they came from.
 </Card>
 
 **Use Cases:**
@@ -296,25 +293,33 @@ Connect HITL.sh with AI assistants using Model Context Protocol:
 - Human verification of automated actions
 - Escalation from AI to human experts
 
-**Installation:**
-```bash
-npm install @hitl/mcp-server
+#### Option A — local stdio server (npm)
+
+Needs  (a  key from [my.hitl.sh/settings](https://my.hitl.sh/settings)).
+
+**Claude Code:**
+```sh
+claude mcp add hitl -e HITL_API_KEY=hitl_live_xxx -- npx -y @hitl-sh/mcp
 ```
 
-**Configuration:**
+**Claude Desktop / Cursor ( or ):**
 ```json
 {
   "mcpServers": {
     "hitl": {
       "command": "npx",
-      "args": ["-y", "@hitl/mcp-server"],
-      "env": {
-        "HITL_API_KEY": "your_api_key_here"
-      }
+      "args": ["-y", "@hitl-sh/mcp"],
+      "env": { "HITL_API_KEY": "hitl_live_xxx" }
     }
   }
 }
 ```
+
+The same server is also bundled in the CLI (). See the [CLI integration guide](/integrations/cli) for details.
+
+#### Option B — hosted remote server (zero-install, OAuth)
+
+Add  as a remote MCP server in Claude Code or any MCP client that supports OAuth. A raw-key variant is available at  (Bearer token).
 
 ## Custom Application Integration
 

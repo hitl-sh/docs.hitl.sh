@@ -12,47 +12,56 @@ We're constantly expanding HITL.sh's integration ecosystem. Here's what's curren
 Before configuring any integration, install the HITL.sh mobile app ([App Store](https://apps.apple.com/us/app/hitl-human-in-the-loop/id6752878072) | [Google Play](https://play.google.com/store/apps/details?id=hitl.sh.app)) since it's an integral part of the setup.
 </Note>
 
-## In Development
+## MCP & CLI — available now
 
-### MCP Server Integration
+### MCP Server (`@hitl-sh/mcp`)
 
 <Card title="Model Context Protocol (MCP) Server" icon="server">
-Connect HITL.sh with AI assistants like Claude, GPT, and other LLMs using the Model Context Protocol for seamless human-in-the-loop AI workflows.
+Connect HITL.sh with Claude Desktop, Claude Code, Cursor, and any other MCP-compatible AI assistant. Nine tools let your agent create requests, check responses, and collect feedback — all routed to real humans in your loops.
 </Card>
 
-**Status:** In Active Development
+**Status:** Available on npm — [npmjs.com/package/@hitl-sh/mcp](https://www.npmjs.com/package/@hitl-sh/mcp)
 
-**Features:**
-- Direct integration with Claude Desktop and other MCP-compatible AI assistants
-- Add human oversight to AI agent workflows
-- Context sharing between AI and human reviewers
-- Seamless handoff from AI to human decision-making
+**Tools:** `list_loops`, `create_request`, `list_requests`, `get_request`, `update_request`, `cancel_request`, `add_request_feedback`, `list_images`, `get_image`
 
-**Use Cases:**
-- AI agents requesting human approval for critical decisions
-- Quality control for AI-generated content
-- Human verification of automated actions
-- Escalation from AI to human experts when confidence is low
-
-**Installation (Coming Soon):**
-```bash
-npm install @hitl/mcp-server
+**Claude Code:**
+```sh
+claude mcp add hitl -e HITL_API_KEY=hitl_live_xxx -- npx -y @hitl-sh/mcp
 ```
 
-**Configuration (Preview):**
+**Claude Desktop / Cursor (`claude_desktop_config.json` or `.mcp.json`):**
 ```json
 {
   "mcpServers": {
     "hitl": {
       "command": "npx",
-      "args": ["-y", "@hitl/mcp-server"],
-      "env": {
-        "HITL_API_KEY": "your_api_key_here"
-      }
+      "args": ["-y", "@hitl-sh/mcp"],
+      "env": { "HITL_API_KEY": "hitl_live_xxx" }
     }
   }
 }
 ```
+
+Get your API key from [my.hitl.sh/settings](https://my.hitl.sh/settings). `HITL_API_BASE` overrides the default endpoint.
+
+Prefer zero-install with OAuth? Use the hosted server at `https://mcp.hitl.sh/mcp`. A raw Bearer-key variant is at `https://mcp.hitl.sh/mcp-simple`.
+
+### HITL CLI (`@hitl-sh/cli`)
+
+<Card title="hitl Command Line Interface" icon="terminal">
+Install the `hitl` command to manage loops and requests from any terminal, run the MCP server for Claude Desktop or Cursor, and edit a workflow live with the HITL editor.
+</Card>
+
+**Status:** Available on npm — [npmjs.com/package/@hitl-sh/cli](https://www.npmjs.com/package/@hitl-sh/cli)
+
+```sh
+npx @hitl-sh/cli login --api-key hitl_live_xxx
+hitl loops list
+hitl requests list --status pending
+hitl mcp                  # stdio MCP server
+```
+
+See the [CLI integration guide](/integrations/cli) for the full command reference.
 
 ## Planned Integrations
 

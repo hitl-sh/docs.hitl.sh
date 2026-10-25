@@ -58,7 +58,10 @@
           },
           {
             "group": "Requests",
-            "pages": ["requests/introduction", "requests/content-types"]
+            "pages": [
+              "requests/introduction",
+              "requests/content-types"
+            ]
           },
           {
             "group": "Responses",
@@ -77,6 +80,7 @@
               "integrations/n8n",
               "integrations/zapier",
               "integrations/make",
+              "integrations/cli",
               "integrations/coming-soon"
             ]
           }
@@ -148,11 +152,15 @@
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
-  "navbar": {
-   
-  },
+  "navbar": {},
   "contextual": {
-    "options": ["copy", "chatgpt", "claude", "cursor", "vscode"]
+    "options": [
+      "copy",
+      "chatgpt",
+      "claude",
+      "cursor",
+      "vscode"
+    ]
   },
   "redirects": [
     {
