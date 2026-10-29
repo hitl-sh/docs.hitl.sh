@@ -31,7 +31,8 @@
               "api-keys",
               "billing",
               "first-workflow",
-              "sdks"
+              "sdks",
+              "guides/moving-from-version-1"
             ]
           },
           {
@@ -46,8 +47,7 @@
             "group": "Enterprise",
             "pages": [
               "guides/organizations",
-              "guides/roles-permissions",
-              "guides/migration"
+              "guides/roles-permissions"
             ]
           },
           {
@@ -250,6 +250,10 @@
     {
       "source": "/first-loop",
       "destination": "/first-workflow"
+    },
+    {
+      "source": "/guides/migration",
+      "destination": "/guides/moving-from-version-1"
     }
   ],
   "footer": {

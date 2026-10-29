@@ -1,0 +1,134 @@
+---
+title: "Moving from HITL version 1"
+description: "Turn the loops you made in HITL version 1 into workflows. Members, invite codes, requests and API integrations come along."
+icon: "arrow-right-arrow-left"
+---
+
+# Moving from HITL version 1
+
+In HITL version 1, you created a **loop**, invited people to it, and sent requests to it from code. HITL now organises everything around **workflows**: a Start step, a Review step and an End step that you can extend in the [workflow editor](/guides/workflow-designer).
+
+Loops you made in HITL version 1 are not deleted or changed. You choose when to move each one, and moving takes a few seconds.
+
+<Frame>
+<img src="/images/portal/migration-banner.png" alt="The Workflows page in my.hitl.sh with a banner saying you have loops from HITL version 1 and a Move to workflows button" />
+</Frame>
+
+## What happens when you move a loop
+
+Each loop becomes one workflow that sends its requests to the same people:
+
+| In HITL version 1 | After the move |
+|---|---|
+| Loop name, description and icon | The workflow's name, description and icon |
+| Loop members, roles and pending invites | Unchanged. The Review step has no reviewers picked, so every active member of the loop gets each request |
+| Invite code and QR code | Still work. Nobody has to rejoin |
+| Requests already sent to the loop | Listed under the new workflow, with their answers |
+| API keys and integrations that send to `loop_id` | Keep working. New requests show up under the workflow |
+| Answer settings sent with each request | The Review step asks for the response type your loop used most, with the settings of its newest request of that type |
+
+The new workflow is **Live** straight away and looks like this: **Start** (webhook) → **Review** → **End**. A loop with no requests gets an Approve / Deny review with a 24 hour deadline.
+
+<Info>
+Nothing about the loop itself changes. Members, roles, pending invites and the invite code stay exactly as they were, and you can keep sending requests to it with the API.
+</Info>
+
+## Move your loops in my.hitl.sh
+
+<Steps>
+<Step title="Open Workflows">
+Sign in to [my.hitl.sh](https://my.hitl.sh) and open **Workflows**. On the **Your workflows** tab, a banner says how many loops you have from HITL version 1. The banner only appears for loops you own that are not already used by a workflow.
+</Step>
+
+<Step title="Click Move to workflows">
+The **Bring your loops over** dialog lists each loop with its member count, request count and how many requests are still waiting.
+
+<Frame>
+<img src="/images/portal/migration-list.png" alt="Bring your loops over dialog listing loops with members, requests and a Preview button for each" />
+</Frame>
+</Step>
+
+<Step title="Preview a loop (optional)">
+Click **Preview** on a row to compare both sides before you move it. The left side shows the loop **In HITL version 1**: its members, request totals, the answer types it asked for, where requests were sent from, and the latest requests. The right side shows it **As a workflow**: the Start, Review and End steps it will get, and what carries over.
+
+<Frame>
+<img src="/images/portal/migration-preview.png" alt="Loop preview with In HITL version 1 on the left and As a workflow on the right" />
+</Frame>
+
+Click **Move this loop** to move just this one, or **Back** to return to the list.
+</Step>
+
+<Step title="Move all">
+Click **Move all** to move every listed loop. If a loop fails, its row shows **Try again**. When everything has moved, the dialog says **Your loops are workflows now** and the workflows appear in your list.
+</Step>
+</Steps>
+
+Click **Not now** to close the dialog without moving anything. The banner comes back the next time you open Workflows, until every loop has moved.
+
+## After the move
+
+- **Reviewers** keep answering in the HITL app exactly as before. Requests now show the workflow's name.
+- **Your code** does not need to change. If you want to use the new features (AI steps, conditions, actions, routing, voice calls), open the workflow in the editor and add steps, then switch your integration to the workflow's [webhook URL](/concepts/workflows#webhook-triggers) when you are ready.
+- **Answer settings** now live on the Review step. Requests you still send to `loop_id` with the API bring their own `response_type` and `response_config`, as in HITL version 1.
+
+## Move loops with the API
+
+The portal uses three endpoints on the HITL app API (`https://dev.api.my.hitl.sh/v1` on preview). They take a signed-in user's session token, not an API key, and only the loop's owner can call them.
+
+<AccordionGroup>
+<Accordion title="GET /v1/mobile/migration/loops">
+Lists loops you own that no workflow uses yet, newest first, at most 100. Deleted loops and unfinished drafts are left out. Always returns `200`; an empty list is `{ "data": { "loops": [] } }`.
+
+Each row has `id`, `name`, `description`, `icon`, `icon_type`, `member_count`, `request_count`, `pending_count`, `created_at`, and `workflow_icon` (the icon the workflow will get).
+</Accordion>
+
+<Accordion title="GET /v1/mobile/migration/loops/:loopId">
+Returns the preview of one loop and writes nothing:
+
+- `loop`: name, description, icon, status, created date and `members` (owner first, then members, then pending invites)
+- `requests`: `total`, `by_status`, `by_platform`, `response_types` (most used first), the 5 newest in `recent`, `first_at` and `last_at`
+- `workflow`: the `nodes` and `edges` the move would create, or the workflow the loop already became (`already_converted: true`)
+
+Returns `403` if you are not the owner and `404` for a deleted or unknown loop.
+</Accordion>
+
+<Accordion title="POST /v1/loops/:loopId/convert-to-workflow">
+Moves one loop. Send an empty JSON body `{}`.
+
+| Status | Meaning |
+|---|---|
+| `201` | Moved. Body: `{ "already_converted": false, "workflow": { ... } }` |
+| `200` | The loop already has a workflow. Body: `{ "already_converted": true, "workflow": { ... } }` |
+| `403` | You are not the loop's owner |
+| `404` | No loop with that id |
+| `422` | The loop can't be moved (deleted, an unfinished draft, or used by someone else's workflow). `message` says why |
+| `429` | More than 120 moves in an hour |
+
+Calling it twice for the same loop is safe: the second call returns the same workflow with `already_converted: true`.
+</Accordion>
+</AccordionGroup>
+
+## Getting help
+
+- Join our [Discord community](https://discord.gg/jYVrpmnMP9)
+- Email [team@hitl.sh](mailto:team@hitl.sh)
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Workflows" icon="diagram-project" href="/concepts/workflows">
+How workflows, steps and executions fit together
+</Card>
+
+<Card title="Workflow Editor" icon="pen-ruler" href="/guides/workflow-designer">
+Add AI, conditions and actions to a moved workflow
+</Card>
+
+<Card title="Review Step" icon="user-check" href="/guides/workflow-designer#human-review-node">
+Choose reviewers, routing and channels
+</Card>
+
+<Card title="Humans" icon="users" href="/concepts/humans">
+Manage the people who answer
+</Card>
+</CardGroup>
