@@ -1,6 +1,7 @@
 ---
 title: "Response Types"
 description: "Complete guide to all response types supported by HITL.sh - from simple text to complex ratings and multi-select options"
+icon: "shapes"
 ---
 
 # Response Types
@@ -150,6 +151,128 @@ When a reviewer submits a text response, you'll receive:
 ```json
 {
   "response_data": "This article is well-written and factually accurate. The tone is professional and engaging. I recommend approval with minor grammar corrections on paragraph 3."
+}
+```
+
+## Editable Text Response
+
+Send a draft message for the reviewer to edit and revise before sending back. Perfect for AI-generated notifications, emails, or messages that need human polish.
+
+### Configuration
+
+<ParamField body="draft_text" type="string" required>
+The initial draft text that the reviewer will edit
+</ParamField>
+
+<ParamField body="placeholder" type="string" optional>
+Placeholder text shown in the editor
+</ParamField>
+
+<ParamField body="min_length" type="integer" optional default="0">
+Minimum characters required
+</ParamField>
+
+<ParamField body="max_length" type="integer" required>
+Maximum characters allowed (1-10000)
+</ParamField>
+
+<ParamField body="required" type="boolean" optional default="false">
+Whether a response is required
+</ParamField>
+
+### Example Request
+
+<CodeGroup>
+
+```python Python
+import requests
+
+request_data = {
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please review and edit this AI-generated client notification before it is sent.",
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Dear Client,\n\nYour project milestone has been completed ahead of schedule. Our team will reach out shortly to discuss next steps.\n\nBest regards,\nThe Team",
+        "placeholder": "Edit the message above...",
+        "min_length": 20,
+        "max_length": 2000,
+        "required": True
+    },
+    "default_response": "Notification not reviewed within timeout period",
+    "timeout_seconds": 3600,
+    "platform": "api"
+}
+
+response = requests.post(
+    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    headers={"Authorization": f"Bearer {api_key}"},
+    json=request_data
+)
+```
+
+```javascript Node.js
+const requestData = {
+    processing_type: "time-sensitive",
+    type: "markdown",
+    priority: "medium",
+    request_text: "Please review and edit this AI-generated client notification before it is sent.",
+    response_type: "editable_text",
+    response_config: {
+        draft_text: "Dear Client,\n\nYour project milestone has been completed ahead of schedule. Our team will reach out shortly to discuss next steps.\n\nBest regards,\nThe Team",
+        placeholder: "Edit the message above...",
+        min_length: 20,
+        max_length: 2000,
+        required: true
+    },
+    default_response: "Notification not reviewed within timeout period",
+    timeout_seconds: 3600,
+    platform: "api"
+};
+
+const response = await axios.post(
+    `https://dev.api.hitl.sh/v1/api/loops/${loopId}/requests`,
+    requestData,
+    { headers: { Authorization: `Bearer ${apiKey}` }}
+);
+```
+
+```bash cURL
+curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "processing_type": "time-sensitive",
+    "type": "markdown",
+    "priority": "medium",
+    "request_text": "Please review and edit this AI-generated client notification before it is sent.",
+    "response_type": "editable_text",
+    "response_config": {
+        "draft_text": "Dear Client,\n\nYour project milestone has been completed ahead of schedule. Our team will reach out shortly to discuss next steps.\n\nBest regards,\nThe Team",
+        "placeholder": "Edit the message above...",
+        "min_length": 20,
+        "max_length": 2000,
+        "required": true
+    },
+    "default_response": "Notification not reviewed within timeout period",
+    "timeout_seconds": 3600,
+    "platform": "api"
+  }'
+```
+
+</CodeGroup>
+
+### Response Format
+
+When a reviewer submits an editable text response, you'll receive:
+
+```json
+{
+  "response_data": {
+    "revised_text": "Dear Client,\n\nGreat news — your project milestone has been completed two days ahead of schedule! We will be in touch by end of day to walk you through the next phase.\n\nWarm regards,\nThe Team",
+    "was_edited": true
+  }
 }
 ```
 
@@ -572,112 +695,6 @@ curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
 }
 ```
 
-## Editable Text Response
-
-Pre-filled draft text that reviewers can edit and revise. Ideal for AI-generated content that needs human refinement before publishing.
-
-### Configuration
-
-<ParamField body="draft_text" type="string" required>
-The initial text presented to the reviewer for editing
-</ParamField>
-
-<ParamField body="placeholder" type="string" optional>
-Placeholder text shown if the draft is cleared
-</ParamField>
-
-<ParamField body="min_length" type="integer" optional default="0">
-Minimum number of characters required in the revised text
-</ParamField>
-
-<ParamField body="max_length" type="integer" required>
-Maximum number of characters allowed (1-5000)
-</ParamField>
-
-<ParamField body="required" type="boolean" optional default="false">
-Whether the response is required
-</ParamField>
-
-### Example Request
-
-<CodeGroup>
-
-```python Python
-request_data = {
-    "processing_type": "deferred",
-    "type": "markdown",
-    "priority": "medium",
-    "request_text": "Review and edit this AI-generated product description before publishing:",
-    "response_type": "editable_text",
-    "response_config": {
-        "draft_text": "Introducing our premium wireless headphones. Experience crystal-clear audio with advanced noise cancellation technology. Featuring 30-hour battery life and ergonomic design for all-day comfort.",
-        "placeholder": "Enter the revised description...",
-        "min_length": 50,
-        "max_length": 2000,
-        "required": True
-    },
-    "default_response": "No edits provided",
-    "timeout_seconds": 3600,
-    "platform": "api"
-}
-```
-
-```javascript Node.js
-const requestData = {
-    processing_type: "deferred",
-    type: "markdown",
-    priority: "medium",
-    request_text: "Review and edit this AI-generated product description before publishing:",
-    response_type: "editable_text",
-    response_config: {
-        draft_text: "Introducing our premium wireless headphones. Experience crystal-clear audio with advanced noise cancellation technology. Featuring 30-hour battery life and ergonomic design for all-day comfort.",
-        placeholder: "Enter the revised description...",
-        min_length: 50,
-        max_length: 2000,
-        required: true
-    },
-    default_response: "No edits provided",
-    timeout_seconds: 3600,
-    platform: "api"
-};
-```
-
-```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
-  -H "Authorization: Bearer your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "processing_type": "deferred",
-    "type": "markdown",
-    "priority": "medium",
-    "request_text": "Review and edit this AI-generated product description before publishing:",
-    "response_type": "editable_text",
-    "response_config": {
-        "draft_text": "Introducing our premium wireless headphones. Experience crystal-clear audio with advanced noise cancellation technology. Featuring 30-hour battery life and ergonomic design for all-day comfort.",
-        "placeholder": "Enter the revised description...",
-        "min_length": 50,
-        "max_length": 2000,
-        "required": true
-    },
-    "default_response": "No edits provided",
-    "timeout_seconds": 3600,
-    "platform": "api"
-  }'
-```
-
-</CodeGroup>
-
-### Response Format
-
-```json
-{
-  "response_data": {
-    "revised_text": "Introducing our premium wireless headphones — crystal-clear audio meets advanced noise cancellation. With 30 hours of battery life and an ergonomic design built for all-day comfort, these headphones redefine your listening experience.",
-    "was_edited": true
-  }
-}
-```
-
 ## Validation Rules
 
 HITL.sh validates all responses against the configured rules:
@@ -720,10 +737,10 @@ HITL.sh validates all responses against the configured rules:
 </Accordion>
 
 <Accordion title="Editable Text Validation">
-- Response must be a string (the revised text)
-- Length must be within min_length and max_length bounds
-- Required responses cannot be empty strings
-- Response includes was_edited flag indicating if changes were made
+- Response must be an object containing `revised_text` (string) and `was_edited` (boolean)
+- `revised_text` length must be within min_length and max_length bounds
+- Required responses cannot have an empty `revised_text`
+- `max_length` must be between 1 and 10000
 </Accordion>
 
 </AccordionGroup>
@@ -757,8 +774,8 @@ Use number responses for pricing, quantities, measurements, or any numeric data 
 Use boolean responses for simple approve/reject, yes/no, or go/no-go decisions with customizable labels and colors.
 </Step>
 
-<Step title="Editable Text for Draft Refinement">
-Use editable text responses when AI-generated content needs human editing before publishing — translations, product descriptions, or email drafts.
+<Step title="Editable Text for Human Polish">
+Use editable text when you have AI-generated drafts (emails, notifications, or messages) that need a human to refine the tone, accuracy, or wording before delivery.
 </Step>
 
 </Steps>
@@ -831,12 +848,11 @@ def handle_response(request_id, response_data, response_type):
             reject_content()
 
     elif response_type == "editable_text":
-        revised = response_data["revised_text"]
+        revised_text = response_data["revised_text"]
         was_edited = response_data["was_edited"]
+        send_client_notification(revised_text)
         if was_edited:
-            publish_revised_content(revised)
-        else:
-            publish_original_content()
+            log_human_revision(request_id, revised_text)
 ```
 
 ## Next Steps

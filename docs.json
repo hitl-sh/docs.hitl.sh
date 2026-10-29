@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "aspen",
+  "theme": "maple",
   "name": "Human in the Loop",
   "colors": {
     "primary": "#2D3748",
@@ -24,6 +24,7 @@
             "group": "Getting Started",
             "pages": [
               "index",
+              "overview",
               "introduction",
               "quickstart",
               "dashboard",
@@ -82,7 +83,10 @@
           },
           {
             "group": "Responses",
-            "pages": ["requests/introduction"]
+            "pages": [
+              "requests/introduction",
+              "requests/content-types"
+            ]
           },
           {
             "group": "Responses",
@@ -125,6 +129,7 @@
               "integrations/zapier",
               "integrations/make",
               "integrations/python",
+              "integrations/cli",
               "integrations/coming-soon"
             ]
           }
@@ -219,21 +224,15 @@
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
-  "navbar": {
-    "links": [
-      {
-        "label": "Contact Team",
-        "href": "mailto:team@hitl.sh"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-              "href": "https://my.hitl.sh"
-    }
-  },
+  "navbar": {},
   "contextual": {
-    "options": ["copy", "chatgpt", "claude", "cursor", "vscode"]
+    "options": [
+      "copy",
+      "chatgpt",
+      "claude",
+      "cursor",
+      "vscode"
+    ]
   },
   "redirects": [
     {

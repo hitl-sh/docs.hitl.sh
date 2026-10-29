@@ -2,6 +2,7 @@
 title: "Wait for Turn"
 api: "GET https://dev.api.hitl.sh/v1/api/sessions/{id}/turns/{turn_id}/wait"
 description: "Long-poll for the human decision on a turn."
+icon: "hourglass"
 ---
 
 Holds the connection until either the turn is resolved or `timeout` seconds elapse, whichever comes first.

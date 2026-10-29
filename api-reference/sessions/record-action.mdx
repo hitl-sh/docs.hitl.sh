@@ -2,6 +2,7 @@
 title: "Record Turn Action"
 api: "POST https://dev.api.hitl.sh/v1/api/sessions/{id}/turns/{turn_id}/action"
 description: "Attach the real outcome of an approved action to its turn."
+icon: "bolt"
 ---
 
 The agent plugin calls this after running the tool that a human approved, so reviewers can see what actually happened (exit code, stdout/stderr excerpt, files touched) — not just what was proposed.

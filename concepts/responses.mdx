@@ -1,6 +1,7 @@
 ---
 title: "Responses"
 description: "Understand how human review responses work in HITL.sh workflows -- from request creation to structured response collection"
+icon: "messages"
 ---
 
 # Responses
@@ -62,6 +63,10 @@ Pre-filled draft text the reviewer can modify
 </CardGroup>
 
 See the [Response Types reference](/responses/types) for configuration details and examples for each type.
+
+## Content Types
+
+The content a reviewer sees alongside the question can be one of five types: `markdown`, `image`, `file`, `video`, or `audio`. Images (10MB max) and documents (50MB max) can be uploaded through the [Upload API](/api-reference/upload/upload-image), while video and audio are passed as links. See [Content Types](/requests/content-types) for the required fields for each type and how to attach multiple media items.
 
 ## Responses and Executions
 

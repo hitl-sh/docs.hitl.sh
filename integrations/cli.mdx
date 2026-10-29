@@ -1,0 +1,277 @@
+---
+title: "HITL CLI"
+description: "Install the hitl command to trigger workflows and send review requests from any terminal, run the MCP server for Claude Desktop or Cursor, and edit a workflow live with the HITL editor"
+icon: "terminal"
+---
+
+# HITL CLI
+
+The `@hitl-sh/cli` npm package (v0.2.0) installs the `hitl` command (MIT, Node 20+, source at [github.com/hitl-sh/cli](https://github.com/hitl-sh/cli/tree/main/packages/cli)).
+
+<Note>
+Before using the CLI, install the HITL mobile app ([App Store](https://apps.apple.com/us/app/hitl-human-in-the-loop/id6752878072) | [Google Play](https://play.google.com/store/apps/details?id=hitl.sh.app)) so your reviewers can respond to requests.
+</Note>
+
+## Installation
+
+Run without installing:
+
+```sh
+npx @hitl-sh/cli <command>
+```
+
+Install globally so `hitl` is always on your PATH:
+
+```sh
+npm install -g @hitl-sh/cli
+```
+
+## Authentication
+
+Log in with an API key from [my.hitl.sh/settings](https://my.hitl.sh/settings):
+
+```sh
+npx @hitl-sh/cli login --api-key hitl_live_xxx
+```
+
+The key is saved to `~/.config/hitl/config.json` (mode 0600; `$XDG_CONFIG_HOME` is honoured). To skip the saved key in a script, set the `HITL_API_KEY` environment variable instead; it always wins.
+
+```sh
+hitl whoami    # verify the saved key
+```
+
+## Commands
+
+### Ask a human (`hitl ask`)
+
+`hitl ask` creates one request and blocks until a human answers. The answer is printed on stdout; progress goes to stderr. Use it in shell scripts, CI pipelines, or agent hooks to pause until a person decides.
+
+```sh
+hitl ask "Deploy v2 to production?"                        # boolean: exit 0 yes, exit 4 no
+hitl ask "Which region?" --options us,eu,asia              # single_select: prints chosen value
+hitl ask "Summarise the risk" --type text --timeout 3600
+hitl ask "Ship it?" --no-wait                              # prints request id, exits immediately
+```
+
+**Options:**
+
+| Flag | Default | Description |
+|---|---|---|
+| `--loop <id>` | `HITL_LOOP_ID` or the account's only loop | Target loop |
+| `--type` | `boolean` | Response type: `boolean`, `single_select`, `multi_select`, `text`, `editable_text`, `number`, `rating` |
+| `--options a,b,c` | — | Choices for `single_select` / `multi_select` |
+| `--default <value>` | — | Applied automatically on timeout |
+| `--priority` | `medium` | `low`, `medium`, `high`, or `critical` |
+| `--timeout <seconds>` | `600` | How long to wait before exit code 5 |
+| `--interval <seconds>` | `3` | Poll interval |
+| `--source <name>` | `cli` | Shown to reviewers as the request source |
+| `--context '<json>'` | — | Extra metadata sent with the request |
+| `--no-wait` | — | Print the request id and exit immediately |
+| `--json` | — | Machine-readable output |
+
+**Exit codes for `hitl ask`:**
+
+| Code | Meaning |
+|---|---|
+| 0 | Answered yes / affirmative |
+| 4 | Answered no / negative |
+| 5 | Timed out or cancelled |
+| 1 | Usage error |
+| 2 | Request failed |
+| 3 | No API key or key rejected |
+
+**CI example: gate a deploy on human approval:**
+
+```sh
+# In a CI pipeline step:
+hitl ask "Deploy $TAG to production?" \
+  --loop $HITL_LOOP_ID \
+  --priority high \
+  --timeout 1800 || exit 1
+```
+
+The pipeline pauses for up to 30 minutes. A reviewer approves in the HITL app or web inbox; the step exits 0 and the deploy proceeds. A "No" reply or timeout causes exit 4 or 5, the `|| exit 1` fires, and the pipeline fails.
+
+### Resume waiting (`hitl requests wait`)
+
+If you used `--no-wait` to get a request id without blocking, resume waiting on it later:
+
+```sh
+hitl requests wait <requestId>
+hitl requests wait <requestId> --timeout 3600
+hitl requests wait <requestId> --interval 5 --json
+```
+
+Prints the same answer on stdout and uses the same exit codes as `hitl ask` (0 yes, 4 no, 5 timed out / cancelled).
+
+| Flag | Default | Description |
+|---|---|---|
+| `--timeout <seconds>` | `600` | Maximum wait time |
+| `--interval <seconds>` | `3` | Poll interval |
+| `--json` | — | Machine-readable output |
+
+### Loops
+
+Every workflow has a `loop_id`, and requests sent to that loop show up under the workflow. The API and CLI still address it as a **loop** (`--loop`, `HITL_LOOP_ID`), so `hitl loops list` shows the ids you can target.
+
+```sh
+hitl loops list              # list all loops you have access to
+hitl loops list --json       # machine-readable output
+```
+
+### Requests
+
+```sh
+hitl requests list                     # list recent requests
+hitl requests list --status pending    # filter by status
+hitl requests get <requestId>          # get a single request
+hitl requests cancel <requestId>       # cancel a pending request
+hitl requests list --json              # machine-readable output
+```
+
+
+### Trigger a workflow (`hitl trigger`)
+
+Workflows built in the HITL editor start from a webhook trigger. `hitl trigger` posts a JSON payload to it and prints the execution id; the engine runs the workflow in the background and your reviewers get the request it contains.
+
+```sh
+hitl trigger <webhook-id> --data '{"customer": "ACME", "amount": 1200}'
+hitl trigger <webhook-id> --file payload.json        # or --file - to read stdin
+hitl trigger https://api.my.hitl.sh/v1/workflows/webhook/<id> --json
+```
+
+The webhook id is on the workflow's **Settings tab** in the HITL editor (the end of its webhook URL). The payload is what the workflow sees as `{{trigger.body…}}`. No API key is sent: workflow webhooks are public endpoints, so only hitl.sh hosts are accepted. `HITL_APP_API_BASE` (or `--app-api-base`) points at another deployment, for example `https://dev.api.my.hitl.sh/v1`.
+
+**Options:**
+
+| Flag | Default | Description |
+|---|---|---|
+| `--data '<json>'` | `{}` | Trigger payload |
+| `--file <path>` | — | Read payload from a JSON file (`-` for stdin) |
+| `--app-api-base <url>` | `HITL_APP_API_BASE` or `https://api.my.hitl.sh/v1` | Override the webhook host for another deployment |
+| `--json` | — | Print the engine's full JSON response |
+
+**Exit codes:** 0 accepted, 2 refused (unknown webhook id, workflow paused or in draft, bad payload).
+
+### Create any request (`hitl requests create`)
+
+`hitl ask` covers the common cases; `hitl requests create` sends a full request payload, so every response type, media attachment and option the API supports is available.
+
+```sh
+hitl requests create --loop <id> --file request.json
+hitl requests create --data '{"request_text":"Rate this draft","response_type":"rating","response_config":{"scale_max":5},"default_response":3}' --wait
+```
+
+Defaults fill in what you omit: `processing_type` time-sensitive, `type` markdown, `priority` medium, `timeout_seconds` 600, `platform` api, `source` cli. At minimum you must supply `request_text`, `response_type`, `response_config`, and `default_response`.
+
+**Options:**
+
+| Flag | Default | Description |
+|---|---|---|
+| `--loop <id>` | `HITL_LOOP_ID` or the account's only loop | Target loop |
+| `--data '<json>'` | — | Full request payload as a JSON string |
+| `--file <path>` | — | Read the payload from a JSON file (`-` for stdin) |
+| `--wait` | — | Block until answered, like `hitl ask` (same exit codes) |
+| `--interval <seconds>` | `3` | Poll interval when `--wait` is set |
+| `--json` | — | Machine-readable output |
+
+`--wait` uses the same exit codes as `hitl ask` (0 yes / answered, 4 no, 5 timed out or cancelled). See the [content types](/requests/content-types) and [response types](/responses/types) pages for the full payload field reference.
+
+### Connect an MCP client (`hitl init`)
+
+`hitl init` wires the HITL MCP server into a supported MCP client in one step, using the key from `hitl login` or `HITL_API_KEY`.
+
+```sh
+hitl init claude-code       # runs: claude mcp add hitl -e HITL_API_KEY=… -- npx -y @hitl-sh/mcp
+hitl init claude-desktop    # edits claude_desktop_config.json (backup kept as .bak)
+hitl init cursor            # edits ~/.cursor/mcp.json (backup kept as .bak)
+hitl init                   # prints the JSON snippet for any other client
+```
+
+| Client | What it does |
+|---|---|
+| `claude-code` | Runs `claude mcp add hitl -e HITL_API_KEY=… -- npx -y @hitl-sh/mcp` |
+| `claude-desktop` | Edits `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) |
+| `cursor` | Edits `~/.cursor/mcp.json` |
+| (none) | Prints the JSON snippet to paste into any MCP client |
+
+Add `--print` to preview what would be written without touching any file. Add `--name <name>` to register the server under a different key (default `hitl`). After running `hitl init claude-code`, confirm the server was added with `claude mcp list`.
+
+### MCP server
+
+```sh
+hitl mcp
+```
+
+Starts the HITL MCP server (v0.1.4) over stdio. All nine tools are available: `list_loops`, `create_request`, `list_requests`, `get_request`, `update_request`, `cancel_request`, `add_request_feedback`, `list_images`, `get_image`. Requests carry the MCP client's name as their source so reviewers see "via Claude Code" or similar.
+
+**Claude Code:**
+
+```sh
+claude mcp add hitl -e HITL_API_KEY=hitl_live_xxx -- npx -y @hitl-sh/cli mcp
+```
+
+**Claude Desktop / Cursor (`claude_desktop_config.json` or `.mcp.json`):**
+
+```json
+{
+  "mcpServers": {
+    "hitl": {
+      "command": "npx",
+      "args": ["-y", "@hitl-sh/cli", "mcp"],
+      "env": { "HITL_API_KEY": "hitl_live_xxx" }
+    }
+  }
+}
+```
+
+The same MCP server is also published as the standalone package [`@hitl-sh/mcp`](https://www.npmjs.com/package/@hitl-sh/mcp) (v0.1.4, `npx -y @hitl-sh/mcp`). Use either; they expose the same tools.
+
+### Workflow editor integration
+
+The HITL workflow editor's **Connect Claude** dialog prints a `hitl workflow` command. Pass it to the CLI to stream and apply live edits:
+
+```sh
+hitl workflow '<url from Connect Claude dialog>'
+```
+
+Run `hitl workflow --help` for the full list of sub-commands (`show`, `add-step`, `update-step`, `remove-step`, `connect`, `disconnect`, `set-workflow`, `log`).
+
+## Environment variables
+
+| Variable | Description |
+|---|---|
+| `HITL_API_KEY` | API key. Overrides the saved key in `~/.config/hitl/config.json`. |
+| `HITL_LOOP_ID` | Default loop for `hitl ask` when `--loop` is not passed and the account has more than one loop. |
+| `HITL_API_BASE` | Override the API base URL (default `https://api.hitl.sh/v1`). The key is only ever sent to `hitl.sh` hosts; set `HITL_ALLOW_HOSTS=localhost` to open a host for local development. |
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | Success (or yes for `hitl ask`) |
+| 1 | Usage error |
+| 2 | Request failed |
+| 3 | No API key or key rejected |
+| 4 | `hitl ask` / `hitl requests wait`: answered no |
+| 5 | `hitl ask` / `hitl requests wait`: timed out or cancelled |
+
+## Related
+
+<CardGroup cols={2}>
+<Card title="MCP Server (`@hitl-sh/mcp`)" icon="server" href="/concepts/integrations">
+Zero-config standalone stdio MCP server: same tools, smaller install.
+</Card>
+
+<Card title="Remote MCP server" icon="cloud" href="https://mcp.hitl.sh">
+Zero-install hosted server with OAuth at mcp.hitl.sh/mcp.
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/introduction">
+Build custom integrations directly against the REST API.
+</Card>
+
+<Card title="Workflows" icon="diagram-project" href="/concepts/workflows">
+Understand workflows before triggering your first review.
+</Card>
+</CardGroup>
