@@ -2,7 +2,7 @@
 
 Branch: `preview` only (never main). Don't stage `.omc/` or `.next/`.
 
-## 2026-10-29: "Moving from HITL version 1" guide (DONE, committed 7646948, NOT pushed: GitHub login expired)
+## 2026-10-29: "Moving from HITL version 1" guide (DONE, committed 7fc666a, pushed to preview 2026-10-30)
 
 - `guides/moving-from-version-1.mdx` (written by an earlier session) replaces `guides/migration.mdx`, which contradicted the
   portal (said loops were auto-converted and invite codes stopped working). Old page removed; `/guides/migration` redirects
