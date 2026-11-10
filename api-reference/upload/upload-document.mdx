@@ -1,6 +1,6 @@
 ---
 title: "Upload Document"
-api: "POST https://dev.api.hitl.sh/v1/upload/document"
+api: "POST https://api.hitl.sh/v1/upload/document"
 description: "Upload a document to HITL.sh hosting (S3-backed) for use in file content type requests"
 icon: "file-arrow-up"
 ---
@@ -83,7 +83,7 @@ import requests
 
 with open("vendor-agreement-2026.pdf", "rb") as f:
     response = requests.post(
-        "https://dev.api.hitl.sh/v1/upload/document",
+        "https://api.hitl.sh/v1/upload/document",
         headers={"Authorization": f"Bearer {api_key}"},
         files={"file": ("vendor-agreement-2026.pdf", f, "application/pdf")}
     )
@@ -119,7 +119,7 @@ const form = new FormData();
 form.append("file", fs.createReadStream("vendor-agreement-2026.pdf"));
 
 const uploadResponse = await axios.post(
-    "https://dev.api.hitl.sh/v1/upload/document",
+    "https://api.hitl.sh/v1/upload/document",
     form,
     {
         headers: {
@@ -154,7 +154,7 @@ const requestData = {
 
 ```bash cURL
 # Upload the document
-curl -X POST https://dev.api.hitl.sh/v1/upload/document \
+curl -X POST https://api.hitl.sh/v1/upload/document \
   -H "Authorization: Bearer your_api_key" \
   -F "file=@vendor-agreement-2026.pdf"
 
@@ -170,7 +170,7 @@ curl -X POST https://dev.api.hitl.sh/v1/upload/document \
 # }
 
 # Use the returned fields in a request
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{

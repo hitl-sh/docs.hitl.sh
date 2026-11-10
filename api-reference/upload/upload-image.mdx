@@ -1,6 +1,6 @@
 ---
 title: "Upload Image"
-api: "POST https://dev.api.hitl.sh/v1/upload/image"
+api: "POST https://api.hitl.sh/v1/upload/image"
 description: "Upload an image to HITL.sh hosting (S3-backed) for use in image content type requests"
 icon: "image"
 ---
@@ -63,7 +63,7 @@ import requests
 
 with open("product-photo.jpg", "rb") as f:
     response = requests.post(
-        "https://dev.api.hitl.sh/v1/upload/image",
+        "https://api.hitl.sh/v1/upload/image",
         headers={"Authorization": f"Bearer {api_key}"},
         files={"file": ("product-photo.jpg", f, "image/jpeg")}
     )
@@ -92,7 +92,7 @@ const form = new FormData();
 form.append("file", fs.createReadStream("product-photo.jpg"));
 
 const uploadResponse = await axios.post(
-    "https://dev.api.hitl.sh/v1/upload/image",
+    "https://api.hitl.sh/v1/upload/image",
     form,
     {
         headers: {
@@ -120,14 +120,14 @@ const requestData = {
 
 ```bash cURL
 # Upload the image
-curl -X POST https://dev.api.hitl.sh/v1/upload/image \
+curl -X POST https://api.hitl.sh/v1/upload/image \
   -H "Authorization: Bearer your_api_key" \
   -F "file=@product-photo.jpg"
 
 # Response: { "error": false, "data": { "url": "https://cdn.hitl.sh/uploads/img/abc123.jpg" } }
 
 # Use the returned URL in a request
-curl -X POST https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests \
+curl -X POST https://api.hitl.sh/v1/api/loops/{loop_id}/requests \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{

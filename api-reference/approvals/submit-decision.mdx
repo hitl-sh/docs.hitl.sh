@@ -1,6 +1,6 @@
 ---
 title: "Submit Decision"
-api: "POST https://dev.api.hitl.sh/v1/approval-chains/{chainId}/decide"
+api: "POST https://api.hitl.sh/v1/approval-chains/{chainId}/decide"
 description: "Submit an approve or reject decision for a step in an approval chain"
 ---
 
@@ -73,7 +73,7 @@ decision_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/approval-chains/{chain_id}/decide",
+    f"https://api.hitl.sh/v1/approval-chains/{chain_id}/decide",
     headers={"Authorization": f"Bearer {api_key}"},
     json=decision_data
 )
@@ -91,7 +91,7 @@ const decisionData = {
 };
 
 const response = await axios.post(
-    `https://dev.api.hitl.sh/v1/approval-chains/${chainId}/decide`,
+    `https://api.hitl.sh/v1/approval-chains/${chainId}/decide`,
     decisionData,
     { headers: { Authorization: `Bearer ${apiKey}` }}
 );
@@ -101,7 +101,7 @@ console.log(`Chain status after decision: ${chain.status}`);
 ```
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/approval-chains/{chain_id}/decide \
+curl -X POST https://api.hitl.sh/v1/approval-chains/{chain_id}/decide \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{

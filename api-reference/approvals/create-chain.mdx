@@ -1,6 +1,6 @@
 ---
 title: "Create Approval Chain"
-api: "POST https://dev.api.hitl.sh/v1/requests/{requestId}/approval-chain"
+api: "POST https://api.hitl.sh/v1/requests/{requestId}/approval-chain"
 description: "Create a multi-step approval chain for a request"
 ---
 
@@ -93,7 +93,7 @@ chain_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/requests/{request_id}/approval-chain",
+    f"https://api.hitl.sh/v1/requests/{request_id}/approval-chain",
     headers={"Authorization": f"Bearer {api_key}"},
     json=chain_data
 )
@@ -121,14 +121,14 @@ const chainData = {
 };
 
 const response = await axios.post(
-    `https://dev.api.hitl.sh/v1/requests/${requestId}/approval-chain`,
+    `https://api.hitl.sh/v1/requests/${requestId}/approval-chain`,
     chainData,
     { headers: { Authorization: `Bearer ${apiKey}` }}
 );
 ```
 
 ```bash cURL
-curl -X POST https://dev.api.hitl.sh/v1/requests/{request_id}/approval-chain \
+curl -X POST https://api.hitl.sh/v1/requests/{request_id}/approval-chain \
   -H "Authorization: Bearer your_api_key" \
   -H "Content-Type: application/json" \
   -d '{

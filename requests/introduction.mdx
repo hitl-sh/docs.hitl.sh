@@ -57,7 +57,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -87,7 +87,7 @@ If you configured a `callback_url`, HITL.sh sends a webhook notification with th
 # Poll for the completed response
 def get_response(request_id):
     response = requests.get(
-        f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+        f"https://api.hitl.sh/v1/api/requests/{request_id}",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     
@@ -498,7 +498,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -536,7 +536,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -578,7 +578,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -621,7 +621,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -662,7 +662,7 @@ request_data = {
 }
 
 response = requests.post(
-    f"https://dev.api.hitl.sh/v1/api/loops/{loop_id}/requests",
+    f"https://api.hitl.sh/v1/api/loops/{loop_id}/requests",
     headers={"Authorization": f"Bearer {api_key}"},
     json=request_data
 )
@@ -673,7 +673,7 @@ response = requests.post(
 ```python
 def get_request_status(request_id):
     response = requests.get(
-        f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+        f"https://api.hitl.sh/v1/api/requests/{request_id}",
         headers={"Authorization": f"Bearer {api_key}"}
     )
     

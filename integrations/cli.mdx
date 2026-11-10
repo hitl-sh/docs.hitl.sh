@@ -140,7 +140,7 @@ hitl trigger <webhook-id> --file payload.json        # or --file - to read stdin
 hitl trigger https://api.my.hitl.sh/v1/workflows/webhook/<id> --json
 ```
 
-The webhook id is on the workflow's **Settings tab** in the HITL editor (the end of its webhook URL). The payload is what the workflow sees as `{{trigger.body…}}`. No API key is sent: workflow webhooks are public endpoints, so only hitl.sh hosts are accepted. `HITL_APP_API_BASE` (or `--app-api-base`) points at another deployment, for example `https://dev.api.my.hitl.sh/v1`.
+The webhook id is on the workflow's **Settings tab** in the HITL editor (the end of its webhook URL). The payload is what the workflow sees as `{{trigger.body…}}`. No API key is sent: workflow webhooks are public endpoints, so only hitl.sh hosts are accepted. `HITL_APP_API_BASE` (or `--app-api-base`) points at another deployment, for example `https://api.my.hitl.sh/v1`.
 
 **Options:**
 

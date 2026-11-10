@@ -1,6 +1,6 @@
 ---
 title: "Cancel Request"
-api: "DELETE https://dev.api.hitl.sh/v1/api/requests/{id}"
+api: "DELETE https://api.hitl.sh/v1/api/requests/{id}"
 description: "Cancel a pending request. Only requests that haven't been completed can be cancelled."
 icon: "circle-xmark"
 ---
@@ -47,7 +47,7 @@ Cancelled requests cannot be restored. If you need the same request processed, y
 <RequestExample>
 
 ```bash cURL
-curl -X DELETE https://dev.api.hitl.sh/v1/api/requests/65f1234567890abcdef12348 \
+curl -X DELETE https://api.hitl.sh/v1/api/requests/65f1234567890abcdef12348 \
   -H "Authorization: Bearer your_api_key_here"
 ```
 
@@ -60,7 +60,7 @@ def cancel_request(request_id, confirm=True):
     if confirm:
         # Get request details first
         get_response = requests.get(
-            f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+            f"https://api.hitl.sh/v1/api/requests/{request_id}",
             headers={"Authorization": "Bearer your_api_key_here"}
         )
         
@@ -76,7 +76,7 @@ def cancel_request(request_id, confirm=True):
                 return {"cancelled": False, "reason": "User cancelled operation"}
     
     # Proceed with cancellation
-    url = f"https://dev.api.hitl.sh/v1/api/requests/{request_id}"
+    url = f"https://api.hitl.sh/v1/api/requests/{request_id}"
     headers = {"Authorization": "Bearer your_api_key_here"}
     
     response = requests.delete(url, headers=headers)
@@ -104,7 +104,7 @@ async function cancelRequest(requestId, options = {}) {
         if (confirm) {
             // Get request details for confirmation
             const getResponse = await axios.get(
-                `https://dev.api.hitl.sh/v1/api/requests/${requestId}`,
+                `https://api.hitl.sh/v1/api/requests/${requestId}`,
                 { headers: { 'Authorization': 'Bearer your_api_key_here' } }
             );
             
@@ -123,7 +123,7 @@ async function cancelRequest(requestId, options = {}) {
         
         // Proceed with cancellation
         const response = await axios.delete(
-            `https://dev.api.hitl.sh/v1/api/requests/${requestId}`,
+            `https://api.hitl.sh/v1/api/requests/${requestId}`,
             {
                 headers: { 'Authorization': 'Bearer your_api_key_here' },
                 data: reason ? { reason } : undefined
@@ -241,7 +241,7 @@ def batch_cancel_requests(request_ids, max_concurrent=5):
     def cancel_single_request(request_id):
         try:
             response = requests.delete(
-                f"https://dev.api.hitl.sh/v1/api/requests/{request_id}",
+                f"https://api.hitl.sh/v1/api/requests/{request_id}",
                 headers={"Authorization": "Bearer your_api_key_here"}
             )
             
@@ -313,7 +313,7 @@ async function batchCancelRequests(requestIds, maxConcurrent = 5) {
 
         try {
             const response = await axios.delete(
-                `https://dev.api.hitl.sh/v1/api/requests/${requestId}`,
+                `https://api.hitl.sh/v1/api/requests/${requestId}`,
                 { headers: { 'Authorization': 'Bearer your_api_key_here' } }
             );
             
@@ -398,7 +398,7 @@ def smart_cancel_requests(filter_criteria):
         params['created_before'] = filter_criteria['created_before']
     
     response = requests.get(
-        "https://dev.api.hitl.sh/v1/api/requests",
+        "https://api.hitl.sh/v1/api/requests",
         headers={"Authorization": "Bearer your_api_key_here"},
         params=params
     )
@@ -504,7 +504,7 @@ async function safeCancel(requestId, retries = 2) {
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
             const response = await axios.delete(
-                `https://dev.api.hitl.sh/v1/api/requests/${requestId}`,
+                `https://api.hitl.sh/v1/api/requests/${requestId}`,
                 { headers: { 'Authorization': 'Bearer your_api_key_here' } }
             );
             
