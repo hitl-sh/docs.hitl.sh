@@ -10,5 +10,5 @@ Mintlify docs for HITL (docs.hitl.sh). See README.md for layout and writing rule
 - API reference pages are thin wrappers over `api-reference/openapi.json`; edit the spec. Public routes are under
   `https://api.hitl.sh/v1/api/...` (plus `/v1/test` and `/v1/upload/*`).
 - Use real response bodies for examples, production hosts only, example.com people only.
-- Images: `images/<section>/`, under 400 KB, inside `<Frame>` with alt text. Delete images no page uses.
+- Images: `images/<section>/`, under 400 KB, inside `<Frame>` with alt text. Delete images no page uses, except `images/readme/` and the screenshots the npm READMEs link (see README.md).
 - Removed pages get a redirect in `docs.json`.

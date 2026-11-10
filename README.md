@@ -18,6 +18,7 @@ Telegram) and the run (an **execution**) finishes with their answer.
 | `integrations/` | Agent setup prompt, MCP, CLI, REST, n8n, Zapier, Make |
 | `api-reference/` | `openapi.json` (OpenAPI 3.1, server `https://api.hitl.sh/v1`) and one page per endpoint |
 | `images/<section>/` | Screenshots, under 400 KB each |
+| `images/readme/` | Images for the npm READMEs of `@hitl-sh/cli`, `@hitl-sh/mcp`, `@hitl-sh/core` and `n8n-nodes-human-in-the-loop`, linked from npm as `https://docs.hitl.sh/images/readme/...`. No page uses them; keep them. Those READMEs also link `images/mcp/*`, `images/n8n/*` and `images/mobile/boolean.png` |
 | `docs.json` | Navigation, redirects for removed pages, theme |
 
 ## Run locally
