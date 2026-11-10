@@ -1,0 +1,86 @@
+---
+title: "Mobile app"
+description: "The HITL app for iOS and Android: sign in, join workflows, get notified, answer every kind of question, and see your history."
+icon: "mobile"
+---
+
+Most reviewers answer on their phone. The HITL app sends a push notification for each request and shows the question with the right controls for the answer type.
+
+**Download:** [hitl.sh/download](https://hitl.sh/download) (App Store and Google Play).
+
+## Sign in
+
+Use **Continue with Apple**, **Continue with Google** or **Continue with email** (a one-time code). Use the same email you were invited with, so the workflows you were invited to are there.
+
+<Frame>
+<img src="/images/mobile/sign-in.png" alt="The HITL app sign-in screen: Your agents ask. You answer. With Continue with Apple, Continue with Google and Continue with email" width="300" />
+</Frame>
+
+## Join a workflow
+
+Accept the email invitation, tap an invite link (`hitl.sh/invites/...`), scan the workflow's QR code, or tap **+** on the **Workflows** tab and type the join code. You see the workflow's name, description and how many people review it, then tap **Join this workflow**.
+
+<Columns cols={2}>
+<Frame caption="Joining with a code">
+<img src="/images/mobile/join.png" alt="A workflow invitation in the app, Support escalations, 3 of 10 joined, with a Join this workflow button" width="300" />
+</Frame>
+<Frame caption="Workflows you review">
+<img src="/images/mobile/workflows.png" alt="The Workflows tab listing workflows with their owner, member count and number of requests waiting" width="300" />
+</Frame>
+</Columns>
+
+## Answer
+
+The **Inbox** lists what is waiting for you, with the workflow, the question and the time left. Tap one to open it, answer, and tap **Submit**. The run continues straight away, and the app confirms your answer was sent.
+
+<Columns cols={2}>
+<Frame caption="Inbox">
+<img src="/images/mobile/inbox.png" alt="The app's Inbox listing requests from Deploy gate, Refund approvals and Content review with the time left on each" width="300" />
+</Frame>
+<Frame caption="After answering">
+<img src="/images/mobile/answered.png" alt="The answered screen: a check mark, Deploy api v2.14 to production?, You approved, Sent to the agent" width="300" />
+</Frame>
+</Columns>
+
+Each answer type has its own controls:
+
+<Columns cols={3}>
+<Frame caption="Approve / Deny">
+<img src="/images/mobile/boolean.png" alt="An Approve / Deny request: Deploy api v2.14 to production, with environment and PR details and Approve and Deny buttons" width="220" />
+</Frame>
+<Frame caption="Single choice">
+<img src="/images/mobile/single-select.png" alt="A single choice request with three headline options" width="220" />
+</Frame>
+<Frame caption="Multiple choice">
+<img src="/images/mobile/multi-select.png" alt="A multiple choice request: choose 1 to 3 channels for a launch" width="220" />
+</Frame>
+<Frame caption="Text">
+<img src="/images/mobile/text.png" alt="A text request with an empty answer box and a character counter" width="220" />
+</Frame>
+<Frame caption="Editable draft">
+<img src="/images/mobile/editable-text.png" alt="An editable draft: a customer reply pre-filled for the reviewer to edit" width="220" />
+</Frame>
+<Frame caption="Rating">
+<img src="/images/mobile/rating.png" alt="A rating request: How good is this lead summary, with five stars" width="220" />
+</Frame>
+<Frame caption="Number">
+<img src="/images/mobile/number.png" alt="A number request: How much should we refund Sam, with a number pad" width="220" />
+</Frame>
+</Columns>
+
+## History
+
+The **Activity** tab lists what you and the other reviewers answered, by day.
+
+<Columns cols={2}>
+<Frame caption="Activity">
+<img src="/images/mobile/history.png" alt="The Activity tab listing answers such as You approved Refund $45 to Priya and Dana Lee denied Drop the staging database" width="300" />
+</Frame>
+<Frame caption="Account">
+<img src="/images/mobile/settings.png" alt="The Account screen with notification and call settings and help links" width="300" />
+</Frame>
+</Columns>
+
+## Notifications and calls
+
+Allow notifications when the app asks, or later in **Account → Notifications & sounds**. A review step can also **call** you for urgent requests: answer the call and say your decision. Set the voice under **Account → Calls**.
