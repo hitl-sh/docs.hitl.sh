@@ -1,0 +1,44 @@
+---
+title: "Authentication"
+description: "Send your API key as a Bearer token. Scopes, signup keys and keeping keys safe."
+icon: "lock"
+---
+
+Every request carries your [API key](/api-keys):
+
+```bash
+curl https://api.hitl.sh/v1/test -H "Authorization: Bearer hitl_live_..."
+```
+
+A key acts as its account: it sees and runs the workflows that account owns. Other accounts' workflows and runs answer `404`.
+
+## Check a key
+
+[`GET /test`](/api-reference/account/test-key) answers `200` with the account's email and the key's hourly budget, or `401`.
+
+## Scopes
+
+Keys issued with scopes are limited to:
+
+| Scope | Allows |
+|---|---|
+| `workflow:read` | List and get workflows, input fields, executions, reviewers, webhooks |
+| `workflow:run` | Run, test and retry |
+| `workflow:write` | Create, edit, activate, pause, delete and publish workflows |
+| `humans:write` | Invitations and join codes |
+
+`workflow:*`, `humans:*` and `*` grant a whole family. Keys without scopes, such as the key in my.hitl.sh, have full access. A missing scope answers `403`.
+
+## Keys from agent signup
+
+A key from [`POST /api/signup`](/api-reference/account/signup) works at once but, until the human confirms, can only read and draft workflows. Anything else answers:
+
+```json
+{ "error": true, "code": "confirmation_required", "msg": "..." }
+```
+
+## Keep keys safe
+
+- Keep keys on servers, in environment variables or a secret store. Never ship one in a browser or mobile app.
+- Regenerate the key in my.hitl.sh if it leaks; the old one stops working at once.
+- Verify the signature of the webhooks HITL sends you ([Webhooks](/guides/webhooks#verify-the-signature)).

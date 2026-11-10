@@ -1,0 +1,37 @@
+---
+title: "Errors"
+description: "Error format, status codes and what to do about each."
+icon: "triangle-exclamation"
+---
+
+Errors answer with an HTTP status and:
+
+```json
+{ "error": true, "msg": "Workflow is a draft: publish and activate it in the editor first", "status": "draft" }
+```
+
+`msg` is written for people; some errors add a `code` for programs (`confirmation_required`, `too_many`, ...).
+
+| Status | Meaning | What to do |
+|---|---|---|
+| `400` | Invalid input, or activation found something to fix (`msg` says what) | Fix the request or the workflow |
+| `401` | Missing or invalid API key | Check the `Authorization: Bearer` header |
+| `403` | The key lacks the scope, or its signup is not confirmed (`code: confirmation_required`) | Use a key with the scope, or confirm the signup |
+| `404` | No such workflow or execution, or it belongs to another account | Check the id and the key |
+| `409` | Running a workflow that is a draft or paused | Activate it |
+| `410` | A retired endpoint from HITL version 1 | See [Moving from HITL version 1](/guides/moving-from-version-1) |
+| `413` | Body too large (run input over 64 KB, workflow over 2 MB) | Send less, or link to the data |
+| `429` | Rate limit (1,000 an hour per key on workflows and executions; signup limits) | Back off; use `wait` instead of fast polling |
+| `502`, `503` | The workflow service is unavailable, or the run could not be queued (it is marked failed) | Retry with backoff |
+
+Examples of real answers:
+
+```json
+{ "error": true, "msg": "Workflow not found" }
+```
+
+```json
+{ "error": true, "msg": "Invalid execution id" }
+```
+
+A workflow that fails while running is not an HTTP error: the execution's `status` becomes `failed` and its `error` says why.

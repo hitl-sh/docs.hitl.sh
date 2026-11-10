@@ -1,0 +1,3599 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HITL API",
+    "version": "1.0.0",
+    "description": "Run the workflows you build in HITL, follow each run until a person has answered, and manage who reviews them."
+  },
+  "servers": [
+    {
+      "url": "https://api.hitl.sh/v1"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Workflows"
+    },
+    {
+      "name": "Runs"
+    },
+    {
+      "name": "Reviewers"
+    },
+    {
+      "name": "Webhooks"
+    },
+    {
+      "name": "Account"
+    },
+    {
+      "name": "Uploads"
+    }
+  ],
+  "paths": {
+    "/test": {
+      "get": {
+        "operationId": "account-test-key",
+        "tags": [
+          "Account"
+        ],
+        "summary": "Check your API key",
+        "description": "Confirms the key works and shows the account it belongs to and its hourly budget.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "api_key_id": {
+                          "type": "string"
+                        },
+                        "user_id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "account_status": {
+                          "type": "string"
+                        },
+                        "rate_limit": {
+                          "type": "object",
+                          "properties": {
+                            "limit": {
+                              "type": "integer"
+                            },
+                            "remaining": {
+                              "type": "integer"
+                            },
+                            "reset_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "error": false,
+                  "msg": "API key is valid",
+                  "data": {
+                    "api_key_id": "6af2ce9d8207961501f59493",
+                    "user_id": "6af2ce47967ce8777084a292",
+                    "email": "jordan.lee@example.com",
+                    "account_status": "active",
+                    "rate_limit": {
+                      "limit": 100,
+                      "remaining": 4988,
+                      "reset_at": "2026-11-10T09:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          }
+        }
+      }
+    },
+    "/api/workflows": {
+      "get": {
+        "operationId": "workflows-list",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "List workflows",
+        "description": "Your workflows, newest first. Needs `workflow:read`.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "workflows": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/WorkflowSummary"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "count": 5,
+                    "workflows": [
+                      {
+                        "id": "6af2ce5f8207961501f59482",
+                        "name": "Translation quality",
+                        "description": "Native speakers rate machine translations.",
+                        "status": "active",
+                        "trigger": {
+                          "type": "webhook",
+                          "webhook_id": "wf_d7050a5d0e91ee0944534988405a9c7a"
+                        },
+                        "steps": 3,
+                        "has_review": true,
+                        "runnable": true,
+                        "execution_count": 2,
+                        "last_executed_at": "2026-11-10T07:59:39.189Z",
+                        "created_at": "2026-11-10T07:57:19.308Z",
+                        "updated_at": "2026-11-10T07:57:22.218Z"
+                      },
+                      {
+                        "id": "6af2ce5b8207961501f5947e",
+                        "name": "Support reply review",
+                        "description": "An agent drafts a reply; a person edits and sends it.",
+                        "status": "active",
+                        "trigger": {
+                          "type": "webhook",
+                          "webhook_id": "wf_b5bdb3e59a5dbbae7c37391cc794e752"
+                        },
+                        "steps": 4,
+                        "has_review": true,
+                        "runnable": true,
+                        "execution_count": 2,
+                        "last_executed_at": "2026-11-10T07:59:44.889Z",
+                        "created_at": "2026-11-10T07:57:15.116Z",
+                        "updated_at": "2026-11-10T07:57:18.042Z"
+                      },
+                      {
+                        "id": "6af2ce568207961501f5947a",
+                        "name": "Deploy gate",
+                        "description": "An on-call engineer signs off production deploys.",
+                        "status": "active",
+                        "trigger": {
+                          "type": "webhook",
+                          "webhook_id": "wf_fe660c09a7434ebfc13a9e71f6dc63da"
+                        },
+                        "steps": 4,
+                        "has_review": true,
+                        "runnable": true,
+                        "execution_count": 2,
+                        "last_executed_at": "2026-11-10T07:59:50.439Z",
+                        "created_at": "2026-11-10T07:57:10.915Z",
+                        "updated_at": "2026-11-10T07:57:13.849Z"
+                      },
+                      {
+                        "id": "6af2ce528207961501f59476",
+                        "name": "Content moderation",
+                        "description": "Moderators check posts the classifier flagged.",
+                        "status": "active",
+                        "trigger": {
+                          "type": "webhook",
+                          "webhook_id": "wf_4aa18482334c7eae5e18f094bca35223"
+                        },
+                        "steps": 4,
+                        "has_review": true,
+                        "runnable": true,
+                        "execution_count": 2,
+                        "last_executed_at": "2026-11-10T07:59:55.996Z",
+                        "created_at": "2026-11-10T07:57:06.721Z",
+                        "updated_at": "2026-11-10T07:57:09.654Z"
+                      },
+                      {
+                        "id": "6af2ce4e8207961501f59472",
+                        "name": "Refund approval",
+                        "description": "A support lead approves, denies or escalates refunds over $100.",
+                        "status": "active",
+                        "trigger": {
+                          "type": "webhook",
+                          "webhook_id": "wf_26db308d0ea2bfd5427999311a169b3b"
+                        },
+                        "steps": 6,
+                        "has_review": true,
+                        "runnable": true,
+                        "execution_count": 4,
+                        "last_executed_at": "2026-11-10T08:00:07.228Z",
+                        "created_at": "2026-11-10T07:57:02.477Z",
+                        "updated_at": "2026-11-10T07:57:05.452Z"
+                      }
+                    ]
+                  },
+                  "error": false,
+                  "msg": "Workflows retrieved"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Only workflows with this status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "paused",
+                "draft"
+              ]
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "workflows-create",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Create a workflow",
+        "description": "Creates a **draft** from a graph of steps, the same graph the editor builds. Invite reviewers, then [activate](/api-reference/workflows/activate) it. Needs `workflow:write`. A key whose signup is not confirmed yet can create drafts.",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Workflow"
+                    }
+                  }
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Workflow created",
+                  "data": {
+                    "id": "6af2ce4e8207961501f59472",
+                    "name": "Refund approval",
+                    "description": "A support lead approves, denies or escalates refunds over $100.",
+                    "status": "draft",
+                    "trigger": {
+                      "type": "webhook",
+                      "webhook_id": "wf_26db308d0ea2bfd5427999311a169b3b"
+                    },
+                    "steps": 6,
+                    "has_review": true,
+                    "runnable": false,
+                    "execution_count": 0,
+                    "last_executed_at": null,
+                    "created_at": "2026-11-10T07:57:02.477Z",
+                    "updated_at": "2026-11-10T07:57:05.452Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "403": {
+            "$ref": "#/components/responses/E403"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowGraph"
+              },
+              "example": {
+                "name": "Refund approval",
+                "description": "A support lead approves or denies refunds.",
+                "nodes": [
+                  {
+                    "id": "trigger-1",
+                    "type": "trigger",
+                    "position": {
+                      "x": 0,
+                      "y": 0
+                    },
+                    "data": {
+                      "triggerType": "webhook"
+                    }
+                  },
+                  {
+                    "id": "review-1",
+                    "type": "review",
+                    "position": {
+                      "x": 0,
+                      "y": 200
+                    },
+                    "data": {
+                      "label": "Approve refund",
+                      "requestText": "Refund ${{trigger.body.amount}} to {{trigger.body.customer.name}}?",
+                      "responseType": "single_select",
+                      "priority": "high",
+                      "timeout": "7200",
+                      "responseConfig": {
+                        "options": [
+                          {
+                            "value": "approve",
+                            "label": "Approve refund"
+                          },
+                          {
+                            "value": "deny",
+                            "label": "Deny"
+                          }
+                        ],
+                        "required": true
+                      }
+                    }
+                  },
+                  {
+                    "id": "end-1",
+                    "type": "end",
+                    "position": {
+                      "x": 0,
+                      "y": 400
+                    },
+                    "data": {
+                      "label": "End"
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "e1",
+                    "source": "trigger-1",
+                    "target": "review-1"
+                  },
+                  {
+                    "id": "e2",
+                    "source": "review-1",
+                    "target": "end-1"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workflows/{id}": {
+      "get": {
+        "operationId": "workflows-get",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Get a workflow",
+        "description": "One workflow with its steps (`nodes`, credentials redacted), connections (`edges`) and the input fields its steps read.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Workflow"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "id": "6af2ce4e8207961501f59472",
+                    "name": "Refund approval",
+                    "description": "A support lead approves, denies or escalates refunds over $100.",
+                    "status": "active",
+                    "trigger": {
+                      "type": "webhook",
+                      "webhook_id": "wf_26db308d0ea2bfd5427999311a169b3b"
+                    },
+                    "steps": 6,
+                    "has_review": true,
+                    "runnable": true,
+                    "execution_count": 4,
+                    "last_executed_at": "2026-11-10T08:00:07.228Z",
+                    "created_at": "2026-11-10T07:57:02.477Z",
+                    "updated_at": "2026-11-10T07:57:05.452Z",
+                    "nodes": [
+                      {
+                        "id": "trigger-1",
+                        "type": "trigger",
+                        "data": {
+                          "label": "Webhook",
+                          "triggerType": "webhook",
+                          "workflowIcon": {
+                            "color": "peach",
+                            "type": "set",
+                            "value": "receipt"
+                          }
+                        }
+                      },
+                      {
+                        "id": "review-1",
+                        "type": "review",
+                        "data": {
+                          "label": "Approve refund",
+                          "priority": "high",
+                          "requestText": "**Refund request**\n\n| | |\n|---|---|\n| Customer | {{trigger.body.customer.name}} ({{trigger.body.customer.email}}) |\n| Order | {{trigger.body.order_id}} |\n| Amount | ${{trigger.body.amount}} {{trigger.body.currency}} |\n\n**Reason:** {{trigger.body.reason}}",
+                          "responseConfig": {
+                            "options": [
+                              {
+                                "label": "Approve refund",
+                                "value": "approve"
+                              },
+                              {
+                                "label": "Deny",
+                                "value": "deny"
+                              },
+                              {
+                                "label": "Escalate to manager",
+                                "value": "escalate"
+                              }
+                            ],
+                            "required": true
+                          },
+                          "responseType": "single_select",
+                          "timeout": "7200"
+                        }
+                      },
+                      {
+                        "id": "condition-1",
+                        "type": "condition",
+                        "data": {
+                          "field": "response.value",
+                          "label": "Approved?",
+                          "operator": "equals",
+                          "value": "approve"
+                        }
+                      },
+                      {
+                        "id": "action-1",
+                        "type": "action",
+                        "data": {
+                          "actionType": "webhook",
+                          "body": "{\"order_id\": \"{{trigger.body.order_id}}\", \"amount\": {{trigger.body.amount}}, \"approved_by\": \"{{response.by.name}}\"}",
+                          "label": "Issue the refund",
+                          "method": "POST",
+                          "name": "Issue the refund",
+                          "url": "https://httpbin.org/post"
+                        }
+                      },
+                      {
+                        "id": "action-2",
+                        "type": "action",
+                        "data": {
+                          "actionType": "webhook",
+                          "body": "{\"order_id\": \"{{trigger.body.order_id}}\", \"decision\": \"{{response.value}}\"}",
+                          "label": "Email the customer",
+                          "method": "POST",
+                          "name": "Email the customer",
+                          "url": "https://httpbin.org/post"
+                        }
+                      },
+                      {
+                        "id": "end-1",
+                        "type": "end",
+                        "data": {
+                          "label": "End"
+                        }
+                      }
+                    ],
+                    "edges": [
+                      {
+                        "id": "e1",
+                        "source": "trigger-1",
+                        "target": "review-1"
+                      },
+                      {
+                        "id": "e2",
+                        "source": "review-1",
+                        "target": "condition-1"
+                      },
+                      {
+                        "id": "e3",
+                        "source": "condition-1",
+                        "target": "action-1",
+                        "source_handle": "yes"
+                      },
+                      {
+                        "id": "e4",
+                        "source": "condition-1",
+                        "target": "action-2",
+                        "source_handle": "no"
+                      },
+                      {
+                        "id": "e5",
+                        "source": "action-1",
+                        "target": "end-1"
+                      },
+                      {
+                        "id": "e6",
+                        "source": "action-2",
+                        "target": "end-1"
+                      }
+                    ],
+                    "input_fields": [
+                      {
+                        "path": "amount",
+                        "used_by": [
+                          "action-1",
+                          "review-1"
+                        ]
+                      },
+                      {
+                        "path": "currency",
+                        "used_by": [
+                          "review-1"
+                        ]
+                      },
+                      {
+                        "path": "customer.email",
+                        "used_by": [
+                          "review-1"
+                        ]
+                      },
+                      {
+                        "path": "customer.name",
+                        "used_by": [
+                          "review-1"
+                        ]
+                      },
+                      {
+                        "path": "order_id",
+                        "used_by": [
+                          "action-1",
+                          "action-2",
+                          "review-1"
+                        ]
+                      },
+                      {
+                        "path": "reason",
+                        "used_by": [
+                          "review-1"
+                        ]
+                      }
+                    ]
+                  },
+                  "error": false,
+                  "msg": "Workflow retrieved"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      },
+      "put": {
+        "operationId": "workflows-update",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Update a workflow",
+        "description": "Changes any of `name`, `description`, `nodes`, `edges`, `trigger`, `gradient_id`. An active workflow must still pass the activation checks. Needs `workflow:write`.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Workflow"
+                    }
+                  }
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Workflow updated",
+                  "data": {
+                    "id": "6af2ce4e8207961501f59472",
+                    "name": "Refund approval",
+                    "description": "A support lead approves, denies or escalates refunds over $100.",
+                    "status": "active",
+                    "trigger": {
+                      "type": "webhook",
+                      "webhook_id": "wf_26db308d0ea2bfd5427999311a169b3b"
+                    },
+                    "steps": 6,
+                    "has_review": true,
+                    "runnable": true,
+                    "execution_count": 4,
+                    "last_executed_at": "2026-11-10T08:00:07.228Z",
+                    "created_at": "2026-11-10T07:57:02.477Z",
+                    "updated_at": "2026-11-10T07:57:05.452Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowGraph"
+              },
+              "example": {
+                "description": "A support lead approves, denies or escalates refunds over $100."
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "workflows-delete",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Delete a workflow",
+        "description": "Deletes the workflow and its reviewer list. Runs already finished stay readable for a while; nothing new starts. Needs `workflow:write`.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Workflow deleted"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      }
+    },
+    "/api/workflows/{id}/input": {
+      "get": {
+        "operationId": "workflows-input",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Get a workflow's input fields",
+        "description": "Every `{{trigger.body.<path>}}` the steps read (and condition fields on `trigger.body`), the steps that read each one, an example body, and a form description that integrations use to build their input fields. Fields not listed are still accepted and passed through.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "workflow_id": {
+                          "type": "string"
+                        },
+                        "fields": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/InputField"
+                          }
+                        },
+                        "example": {
+                          "type": "object"
+                        },
+                        "form": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "note": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "example": {
+                      "amount": "",
+                      "currency": "",
+                      "customer": {
+                        "email": "",
+                        "name": ""
+                      },
+                      "order_id": "",
+                      "reason": ""
+                    },
+                    "fields": [
+                      {
+                        "path": "amount",
+                        "used_by": [
+                          "action-1",
+                          "review-1"
+                        ]
+                      },
+                      {
+                        "path": "currency",
+                        "used_by": [
+                          "review-1"
+                        ]
+                      },
+                      {
+                        "path": "customer.email",
+                        "used_by": [
+                          "review-1"
+                        ]
+                      },
+                      {
+                        "path": "customer.name",
+                        "used_by": [
+                          "review-1"
+                        ]
+                      },
+                      {
+                        "path": "order_id",
+                        "used_by": [
+                          "action-1",
+                          "action-2",
+                          "review-1"
+                        ]
+                      },
+                      {
+                        "path": "reason",
+                        "used_by": [
+                          "review-1"
+                        ]
+                      }
+                    ],
+                    "form": [
+                      {
+                        "name": "amount",
+                        "label": "Amount",
+                        "type": "text"
+                      },
+                      {
+                        "name": "currency",
+                        "label": "Currency",
+                        "type": "text"
+                      },
+                      {
+                        "name": "customer",
+                        "label": "Customer",
+                        "type": "collection",
+                        "spec": [
+                          {
+                            "name": "email",
+                            "label": "Email",
+                            "type": "text"
+                          },
+                          {
+                            "name": "name",
+                            "label": "Name",
+                            "type": "text"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "order_id",
+                        "label": "Order id",
+                        "type": "text"
+                      },
+                      {
+                        "name": "reason",
+                        "label": "Reason",
+                        "type": "text"
+                      }
+                    ],
+                    "note": "Fields the workflow's steps read as {{trigger.body.<path>}}. Other fields are accepted and passed through.",
+                    "workflow_id": "6af2ce4e8207961501f59472"
+                  },
+                  "error": false,
+                  "msg": "Workflow input retrieved"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      }
+    },
+    "/api/workflows/{id}/activate": {
+      "post": {
+        "operationId": "workflows-activate",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Activate a workflow",
+        "description": "Checks the workflow and makes it runnable. A refusal is a `400` whose `msg` says what to fix (for example a review step with no question). Warnings on success come back as `warnings`.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Workflow"
+                    }
+                  }
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Workflow activated",
+                  "data": {
+                    "id": "6af2ce4e8207961501f59472",
+                    "name": "Refund approval",
+                    "status": "active",
+                    "runnable": true
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "403": {
+            "$ref": "#/components/responses/E403"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      }
+    },
+    "/api/workflows/{id}/pause": {
+      "post": {
+        "operationId": "workflows-pause",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Pause a workflow",
+        "description": "Stops new runs. Runs already waiting for a person keep waiting. Activate it again to resume.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Workflow"
+                    }
+                  }
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Workflow paused",
+                  "data": {
+                    "id": "6af2ce4e8207961501f59472",
+                    "name": "Refund approval",
+                    "status": "paused",
+                    "runnable": false
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      }
+    },
+    "/api/workflows/{id}/test": {
+      "post": {
+        "operationId": "workflows-test",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Test a workflow",
+        "description": "A test run: review steps ask people as usual, but action steps only log what they would send. Test runs do not trigger webhook subscriptions. Needs `workflow:run`.",
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Test run started",
+                  "data": {
+                    "execution_id": "6af2db0ec6a9f1dc71efd5f1",
+                    "workflow_id": "6af2ce4e8207961501f59472"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              },
+              "example": {
+                "input": {
+                  "amount": 49,
+                  "customer": {
+                    "name": "Ada Lovelace"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workflows/{id}/revisions": {
+      "get": {
+        "operationId": "workflows-revisions",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "List published versions",
+        "description": "Every version of the workflow that was published, newest first, with its whole graph.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "data": [
+                    {
+                      "edges": [
+                        {
+                          "id": "e1",
+                          "source": "trigger-1",
+                          "source_handle": "",
+                          "target": "review-1",
+                          "target_handle": ""
+                        },
+                        {
+                          "id": "e2",
+                          "source": "review-1",
+                          "source_handle": "",
+                          "target": "condition-1",
+                          "target_handle": ""
+                        },
+                        {
+                          "...": "4 more edges"
+                        }
+                      ],
+                      "id": "6af2ce518207961501f59475",
+                      "name": "Refund approval",
+                      "nodes": [
+                        {
+                          "data": {
+                            "label": "Webhook",
+                            "triggerType": "webhook",
+                            "workflowIcon": {
+                              "color": "peach",
+                              "type": "set",
+                              "value": "receipt"
+                            }
+                          },
+                          "id": "trigger-1",
+                          "position": {
+                            "x": 300,
+                            "y": 40
+                          },
+                          "type": "trigger"
+                        },
+                        {
+                          "data": {
+                            "label": "Approve refund",
+                            "priority": "high",
+                            "requestText": "**Refund request**\n\n| | |\n|---|---|\n| Customer | {{trigger.body.customer.name}} ({{trigger.body.customer.email}}) |\n| Order | {{trigger.body.order_id}} |\n| Amount | ${{trigger.body.amount}} {{trigger.body.currency}} |\n\n**Reason:** {{trigger.body.reason}}",
+                            "responseConfig": {
+                              "options": [
+                                {
+                                  "label": "Approve refund",
+                                  "value": "approve"
+                                },
+                                {
+                                  "label": "Deny",
+                                  "value": "deny"
+                                },
+                                {
+                                  "label": "Escalate to manager",
+                                  "value": "escalate"
+                                }
+                              ],
+                              "required": true
+                            },
+                            "responseType": "single_select",
+                            "timeout": "7200"
+                          },
+                          "id": "review-1",
+                          "position": {
+                            "x": 300,
+                            "y": 230
+                          },
+                          "type": "review"
+                        },
+                        {
+                          "...": "4 more steps"
+                        }
+                      ],
+                      "published_at": "2026-11-10T07:57:05.98Z",
+                      "version": 1,
+                      "workflow_id": "6af2ce4e8207961501f59472"
+                    }
+                  ],
+                  "error": false,
+                  "msg": "Revisions retrieved successfully"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "workflows-publish",
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "Publish a version",
+        "description": "Saves the workflow's current steps as a new numbered version. The workflow must be active.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Version published",
+                  "data": {
+                    "id": "6af2ce518207961501f59475",
+                    "version": 2,
+                    "workflow_id": "6af2ce4e8207961501f59472",
+                    "published_at": "2026-11-10T09:02:11Z",
+                    "...": "nodes and edges"
+                  },
+                  "created": true
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      }
+    },
+    "/api/workflows/{id}/run": {
+      "post": {
+        "operationId": "runs-run",
+        "tags": [
+          "Runs"
+        ],
+        "summary": "Run a workflow",
+        "description": "Starts a run of an active workflow. Answers `202` at once with the execution and a `Location: /v1/api/executions/<id>` header; follow it with [Get a run](/api-reference/runs/get). Needs `workflow:run`.",
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Execution"
+                    }
+                  }
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Workflow run started",
+                  "data": {
+                    "id": "6af2da4b2ce04c173fe49697",
+                    "workflow_id": "6af2ce4e8207961501f59472",
+                    "workflow_name": "Refund approval",
+                    "status": "running",
+                    "finished": false,
+                    "input": {
+                      "amount": 320,
+                      "currency": "USD",
+                      "customer": {
+                        "email": "mary@example.com",
+                        "name": "Mary Jackson"
+                      },
+                      "order_id": "ORD-48252",
+                      "reason": "Item never arrived."
+                    },
+                    "decisions": [],
+                    "action_results": [],
+                    "triggered_via": "api",
+                    "started_at": "2026-11-10T08:48:11.693Z",
+                    "completed_at": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "403": {
+            "$ref": "#/components/responses/E403"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          },
+          "409": {
+            "$ref": "#/components/responses/E409"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          },
+          "503": {
+            "description": "The run could not be queued; it is marked failed. Try again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "What the steps read as `{{trigger.body.<path>}}`. Up to 64 KB."
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "description": "Public `https` URL that receives the finished run once (see [Webhooks](/guides/webhooks))"
+                  },
+                  "live": {
+                    "type": "boolean",
+                    "description": "Also return a `live` object for watching the run over Statewire"
+                  }
+                }
+              },
+              "example": {
+                "input": {
+                  "order_id": "ORD-48252",
+                  "customer": {
+                    "name": "Mary Jackson",
+                    "email": "mary@example.com"
+                  },
+                  "amount": 320,
+                  "currency": "USD",
+                  "reason": "Item never arrived."
+                },
+                "callback_url": "https://example.com/hitl/result"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/executions/{id}": {
+      "get": {
+        "operationId": "runs-get",
+        "tags": [
+          "Runs"
+        ],
+        "summary": "Get a run",
+        "description": "One run: its status, the step it waits on and the question the reviewers have, the decisions so far and the result. With `wait`, the call holds until the run has finished or that many seconds have passed (max 60), so you can poll without hammering the API.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Execution"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "id": "6af2ceb8c6a9f1dc71efd5dc",
+                    "workflow_id": "6af2ce4e8207961501f59472",
+                    "workflow_name": "Refund approval",
+                    "status": "completed",
+                    "finished": true,
+                    "input": {
+                      "amount": 249,
+                      "currency": "USD",
+                      "customer": {
+                        "email": "ada@example.com",
+                        "name": "Ada Lovelace"
+                      },
+                      "order_id": "ORD-48213",
+                      "reason": "Arrived with a cracked screen."
+                    },
+                    "result": "approve",
+                    "decisions": [
+                      {
+                        "node_id": "review-1",
+                        "reviewer_id": "6af2ce48967ce8777084a293",
+                        "reviewer_name": "Priya Shah",
+                        "platform": "web_portal",
+                        "decision": "approve",
+                        "responded_at": "2026-11-10T07:58:52.241Z",
+                        "response_time_seconds": 2.532943375
+                      }
+                    ],
+                    "action_results": [
+                      {
+                        "node_id": "action-1",
+                        "type": "webhook",
+                        "status": "success",
+                        "response": "200: {\"json\": {\"amount\": 249, \"approved_by\": \"Priya Shah\", \"order_id\": \"ORD-48213\"}}",
+                        "executed_at": "2026-11-10T07:58:53.482Z"
+                      }
+                    ],
+                    "trail": [
+                      {
+                        "node_id": "trigger-1",
+                        "status": "done",
+                        "at": "2026-11-10T07:58:49.604Z"
+                      },
+                      {
+                        "node_id": "review-1",
+                        "status": "waiting",
+                        "at": "2026-11-10T07:58:49.817Z"
+                      },
+                      {
+                        "node_id": "review-1",
+                        "status": "done",
+                        "at": "2026-11-10T07:58:53.482Z"
+                      },
+                      {
+                        "node_id": "condition-1",
+                        "status": "done",
+                        "at": "2026-11-10T07:58:53.482Z"
+                      },
+                      {
+                        "node_id": "action-1",
+                        "status": "done",
+                        "at": "2026-11-10T07:58:53.847Z"
+                      },
+                      {
+                        "node_id": "end-1",
+                        "status": "done",
+                        "at": "2026-11-10T07:58:53.847Z"
+                      }
+                    ],
+                    "triggered_via": "api",
+                    "callback_url": "https://httpbin.org/post",
+                    "callback": {
+                      "state": "delivered",
+                      "attempts": 1,
+                      "last_status": 200,
+                      "last_attempt_at": "2026-11-10T07:58:54.938Z",
+                      "delivered_at": "2026-11-10T07:58:54.938Z"
+                    },
+                    "started_at": "2026-11-10T07:58:48.493Z",
+                    "completed_at": "2026-11-10T07:58:53.847Z",
+                    "duration_seconds": 5.354
+                  },
+                  "error": false,
+                  "msg": "Execution retrieved"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The execution id",
+            "schema": {
+              "type": "string",
+              "example": "6af2cf07c6a9f1dc71efd5e7"
+            }
+          },
+          {
+            "name": "wait",
+            "in": "query",
+            "required": false,
+            "description": "Seconds to wait for the run to finish, up to 60",
+            "schema": {
+              "type": "integer",
+              "example": 30
+            }
+          }
+        ]
+      }
+    },
+    "/api/workflows/{id}/executions": {
+      "get": {
+        "operationId": "runs-list",
+        "tags": [
+          "Runs"
+        ],
+        "summary": "List a workflow's runs",
+        "description": "A workflow's runs, newest first. Page with `before=<next_before>`.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "executions": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Execution"
+                          }
+                        },
+                        "next_before": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "count": 2,
+                    "executions": [
+                      {
+                        "id": "6af2cf07c6a9f1dc71efd5e7",
+                        "workflow_id": "6af2ce4e8207961501f59472",
+                        "workflow_name": "Refund approval",
+                        "status": "pending_review",
+                        "finished": false,
+                        "current_step": {
+                          "node_id": "review-1",
+                          "type": "review",
+                          "label": "Approve refund"
+                        },
+                        "decisions": [],
+                        "action_results": [],
+                        "triggered_via": "api",
+                        "started_at": "2026-11-10T08:00:07.121Z",
+                        "completed_at": null
+                      },
+                      {
+                        "id": "6af2cf01c6a9f1dc71efd5e6",
+                        "workflow_id": "6af2ce4e8207961501f59472",
+                        "workflow_name": "Refund approval",
+                        "status": "pending_review",
+                        "finished": false,
+                        "current_step": {
+                          "node_id": "review-1",
+                          "type": "review",
+                          "label": "Approve refund"
+                        },
+                        "decisions": [],
+                        "action_results": [],
+                        "triggered_via": "api",
+                        "started_at": "2026-11-10T08:00:01.483Z",
+                        "completed_at": null
+                      }
+                    ],
+                    "next_before": "6af2cf01c6a9f1dc71efd5e6"
+                  },
+                  "error": false,
+                  "msg": "Executions retrieved"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Only runs with this status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "running",
+                "pending_review",
+                "completed",
+                "failed",
+                "timed_out"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "1 to 100, default 20",
+            "schema": {
+              "type": "integer",
+              "example": 20
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "Only runs older than this execution id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/workflows/{id}/executions/{execId}/retry": {
+      "post": {
+        "operationId": "runs-retry",
+        "tags": [
+          "Runs"
+        ],
+        "summary": "Retry a failed run",
+        "description": "Runs a failed run again with the same input, as a new execution. Only failed runs can be retried. Needs `workflow:run`.",
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Retry started",
+                  "data": {
+                    "execution_id": "6af2dc21c6a9f1dc71efd5f2",
+                    "workflow_id": "6af2ce4e8207961501f59472"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          },
+          {
+            "name": "execId",
+            "in": "path",
+            "required": true,
+            "description": "The failed execution",
+            "schema": {
+              "type": "string",
+              "example": "6af2cf01c6a9f1dc71efd5e6"
+            }
+          }
+        ]
+      }
+    },
+    "/api/executions/{id}/live": {
+      "post": {
+        "operationId": "runs-live",
+        "tags": [
+          "Runs"
+        ],
+        "summary": "Watch a run live",
+        "description": "Starts live updates for a run and returns where to watch it over [Statewire](https://www.harness-sdk.dev/statewire/docs): the state is `{\"execution\": <the run>, \"observedAt\": <unix ms>}` and changes each time a step finishes. The token admits new watchers for an hour; an attachment lasts up to 24 hours.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/Execution"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "live": {
+                              "$ref": "#/components/schemas/Live"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Live updates started",
+                  "data": {
+                    "id": "6af2cf07c6a9f1dc71efd5e7",
+                    "workflow_id": "6af2ce4e8207961501f59472",
+                    "status": "pending_review",
+                    "finished": false,
+                    "live": {
+                      "url": "https://live.hitl.sh/r/6af2cf07c6a9f1dc71efd5e7",
+                      "token": "eyJhbGciOi\u2026",
+                      "expires_at": "2026-11-10T09:00:08Z",
+                      "protocol": "hitl-run",
+                      "protocol_version": "2026-11-03"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The execution id",
+            "schema": {
+              "type": "string",
+              "example": "6af2cf07c6a9f1dc71efd5e7"
+            }
+          }
+        ]
+      }
+    },
+    "/api/workflows/{id}/humans": {
+      "get": {
+        "operationId": "reviewers-list",
+        "tags": [
+          "Reviewers"
+        ],
+        "summary": "List a workflow's reviewers",
+        "description": "The people who review the workflow, the owner first.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "members": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Human"
+                          }
+                        },
+                        "pagination": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "filters": {
+                      "date_range": "all",
+                      "role": "all",
+                      "status": "all"
+                    },
+                    "members": [
+                      {
+                        "email": "jordan.lee@example.com",
+                        "full_name": "Jordan Lee",
+                        "joined_at": "2026-11-10T07:57:03Z",
+                        "role": "owner",
+                        "status": "active",
+                        "user_id": "6af2ce47967ce8777084a292"
+                      },
+                      {
+                        "email": "priya.shah@example.com",
+                        "full_name": "Priya Shah",
+                        "joined_at": "2026-11-10T07:57:28Z",
+                        "role": "member",
+                        "status": "active",
+                        "user_id": "6af2ce48967ce8777084a293"
+                      },
+                      {
+                        "email": "marcus.webb@example.com",
+                        "full_name": "Marcus Webb",
+                        "joined_at": "2026-11-10T07:57:31Z",
+                        "role": "member",
+                        "status": "active",
+                        "user_id": "6af2ce48967ce8777084a294"
+                      },
+                      {
+                        "email": "elena.garcia@example.com",
+                        "full_name": "Elena Garcia",
+                        "joined_at": "2026-11-10T07:57:34Z",
+                        "role": "member",
+                        "status": "active",
+                        "user_id": "6af2ce48967ce8777084a295"
+                      }
+                    ],
+                    "pagination": {
+                      "count": 4,
+                      "limit": 20,
+                      "offset": 0,
+                      "total": 4
+                    }
+                  },
+                  "error": false,
+                  "msg": "Loop members retrieved successfully"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      }
+    },
+    "/api/workflows/{id}/invitations": {
+      "post": {
+        "operationId": "reviewers-invite",
+        "tags": [
+          "Reviewers"
+        ],
+        "summary": "Invite reviewers by email",
+        "description": "Emails each address an invitation to review the workflow. People without a HITL account create one from the email. Needs `humans:write`.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Invitations sent",
+                  "data": {
+                    "sent": [
+                      "sam.okafor@example.com"
+                    ],
+                    "already_members": [
+                      "priya.shah@example.com"
+                    ],
+                    "invalid": [],
+                    "declined_recently": [],
+                    "failed": [],
+                    "email_sent": true
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "403": {
+            "$ref": "#/components/responses/E403"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "emails"
+                ],
+                "properties": {
+                  "emails": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "member",
+                      "admin"
+                    ],
+                    "description": "Default `member`"
+                  },
+                  "custom_message": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "description": "E.164 phone number, only with a single email"
+                  }
+                }
+              },
+              "example": {
+                "emails": [
+                  "sam.okafor@example.com",
+                  "priya.shah@example.com"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workflows/{id}/join-code": {
+      "get": {
+        "operationId": "reviewers-join-code",
+        "tags": [
+          "Reviewers"
+        ],
+        "summary": "Get the join code",
+        "description": "The workflow's join code. Anyone with a HITL account who enters it in the app joins as a reviewer.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/JoinCode"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "code": "HITL-422WCA",
+                    "created_at": "2026-11-10T07:57:26Z",
+                    "id": "6af2ce668207961501f59488",
+                    "invite_url": "https://hitl.sh/invites/HITL-422WCA",
+                    "join_url": "https://my.hitl.sh/join/HITL-422WCA",
+                    "status": "active",
+                    "usage_count": 3
+                  },
+                  "error": false,
+                  "msg": "Loop invite code retrieved successfully"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "reviewers-create-join-code",
+        "tags": [
+          "Reviewers"
+        ],
+        "summary": "Create a join code",
+        "description": "Creates a join code if the workflow has none. Needs `humans:write`.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/JoinCode"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "code": "HITL-422WCA",
+                    "created_at": "2026-11-10T07:57:26Z",
+                    "id": "6af2ce668207961501f59488",
+                    "invite_url": "https://hitl.sh/invites/HITL-422WCA",
+                    "join_url": "https://my.hitl.sh/join/HITL-422WCA",
+                    "status": "active",
+                    "usage_count": 3
+                  },
+                  "error": false,
+                  "msg": "Loop invite code retrieved successfully"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "reviewers-delete-join-code",
+        "tags": [
+          "Reviewers"
+        ],
+        "summary": "Turn off the join code",
+        "description": "Turns the join code off. People who already joined stay. Needs `humans:write`.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Invite code deactivated"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      }
+    },
+    "/api/workflows/{id}/join-code/rotate": {
+      "post": {
+        "operationId": "reviewers-rotate-join-code",
+        "tags": [
+          "Reviewers"
+        ],
+        "summary": "Replace the join code",
+        "description": "Turns off the current code and issues a new one. Needs `humans:write`.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/JoinCode"
+                    }
+                  }
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Invite code rotated",
+                  "data": {
+                    "code": "HITL-9F3KQZ",
+                    "created_at": "2026-11-10T07:57:26Z",
+                    "id": "6af2ce668207961501f59488",
+                    "invite_url": "https://hitl.sh/invites/HITL-9F3KQZ",
+                    "join_url": "https://my.hitl.sh/join/HITL-9F3KQZ",
+                    "status": "active",
+                    "usage_count": 0
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The workflow id",
+            "schema": {
+              "type": "string",
+              "example": "6af2ce4e8207961501f59472"
+            }
+          }
+        ]
+      }
+    },
+    "/api/join/{code}/validate": {
+      "post": {
+        "operationId": "reviewers-validate-code",
+        "tags": [
+          "Reviewers"
+        ],
+        "summary": "Check a join code",
+        "description": "Shows which workflow a join code leads to, without joining.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Invite is valid",
+                  "data": {
+                    "invite_code": "HITL-422WCA",
+                    "usage_count": 3,
+                    "max_uses": 0,
+                    "expires_at": null,
+                    "member_count": 4
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "description": "A join code",
+            "schema": {
+              "type": "string",
+              "example": "HITL-422WCA"
+            }
+          }
+        ]
+      }
+    },
+    "/api/join/{code}": {
+      "post": {
+        "operationId": "reviewers-join",
+        "tags": [
+          "Reviewers"
+        ],
+        "summary": "Join with a code",
+        "description": "Makes the key's account a reviewer of the workflow the code belongs to.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Successfully joined"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "description": "A join code",
+            "schema": {
+              "type": "string",
+              "example": "HITL-422WCA"
+            }
+          }
+        ]
+      }
+    },
+    "/api/signup": {
+      "post": {
+        "operationId": "account-signup",
+        "tags": [
+          "Account"
+        ],
+        "summary": "Sign up an agent",
+        "description": "Gets an API key with the human's email, no browser needed. The human gets an email with a 6-digit code and a Confirm link. Until they confirm, the key can read and draft workflows; anything else answers `403` with `code: confirmation_required`. The answer is the same whether the email has an account. Limits: 3 an hour and 5 a day per email. No API key needed.",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Check your email",
+                  "data": {
+                    "api_key": "hitl_live_\u2026",
+                    "status": "pending",
+                    "email": "a***@example.com",
+                    "next": "Ask your human for the 6-digit code in the email, then POST /v1/api/signup/confirm"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "agent_name": {
+                    "type": "string",
+                    "description": "Shown in the email"
+                  }
+                }
+              },
+              "example": {
+                "email": "ada@example.com",
+                "agent_name": "Claude Code"
+              }
+            }
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "operationId": "account-signup-status",
+        "tags": [
+          "Account"
+        ],
+        "summary": "Signup status",
+        "description": "Whether the human has confirmed this key.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Signup status",
+                  "data": {
+                    "status": "pending"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          }
+        }
+      }
+    },
+    "/api/signup/confirm": {
+      "post": {
+        "operationId": "account-signup-confirm",
+        "tags": [
+          "Account"
+        ],
+        "summary": "Confirm a signup",
+        "description": "Confirms the key with the code the human gives the agent. 5 tries, valid 24 hours. A new email becomes a Free account; an email that already has an account gets the key and its drafts.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Confirmed",
+                  "data": {
+                    "status": "confirmed"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "code": "123456"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/signup/resend": {
+      "post": {
+        "operationId": "account-signup-resend",
+        "tags": [
+          "Account"
+        ],
+        "summary": "Resend the signup email",
+        "description": "Sends a new email with a new code and link.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Email sent"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "429": {
+            "$ref": "#/components/responses/E429"
+          }
+        }
+      }
+    },
+    "/api/webhooks/subscribe": {
+      "post": {
+        "operationId": "webhooks-subscribe",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Subscribe to a workflow",
+        "description": "Every run of the workflow that finishes, however it was started, is POSTed to `webhook_url` with the same body, signature and retries as a `callback_url`. Test runs are not sent. Revoking the key ends deliveries.",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Webhook"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "active": true,
+                    "events": [
+                      "execution.finished"
+                    ],
+                    "webhook_id": "6af2cf21c6a9f1dc71efd5e8",
+                    "webhook_url": "https://httpbin.org/post",
+                    "workflow_id": "6af2ce4e8207961501f59472"
+                  },
+                  "error": false,
+                  "msg": "Webhook subscribed successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "403": {
+            "$ref": "#/components/responses/E403"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "webhook_url",
+                  "events",
+                  "workflow_id"
+                ],
+                "properties": {
+                  "webhook_url": {
+                    "type": "string"
+                  },
+                  "events": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "execution.finished"
+                      ]
+                    }
+                  },
+                  "workflow_id": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "webhook_url": "https://example.com/hitl",
+                "events": [
+                  "execution.finished"
+                ],
+                "workflow_id": "6af2ce4e8207961501f59472"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/webhooks": {
+      "get": {
+        "operationId": "webhooks-list",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "List webhooks",
+        "description": "This key's webhook subscriptions.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Webhooks retrieved successfully",
+                  "data": {
+                    "count": 1,
+                    "webhooks": [
+                      {
+                        "id": "6af2cf21c6a9f1dc71efd5e8",
+                        "webhook_url": "https://example.com/hitl",
+                        "events": [
+                          "execution.finished"
+                        ],
+                        "workflow_id": "6af2ce4e8207961501f59472",
+                        "is_active": true,
+                        "created_at": "2026-11-10T08:00:33Z"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          }
+        }
+      }
+    },
+    "/api/webhooks/{id}": {
+      "delete": {
+        "operationId": "webhooks-delete",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Delete a webhook",
+        "description": "Ends the subscription.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "error": false,
+                  "msg": "Webhook deleted successfully"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          },
+          "404": {
+            "$ref": "#/components/responses/E404"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The webhook id",
+            "schema": {
+              "type": "string",
+              "example": "6af2cf21c6a9f1dc71efd5e8"
+            }
+          }
+        ]
+      }
+    },
+    "/upload/image": {
+      "post": {
+        "operationId": "uploads-image",
+        "tags": [
+          "Uploads"
+        ],
+        "summary": "Upload an image",
+        "description": "Uploads an image (JPEG, PNG, GIF or WebP, up to 10 MB) and returns its URL, for a review step's image attachment or a run's input.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "imageUrl": "https://<cdn>/images/6af2ce47967ce8777084a292/receipt.png",
+                    "fileName": "images/6af2ce47967ce8777084a292/receipt.png"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The image"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/upload/document": {
+      "post": {
+        "operationId": "uploads-document",
+        "tags": [
+          "Uploads"
+        ],
+        "summary": "Upload a document",
+        "description": "Uploads a document (PDF, Word, Excel, PowerPoint, CSV or plain text, up to 50 MB) and returns its URL, for a review step's document attachment.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "fileUrl": "https://<cdn>/documents/6af2ce47967ce8777084a292/contract.pdf",
+                    "fileName": "contract.pdf",
+                    "fileType": "application/pdf",
+                    "fileKey": "documents/6af2ce47967ce8777084a292/contract.pdf"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/E400"
+          },
+          "401": {
+            "$ref": "#/components/responses/E401"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The document"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Your API key: `hitl_live_\u2026`"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "error",
+          "msg"
+        ],
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "example": true
+          },
+          "msg": {
+            "type": "string",
+            "description": "What went wrong, in plain words"
+          },
+          "code": {
+            "type": "string",
+            "description": "A machine-readable reason, when there is one (for example `confirmation_required`)"
+          }
+        }
+      },
+      "WorkflowSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "draft"
+            ]
+          },
+          "trigger": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "webhook",
+                  "email",
+                  "schedule",
+                  "manual",
+                  "google_sheets_row"
+                ]
+              },
+              "webhook_id": {
+                "type": "string"
+              }
+            }
+          },
+          "steps": {
+            "type": "integer",
+            "description": "Number of steps, trigger and end included"
+          },
+          "has_review": {
+            "type": "boolean",
+            "description": "The workflow has at least one review step"
+          },
+          "runnable": {
+            "type": "boolean",
+            "description": "Active, so `POST /run` will start it"
+          },
+          "execution_count": {
+            "type": "integer"
+          },
+          "last_executed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Step": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "trigger",
+              "review",
+              "ai",
+              "ai_classifier",
+              "data_source",
+              "condition",
+              "transform",
+              "action",
+              "end"
+            ]
+          },
+          "position": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            }
+          },
+          "data": {
+            "type": "object",
+            "description": "The step's settings. For a review step: `label`, `requestText` (Markdown, may use `{{trigger.body.<path>}}`), `responseType`, `responseConfig`, `priority`, `timeout` (seconds, as a string). Credentials are redacted in answers.",
+            "additionalProperties": true
+          }
+        }
+      },
+      "Edge": {
+        "type": "object",
+        "required": [
+          "source",
+          "target"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "source_handle": {
+            "type": "string",
+            "description": "Which exit of the source step: `yes` / `no` for a condition"
+          }
+        }
+      },
+      "InputField": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "example": "customer.email"
+          },
+          "used_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Ids of the steps that read it"
+          }
+        }
+      },
+      "Workflow": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowSummary"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Step"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Edge"
+                }
+              },
+              "input_fields": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/InputField"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "WorkflowGraph": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Edge"
+            }
+          },
+          "trigger": {
+            "type": "object",
+            "description": "Trigger settings",
+            "additionalProperties": true
+          },
+          "gradient_id": {
+            "type": "string",
+            "description": "Icon colour"
+          }
+        }
+      },
+      "Decision": {
+        "type": "object",
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "description": "The review step"
+          },
+          "reviewer_id": {
+            "type": "string"
+          },
+          "reviewer_name": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string",
+            "description": "Where they answered: `mobile`, `web_portal`, `telegram`, ..."
+          },
+          "decision": {
+            "description": "The answer: an option value, a list of values, `true`/`false`, a number or text"
+          },
+          "responded_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "response_time_seconds": {
+            "type": "number"
+          }
+        }
+      },
+      "ActionResult": {
+        "type": "object",
+        "properties": {
+          "node_id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "example": "webhook"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "success",
+              "failed"
+            ]
+          },
+          "response": {
+            "type": "string",
+            "description": "Status code and the start of the response"
+          },
+          "executed_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Execution": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workflow_id": {
+            "type": "string"
+          },
+          "workflow_name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "pending_review",
+              "completed",
+              "failed",
+              "timed_out"
+            ]
+          },
+          "finished": {
+            "type": "boolean",
+            "description": "True for completed, failed and timed_out"
+          },
+          "input": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "What the run was started with"
+          },
+          "current_step": {
+            "type": "object",
+            "properties": {
+              "node_id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "waiting_for": {
+            "type": "object",
+            "description": "While `pending_review`: the question the reviewers have",
+            "properties": {
+              "request_id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "request_text": {
+                "type": "string"
+              },
+              "response_type": {
+                "type": "string"
+              },
+              "response_config": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "timeout_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "result": {
+            "description": "The last decision, once there is one"
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Decision"
+            }
+          },
+          "action_results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionResult"
+            }
+          },
+          "trail": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "node_id": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "done",
+                    "waiting",
+                    "failed",
+                    "skipped"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "error": {
+            "type": "string"
+          },
+          "triggered_via": {
+            "type": "string",
+            "enum": [
+              "api",
+              "webhook",
+              "email",
+              "schedule",
+              "manual",
+              "test"
+            ]
+          },
+          "callback_url": {
+            "type": "string"
+          },
+          "callback": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "queued",
+                  "delivered",
+                  "failed"
+                ]
+              },
+              "attempts": {
+                "type": "integer"
+              },
+              "last_status": {
+                "type": "integer"
+              },
+              "last_error": {
+                "type": "string"
+              },
+              "last_attempt_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "delivered_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "duration_seconds": {
+            "type": "number"
+          }
+        }
+      },
+      "Human": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "member"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "JoinCode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "HITL-422WCA"
+          },
+          "invite_url": {
+            "type": "string"
+          },
+          "join_url": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "usage_count": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Live": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "protocol": {
+            "type": "string",
+            "example": "hitl-run"
+          },
+          "protocol_version": {
+            "type": "string",
+            "example": "2026-11-03"
+          }
+        }
+      },
+      "Webhook": {
+        "type": "object",
+        "properties": {
+          "webhook_id": {
+            "type": "string"
+          },
+          "webhook_url": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "execution.finished"
+              ]
+            }
+          },
+          "workflow_id": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "responses": {
+      "E400": {
+        "description": "Invalid input; `msg` says what to fix",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "msg": "Invalid execution id"
+            }
+          }
+        }
+      },
+      "E401": {
+        "description": "Missing or invalid API key",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "msg": "Invalid API key"
+            }
+          }
+        }
+      },
+      "E403": {
+        "description": "The key lacks the scope, or the signup is not confirmed yet",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "code": "confirmation_required",
+              "msg": "Confirm the signup first: ask your human for the code in the email"
+            }
+          }
+        }
+      },
+      "E404": {
+        "description": "Not found, or not yours",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "msg": "Workflow not found"
+            }
+          }
+        }
+      },
+      "E409": {
+        "description": "The workflow is a draft or paused",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "msg": "Workflow is a draft: publish and activate it in the editor first",
+              "status": "draft"
+            }
+          }
+        }
+      },
+      "E429": {
+        "description": "Rate limit: 1,000 requests an hour per key on /workflows and /executions",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": true,
+              "msg": "Rate limit exceeded"
+            }
+          }
+        }
+      }
+    }
+  }
+}

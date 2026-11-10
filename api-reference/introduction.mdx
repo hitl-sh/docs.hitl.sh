@@ -1,0 +1,50 @@
+---
+title: "API reference"
+description: "The HITL REST API: run workflows, follow their runs until people answer, and manage workflows and reviewers."
+icon: "code"
+---
+
+```text
+https://api.hitl.sh/v1
+```
+
+Every endpoint takes an [API key](/api-reference/authentication) as a Bearer token and answers JSON:
+
+```json
+{ "error": false, "msg": "Execution retrieved", "data": { ... } }
+```
+
+Errors are `{"error": true, "msg": "..."}` with the HTTP status. See [Errors](/api-reference/errors).
+
+## The main flow
+
+| Step | Endpoint |
+|---|---|
+| Find a workflow | [`GET /api/workflows`](/api-reference/workflows/list) |
+| See what it reads | [`GET /api/workflows/{id}/input`](/api-reference/workflows/input) |
+| Run it | [`POST /api/workflows/{id}/run`](/api-reference/runs/run) → `202` with the execution |
+| Wait for the answer | [`GET /api/executions/{id}?wait=60`](/api-reference/runs/get), a `callback_url`, or a [webhook](/api-reference/webhooks/subscribe) |
+
+## Endpoints
+
+| Group | |
+|---|---|
+| [Workflows](/api-reference/workflows/list) | List, get, input fields, create, update, delete, activate, pause, test, versions |
+| [Runs](/api-reference/runs/run) | Run, get (with `wait`), list, retry, watch live |
+| [Reviewers](/api-reference/reviewers/list) | A workflow's reviewers, email invitations, join codes, joining |
+| [Webhooks](/api-reference/webhooks/subscribe) | Subscribe a URL to a workflow's finished runs |
+| [Account](/api-reference/account/test-key) | Check a key; agent signup |
+| [Uploads](/api-reference/uploads/image) | Upload images and documents to link in questions |
+
+## Limits
+
+| | |
+|---|---|
+| Rate limit | 1,000 requests an hour per key on `/api/workflows` and `/api/executions`; `429` when exceeded |
+| Run input | 64 KB |
+| `wait` | Up to 60 seconds per call |
+| Uploads | Images 10 MB, documents 50 MB |
+
+## Clients
+
+The [CLI](/integrations/cli), the [MCP server](/integrations/mcp) and [`@hitl-sh/core`](https://www.npmjs.com/package/@hitl-sh/core) call these same endpoints. The OpenAPI 3.1 description is at [`/api-reference/openapi.json`](https://docs.hitl.sh/api-reference/openapi.json).
