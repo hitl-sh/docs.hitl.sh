@@ -1,138 +1,70 @@
 ---
-title: "API Keys"
-description: "Generate and manage API keys to securely integrate HITL.sh with your applications and workflows"
+title: "API keys"
+description: "Get, use, check and regenerate your API key, or let an agent get one with your email."
 icon: "key"
 ---
 
-# API Keys
-
-API keys are your secure credentials for integrating HITL.sh with your applications, workflows, and third-party tools. They authenticate your requests and ensure only authorized systems can interact with your workflows.
-
-## Understanding API Keys
-
-API keys in HITL.sh provide secure access to:
-
-- **Workflow Management** — Create, read, update, and delete workflows
-- **Response Operations** — Submit items and retrieve responses
-- **Workflow Members** — Add and remove reviewers from workflows
-- **Webhook Configuration** — Set up event notifications
-- **Response Feedback** — Add feedback to completed responses
+An API key lets code, agents and automations act as your account: list and run your workflows, read their executions, build workflows and invite reviewers. Keys look like `hitl_live_…`.
 
 <Warning>
-Keep your API keys secure and never expose them in client-side code or public repositories. Treat them like passwords.
+Treat the key like a password. Keep it in an environment variable (`HITL_API_KEY`) or a secret store, never in client-side code or a repository. The CLI and MCP server only ever send it to `hitl.sh` hosts.
 </Warning>
 
-## Your API Key
+## Get your key
 
-Navigate to **API Keys** in the sidebar at [my.hitl.sh](https://my.hitl.sh). Your API key and history are displayed in a single card:
+Sign in at [my.hitl.sh](https://my.hitl.sh) and open **API keys** (also under **Settings → API keys**). Reveal or copy your key from the row's buttons.
 
-### Current Key
+<Frame>
+<img src="/images/app/api-keys.png" alt="The API keys page with the active Secret key masked, its creation and last-used dates, a Regenerate key button and Show 2 deactivated keys" />
+</Frame>
 
-Your active API key is shown in a rounded input field with two actions:
+**Regenerate key** issues a new key and deactivates the old one immediately. Update your integrations right away. **Show deactivated keys** lists previous keys.
 
-- **Reveal** (eye icon) — Show the full key (hidden by default)
-- **Copy** (copy icon) — Copy the full key to your clipboard
+## Let an agent get a key
 
-### Regenerating Your Key
-
-Click **Regenerate** to create a new key. This will:
-
-1. Deactivate your current key immediately
-2. Generate a new key
-3. Show the new key for you to copy
-
-<Warning>
-Regenerating your key will break any integrations using the old key. Update your environment variables immediately after regenerating.
-</Warning>
-
-### Key History
-
-Below the current key, you'll see a history table showing all your API keys — active and deactivated — with their status, creation date, and last used timestamp.
-
-## Using Your API Key
-
-### Authentication Header
-
-Include your API key in the `Authorization` header of all API requests:
+An agent can sign you up without a browser, using your email:
 
 ```bash
-Authorization: Bearer YOUR_API_KEY
+npx -y @hitl-sh/cli signup --email you@example.com --agent-name "Claude Code"
+# HITL emails you a 6-digit code and a Confirm link
+npx -y @hitl-sh/cli signup confirm 123456
 ```
 
-### Testing Your API Key
+The key works at once, but until you confirm it can only read and draft workflows; anything else answers `403` with `"code": "confirmation_required"`. If your email already has an account, the confirmed key belongs to it (the email says so). Unconfirmed signups are deleted after a week. Over REST: [Sign up an agent](/api-reference/account/signup).
 
-Verify your key is working with the test endpoint:
+## Use it
 
-<CodeGroup>
-```bash cURL
-curl -X GET 'https://api.hitl.sh/v1/test' \
-  -H 'Authorization: Bearer YOUR_API_KEY'
+Send it as a Bearer token:
+
+```bash
+curl https://api.hitl.sh/v1/test -H "Authorization: Bearer $HITL_API_KEY"
 ```
 
-```python Python
-import requests
-
-response = requests.get(
-    'https://api.hitl.sh/v1/test',
-    headers={'Authorization': 'Bearer YOUR_API_KEY'}
-)
-print(response.json())
+```json
+{
+  "error": false,
+  "msg": "API key is valid",
+  "data": {
+    "api_key_id": "6af2ce9d8207961501f59493",
+    "user_id": "6af2ce47967ce8777084a292",
+    "email": "jordan.lee@example.com",
+    "account_status": "active",
+    "rate_limit": {"limit": 100, "remaining": 4988, "reset_at": "2026-11-10T09:00:00Z"}
+  }
+}
 ```
 
-```javascript Node.js
-const response = await fetch('https://api.hitl.sh/v1/test', {
-  headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
-});
-const data = await response.json();
-console.log(data);
-```
-</CodeGroup>
+With the CLI: `npx -y @hitl-sh/cli whoami`.
 
-## Rate Limits
+## Where each tool reads it
 
-API keys have rate limits to ensure fair usage:
+| Tool | Setting |
+|---|---|
+| CLI, MCP server | `HITL_API_KEY`, or the key saved by `hitl login --api-key …` |
+| n8n | A **HITL.sh Human Approval API** credential |
+| Zapier, Make | The connection you create when adding the HITL app |
+| Remote MCP (`https://mcp.hitl.sh/mcp`) | Signs in through the browser instead |
 
-- **100 API calls per hour** per API key
-- Rate limits reset at the top of each hour
-- Rate limit info is included in response headers
+## Scopes
 
-**Rate Limit Headers:**
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 85
-X-RateLimit-Reset: 1642237200
-```
-
-If you hit the rate limit, you'll receive a `429` status code. Wait for the reset or implement exponential backoff.
-
-## Security Best Practices
-
-<CardGroup cols={2}>
-<Card title="Environment Variables" icon="lock">
-Store API keys in environment variables, never hardcode them in source code.
-</Card>
-
-<Card title="Key Rotation" icon="arrows-rotate">
-Regenerate your key periodically to minimize the impact of potential leaks.
-</Card>
-</CardGroup>
-
-## Troubleshooting
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `401 Unauthorized` | Invalid or missing API key | Check the key is correct and uses `Bearer` prefix |
-| `403 Forbidden` | Key lacks required permissions | Verify your account plan supports the feature |
-| `429 Rate Limited` | Too many requests | Wait for rate limit reset, implement backoff |
-
-## Next Steps
-
-<CardGroup cols={2}>
-<Card title="Create Your First Workflow" icon="plus" href="/first-workflow">
-Build your first human-in-the-loop workflow.
-</Card>
-
-<Card title="Billing & Plans" icon="credit-card" href="/billing">
-Understand Free + Enterprise plans.
-</Card>
-</CardGroup>
+Keys issued with scopes need `workflow:read` (list, get, input, executions, humans), `workflow:run` (run, test, retry), `workflow:write` (create, edit, activate, pause, delete, publish) or `humans:write` (invitations, join codes). Keys without scopes, which includes the key in my.hitl.sh, have full access.

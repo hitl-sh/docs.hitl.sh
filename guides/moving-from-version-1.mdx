@@ -4,9 +4,7 @@ description: "Turn the loops you made in HITL version 1 into workflows. Members,
 icon: "arrow-right-arrow-left"
 ---
 
-# Moving from HITL version 1
-
-In HITL version 1, you created a **loop**, invited people to it, and sent requests to it from code. HITL now organises everything around **workflows**: a Start step, a Review step and an End step that you can extend in the [workflow editor](/guides/workflow-designer).
+In HITL version 1, you created a **loop**, invited people to it, and sent requests to it from code. HITL now organises everything around **workflows**: a Start step, a Review step and an End step that you can extend in the [workflow editor](/guides/workflow-editor).
 
 Loops you made in HITL version 1 are not deleted or changed. You choose when to move each one, and moving takes a few seconds.
 
@@ -68,12 +66,12 @@ Click **Not now** to close the dialog without moving anything. The banner comes 
 ## After the move
 
 - **Reviewers** keep answering in the HITL app exactly as before. Requests now show the workflow's name.
-- **Your code** does not need to change. If you want to use the new features (AI steps, conditions, actions, routing, voice calls), open the workflow in the editor and add steps, then switch your integration to the workflow's [webhook URL](/concepts/workflows#webhook-triggers) when you are ready.
+- **Your code** does not need to change. If you want to use the new features (AI steps, conditions, actions, routing, voice calls), open the workflow in the editor and add steps, then move your integration to the workflow when you are ready (see below).
 - **Answer settings** now live on the Review step. Requests you still send to `loop_id` with the API bring their own `response_type` and `response_config`, as in HITL version 1.
 
 ## Move loops with the API
 
-The portal uses three endpoints on the HITL app API (`https://api.my.hitl.sh/v1` on preview). They take a signed-in user's session token, not an API key, and only the loop's owner can call them.
+The portal uses three endpoints on the HITL app API (`https://api.my.hitl.sh/v1`). They take a signed-in user's session token, not an API key, and only the loop's owner can call them.
 
 <AccordionGroup>
 <Accordion title="GET /v1/mobile/migration/loops">
@@ -108,6 +106,23 @@ Calling it twice for the same loop is safe: the second call returns the same wor
 </Accordion>
 </AccordionGroup>
 
+## Moving your code to workflows
+
+Requests sent to a loop keep working, but new features only come to workflows, and the CLI (0.4.0 and later), the MCP server, n8n, Zapier and Make now run workflows. Each version 1 call has a workflow equivalent:
+
+| HITL version 1 | Now |
+|---|---|
+| `POST /v1/api/loops/:loopId/requests` with `request_text`, `response_type`, `response_config` | [`POST /v1/api/workflows/:id/run`](/api-reference/runs/run) with `input`. The question and answer type live in the workflow's review step and read the input as `{{trigger.body.<path>}}` |
+| `GET /v1/api/requests/:id` | [`GET /v1/api/executions/:id?wait=60`](/api-reference/runs/get): `status`, `result`, `decisions` |
+| `callback_url` on the request | `callback_url` on the run, signed (see [Webhooks](/guides/webhooks)) |
+| Webhooks for `request.completed`, `request.timeout`, `request.cancelled` | One event, `execution.finished`, [per workflow](/api-reference/webhooks/subscribe) |
+| `GET /v1/api/loops`, loop members, invite codes | [Workflows](/api-reference/workflows/list), [reviewers](/api-reference/reviewers/list), [join codes](/api-reference/reviewers/join-code) |
+| Approval chains (`/approval-chain`, `/approval-chains/:id/decide`) | Retired: they answer `410`. Put several review steps in a workflow, or use **Multiple approvals** on one step |
+| Sessions and turns | Retired. Run a workflow for each decision an agent needs |
+| MCP tools `create_request`, `get_request`, ... | `run_workflow`, `get_execution`, ... ([MCP](/integrations/mcp)) |
+
+A request's answer was in `response_data`; a run's answer is in `result` (the last review) and `decisions` (every review, with the reviewer's name).
+
 ## Getting help
 
 - Join our [Discord community](https://discord.gg/jYVrpmnMP9)
@@ -120,15 +135,15 @@ Calling it twice for the same loop is safe: the second call returns the same wor
 How workflows, steps and executions fit together
 </Card>
 
-<Card title="Workflow Editor" icon="pen-ruler" href="/guides/workflow-designer">
+<Card title="Workflow editor" icon="pen-ruler" href="/guides/workflow-editor">
 Add AI, conditions and actions to a moved workflow
 </Card>
 
-<Card title="Review Step" icon="user-check" href="/guides/workflow-designer#human-review-node">
+<Card title="Review Step" icon="user-check" href="/concepts/review-steps">
 Choose reviewers, routing and channels
 </Card>
 
-<Card title="Humans" icon="users" href="/concepts/humans">
+<Card title="Humans" icon="users" href="/concepts/reviewers">
 Manage the people who answer
 </Card>
 </CardGroup>

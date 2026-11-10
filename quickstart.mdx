@@ -1,202 +1,185 @@
 ---
-title: "Quickstart Guide"
-description: "Get started with HITL.sh in under 10 minutes. Build your first human-in-the-loop workflow with step-by-step instructions."
-icon: "play"
+title: "Quickstart"
+description: "Build a workflow, run it, answer it on your phone and read the answer back. Two paths: let your agent do it, or do it yourself."
+icon: "rocket"
 ---
 
-Build your first HITL (Human-in-the-Loop) workflow in under 10 minutes. This tutorial walks you through creating a content moderation workflow where human reviewers evaluate user-generated content.
-
-<Info>
-**What You'll Build**: A content moderation workflow that receives flagged content via webhook, routes it to human reviewers, and returns their decision.
-</Info>
-
-## Prerequisites
-
-<CardGroup cols={2}>
-<Card title="HITL.sh Account" icon="user">
-[Sign up for free](https://hitl.sh/signup) and get your API key from the dashboard.
-</Card>
-
-<Card title="Development Environment" icon="laptop">
-Python 3.7+, Node.js 16+, or your preferred language with HTTP client support.
-</Card>
-</CardGroup>
-
-## Step 1: Get Your API Key
-
-<Steps>
-<Step title="Sign Up">
-Create your free account at [hitl.sh/signup](https://hitl.sh/signup)
-</Step>
-
-<Step title="Generate API Key">
-Go to your dashboard and create a new API key. Copy and save it securely.
-</Step>
-
-<Step title="Test Connection">
-Verify your API key works using the dedicated test endpoint:
-
-```bash
-curl -X GET https://api.hitl.sh/v1/test \
-  -H "Authorization: Bearer your_api_key_here"
-```
-
-You should get a JSON response confirming your API key is valid.
-</Step>
-</Steps>
-
-## Step 2: Create a Workflow
-
-A **workflow** is a visual pipeline that routes data through processing steps, including human review. Create one in the dashboard:
-
-<Steps>
-<Step title="Open the Dashboard">
-Navigate to [my.hitl.sh](https://my.hitl.sh) and sign in.
-</Step>
-
-<Step title="Create a New Workflow">
-Click **Workflows** in the sidebar, then click **New Workflow**. Name it "Content Moderation".
-</Step>
-
-<Step title="Add a Human Review Node">
-In the workflow designer canvas, click the **+** button on the Trigger node and add a **Human Review** node. Configure it:
-- **Response type**: Single Select
-- **Options**: Approve, Reject, Escalate
-- **Reviewers**: Select your Universe (all reviewers) or a specific group
-- **Timeout**: 3600 seconds (1 hour)
-- **Default response**: Reject
-</Step>
-
-<Step title="Activate the Workflow">
-Click **Save**, then toggle **Activate**. Copy the webhook URL displayed at the top of the designer.
-</Step>
-</Steps>
-
-## Step 3: Add Reviewers
-
-Your workflow needs human reviewers to respond. Add people in the **Humans** section of the dashboard:
-
-<Steps>
-<Step title="Navigate to Humans">
-Click **Humans** in the sidebar.
-</Step>
-
-<Step title="Add People">
-Click **Add Person** and invite reviewers by email. They will receive an invitation to join HITL.sh.
-</Step>
-
-<Step title="Download the Mobile App">
-Reviewers download the HITL.sh mobile app ([App Store](https://apps.apple.com/us/app/hitl-human-in-the-loop/id6752878072) | [Google Play](https://play.google.com/store/apps/details?id=hitl.sh.app)) and sign in to receive push notifications.
-</Step>
-</Steps>
-
-<Info>
-**For Testing**: You can test by adding yourself as a reviewer and responding via the web dashboard inbox or the mobile app.
-</Info>
-
-## Step 4: Trigger the Workflow
-
-Send a POST request to your workflow's webhook URL to start an execution:
+There are two ways in. If you work with a coding agent (Claude Code, Codex, Cursor, ...), let it set itself up. Otherwise, follow the manual path: it takes about five minutes.
 
 <Tabs>
-<Tab title="Python">
-```python
-import requests
+<Tab title="Let your agent do it">
 
-webhook_url = "https://api.hitl.sh/v1/workflows/YOUR_WORKFLOW_ID/trigger"
-headers = {
-    "Authorization": "Bearer YOUR_API_KEY",
-    "Content-Type": "application/json"
-}
-payload = {
-    "content": "Please review this user comment: 'Great product, highly recommend! Check my link for a discount.'",
-    "user_id": "user_123",
-    "category": "comment"
-}
+<Steps>
+<Step title="Copy the setup prompt">
+Sign in at [my.hitl.sh](https://my.hitl.sh). On **Overview**, click **Copy setup for your agent**. **See what gets copied** shows the prompt first; your API key is included, hidden on screen.
 
-response = requests.post(webhook_url, headers=headers, json=payload)
-execution = response.json()
+<Frame>
+<img src="/images/app/agent-setup.png" alt="The Overview page of my.hitl.sh with the Copy setup for your agent button and the setup prompt expanded below it, the API key masked" />
+</Frame>
 
-print(f"Execution started: {execution['data']['execution_id']}")
-```
+No account yet? The same prompt is on [hitl.sh](https://hitl.sh) without a key: the agent signs you up with your email and asks you for the 6-digit code HITL emails you.
+</Step>
+<Step title="Paste it into your agent">
+The agent connects the HITL MCP server (or the CLI), lists your workflows to check the connection, and offers to build a simple approval workflow with you as the reviewer if you have none.
+</Step>
+<Step title="Install the app and answer">
+Install HITL on your phone ([iOS and Android](https://hitl.sh/download)) and sign in with the same email. When the agent runs the workflow, the question arrives as a notification. Answer it, and the agent reads your answer from the run.
+</Step>
+</Steps>
+
+What the prompt says and how to adjust it: [Agent setup prompt](/integrations/agent-setup).
+
 </Tab>
+<Tab title="Do it yourself">
 
-<Tab title="Node.js">
-```javascript
-const axios = require('axios');
+<Steps>
+<Step title="Create an account and an API key">
+Sign in at [my.hitl.sh](https://my.hitl.sh) with Google, Apple or your email. Open **API keys** and copy your key (`hitl_live_…`). Keep it in an environment variable:
 
-const webhookUrl = 'https://api.hitl.sh/v1/workflows/YOUR_WORKFLOW_ID/trigger';
-const headers = {
-  'Authorization': 'Bearer YOUR_API_KEY',
-  'Content-Type': 'application/json'
-};
-const payload = {
-  content: "Please review this user comment: 'Great product, highly recommend! Check my link for a discount.'",
-  user_id: 'user_123',
-  category: 'comment'
-};
-
-const response = await axios.post(webhookUrl, payload, { headers });
-console.log('Execution started:', response.data.data.execution_id);
-```
-</Tab>
-
-<Tab title="cURL">
 ```bash
-curl -X POST https://api.hitl.sh/v1/workflows/YOUR_WORKFLOW_ID/trigger \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "content": "Please review this user comment: Great product, highly recommend!",
-    "user_id": "user_123",
-    "category": "comment"
-  }'
+export HITL_API_KEY=hitl_live_...
 ```
+
+<Frame>
+<img src="/images/app/api-keys.png" alt="The API keys page of my.hitl.sh with one active secret key, masked, and a Regenerate key button" />
+</Frame>
+
+An agent can also get a key without a browser: `npx -y @hitl-sh/cli signup --email you@example.com`, then `npx -y @hitl-sh/cli signup confirm <code>` with the code from the email. See [API keys](/api-keys).
+</Step>
+
+<Step title="Build a workflow">
+Open **Workflows** and click **New workflow**. Describe what you want ("approve refunds over $100") or pick an example, or click **I'll design it myself**.
+
+<Frame>
+<img src="/images/app/new-workflow.png" alt="The new workflow screen asking What workflow would you like to build today, with example workflows for email replies, refunds, reviews, social posts, change requests and order data" />
+</Frame>
+
+Every workflow starts with a **trigger** and ends with **End**. Add a **Human Review** step between them, and in it:
+
+- **Question**: what reviewers read. Insert fields from the run's input, such as `{{trigger.body.amount}}`.
+- **Answer**: for example **Single choice** with *Approve refund* / *Deny*, or **Approve / Deny**.
+- **Deadline**: how long people have, and what happens after.
+
+<Frame>
+<img src="/images/editor/edit-request.png" alt="The Edit request dialog of a review step: the question with inserted fields Amount, Currency, Customer name and email, Order ID and Reason; Attachment set to None; Answer set to Single choice with options Approve refund, Deny and Escalate to manager; and a phone preview of what reviewers see" />
+</Frame>
+
+The [workflow editor guide](/guides/workflow-editor) covers every step type.
+</Step>
+
+<Step title="Add yourself (and others) as reviewers">
+Open the workflow's **Humans** tab. You are already on it as the owner. Invite others by email, or share the join code, link or QR code.
+
+<Frame>
+<img src="/images/editor/humans-tab.png" alt="The Humans tab of a workflow with the join code HITL-422WCA, Copy and Copy link buttons, a QR code, an Invite by email field, and the list of four humans" />
+</Frame>
+</Step>
+
+<Step title="Activate it">
+Click **Activate** in the editor's top bar. HITL checks the workflow first and tells you what to fix if something is missing. Only active workflows can run.
+</Step>
+
+<Step title="Install the app">
+Install HITL on your phone ([iOS and Android](https://hitl.sh/download)) and sign in with the same account. You can also answer in the [web inbox](/answering/web-inbox) or [Telegram](/answering/telegram).
+</Step>
+
+<Step title="Run it">
+Find the workflow's id and the input fields it reads, then start a run.
+
+<CodeGroup>
+```bash CLI
+npx -y @hitl-sh/cli workflows list
+npx -y @hitl-sh/cli workflows input <workflow-id>
+npx -y @hitl-sh/cli run <workflow-id> \
+  --input '{"order_id":"ORD-48252","customer":{"name":"Mary Jackson","email":"mary@example.com"},"amount":320,"currency":"USD","reason":"Item never arrived."}' \
+  --wait 600
+```
+
+```bash curl
+curl -X POST https://api.hitl.sh/v1/api/workflows/<workflow-id>/run \
+  -H "Authorization: Bearer $HITL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"input": {"order_id": "ORD-48252", "customer": {"name": "Mary Jackson", "email": "mary@example.com"}, "amount": 320, "currency": "USD", "reason": "Item never arrived."}}'
+```
+
+```text MCP (ask your agent)
+Run my "Refund approval" workflow for order ORD-48252: Mary Jackson, mary@example.com,
+$320 USD, "Item never arrived." Wait for the answer and tell me what was decided.
+```
+</CodeGroup>
+
+The API answers `202` with the new execution (`"status": "running"`).
+</Step>
+
+<Step title="Answer on your phone">
+A notification arrives. Open it, read the question, pick an answer and submit.
+
+<Columns cols={2}>
+<Frame>
+<img src="/images/mobile/single-select.png" alt="The HITL iOS app showing a single choice question, Which headline should we publish, with three options and a Submit button" width="300" />
+</Frame>
+<Frame>
+<img src="/images/mobile/answered.png" alt="The HITL iOS app after answering: a check mark, the question and You approved, Sent to the agent" width="300" />
+</Frame>
+</Columns>
+</Step>
+
+<Step title="Get the result">
+With `--wait` the CLI prints the result as soon as you answer. Over REST, read the execution; `wait` holds the call until the run finishes (up to 60 seconds):
+
+```bash
+curl "https://api.hitl.sh/v1/api/executions/<execution-id>?wait=30" \
+  -H "Authorization: Bearer $HITL_API_KEY"
+```
+
+```json
+{
+  "error": false,
+  "msg": "Execution retrieved",
+  "data": {
+    "id": "6af2da4b2ce04c173fe49697",
+    "workflow_name": "Refund approval",
+    "status": "completed",
+    "finished": true,
+    "result": "approve",
+    "decisions": [
+      {
+        "node_id": "review-1",
+        "reviewer_name": "Priya Shah",
+        "platform": "web_portal",
+        "decision": "approve",
+        "responded_at": "2026-11-10T08:48:25.441Z",
+        "response_time_seconds": 12.55
+      }
+    ]
+  }
+}
+```
+
+The run also shows in the workflow's **Executions** tab, with its input, each decision and what the action steps sent.
+
+<Frame>
+<img src="/images/editor/execution-detail.png" alt="The Executions tab of the Refund approval workflow with four runs, two waiting for review and two completed; one completed run is expanded to show its trigger data and the webhook action's result" />
+</Frame>
+</Step>
+</Steps>
+
 </Tab>
 </Tabs>
 
-## Step 5: Respond and View Results
-
-1. Reviewers receive a push notification on the mobile app
-2. Open the review request, read the content, and select a response (Approve, Reject, or Escalate)
-3. The workflow execution completes
-
-View the result in the **Executions** tab of the workflow designer, or poll the execution status via API:
-
-```python
-execution_id = "exec_abc123"
-status_url = f"https://api.hitl.sh/v1/executions/{execution_id}"
-response = requests.get(status_url, headers=headers)
-result = response.json()
-
-print(f"Status: {result['data']['status']}")
-print(f"Response: {result['data']['response_data']}")
-```
-
-## What's Next?
+## Next steps
 
 <CardGroup cols={2}>
-<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
-Learn about all node types, canvas controls, and advanced configuration.
+<Card title="Executions and results" icon="list-check" href="/concepts/executions">
+Statuses, `wait`, callbacks and webhooks.
 </Card>
-
-<Card title="Response Types" icon="list" href="/responses/types">
-Explore all seven response types and their configurations.
+<Card title="Workflow editor" icon="pen-ruler" href="/guides/workflow-editor">
+Conditions, AI steps and actions around the review.
 </Card>
-
-<Card title="Mobile App Guide" icon="mobile" href="/mobile/overview">
-Learn how reviewers use the mobile app to respond.
+<Card title="Answer types" icon="shapes" href="/responses/types">
+Choices, ratings, numbers, edited drafts and more.
 </Card>
-
 <Card title="Integrations" icon="plug" href="/integrations/overview">
-Connect your workflows to n8n, Zapier, Make, and more.
-</Card>
-
-<Card title="SDKs" icon="code" href="/sdks">
-Use our official SDKs for easier integration.
-</Card>
-
-<Card title="Humans" icon="users" href="/concepts/humans">
-Set up reviewer groups for targeted assignment.
+MCP, CLI, n8n, Zapier, Make and REST.
 </Card>
 </CardGroup>

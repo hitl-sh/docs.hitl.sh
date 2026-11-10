@@ -1,0 +1,100 @@
+---
+title: "Webhooks"
+description: "Get finished runs POSTed to your server, with a callback URL per run or a subscription per workflow, and verify their signature."
+icon: "webhook"
+---
+
+HITL can tell your server when a run finishes, so you do not have to poll. There are two ways, with the same body, signature and retries:
+
+| | Set up | Sends |
+|---|---|---|
+| **Callback URL** | `callback_url` on [`POST /workflows/:id/run`](/api-reference/runs/run) | That one run |
+| **Subscription** | [`POST /webhooks/subscribe`](/api-reference/webhooks/subscribe) with a `workflow_id` | Every run of that workflow that finishes, however it was started (API, webhook trigger, schedule, n8n, ...). Test runs are not sent |
+
+A run with both gets both.
+
+<Note>
+This page is about HITL calling **you**. To start a workflow from another system, POST to its webhook trigger URL, or call [`POST /workflows/:id/run`](/api-reference/runs/run).
+</Note>
+
+## The request
+
+```http
+POST https://example.com/hitl/result
+Content-Type: application/json
+X-HITL-Event: execution.finished
+X-HITL-Execution-ID: 6af2ceb8c6a9f1dc71efd5dc
+X-HITL-Signature: t=1762761534,v1=5f2c8e…
+
+{
+  "event": "execution.finished",
+  "execution": {
+    "id": "6af2ceb8c6a9f1dc71efd5dc",
+    "workflow_id": "6af2ce4e8207961501f59472",
+    "workflow_name": "Refund approval",
+    "status": "completed",
+    "finished": true,
+    "input": {"order_id": "ORD-48213", "amount": 249, "currency": "USD"},
+    "result": "approve",
+    "decisions": [{"node_id": "review-1", "reviewer_name": "Priya Shah", "platform": "web_portal", "decision": "approve"}],
+    "action_results": [{"node_id": "action-1", "type": "webhook", "status": "success", "response": "200: {...}"}],
+    "error": "",
+    "triggered_via": "api",
+    "started_at": "2026-11-10T07:58:48.493Z",
+    "completed_at": "2026-11-10T07:58:53.847Z",
+    "duration_seconds": 5.354
+  }
+}
+```
+
+`status` is `completed`, `failed` or `timed_out`. Decisions carry reviewers' names, not their emails.
+
+## Verify the signature
+
+Every delivery is signed with the workflow's **webhook secret** (in the editor's **Settings** tab). `X-HITL-Signature` is `t=<unix seconds>,v1=<hex>`, where `v1` is the HMAC-SHA256 of `"<t>.<raw body>"` keyed with the secret. Compare in constant time, and reject a `t` more than 5 minutes from your clock.
+
+<CodeGroup>
+```javascript Node.js
+import crypto from "node:crypto";
+
+export function verifyHitl(rawBody, header, secret) {
+  const parts = Object.fromEntries(header.split(",").map((p) => p.split("=")));
+  const t = Number(parts.t);
+  if (!t || Math.abs(Date.now() / 1000 - t) > 300) return false;
+  const expected = crypto.createHmac("sha256", secret).update(`${t}.${rawBody}`).digest("hex");
+  const given = Buffer.from(parts.v1 ?? "", "hex");
+  return given.length === 32 && crypto.timingSafeEqual(given, Buffer.from(expected, "hex"));
+}
+```
+
+```python Python
+import hashlib, hmac, time
+
+def verify_hitl(raw_body: bytes, header: str, secret: str) -> bool:
+    parts = dict(p.split("=", 1) for p in header.split(","))
+    t = int(parts.get("t", 0))
+    if not t or abs(time.time() - t) > 300:
+        return False
+    expected = hmac.new(secret.encode(), f"{t}.".encode() + raw_body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, parts.get("v1", ""))
+```
+</CodeGroup>
+
+Use the raw body exactly as received, before any JSON parsing.
+
+## Delivery
+
+- Answer with any `2xx`. `408`, `429`, `5xx` and network errors are retried with backoff (10 seconds, growing to an hour between tries) for 24 hours. Any other status stops delivery.
+- A delivery can arrive more than once: deduplicate on the execution id.
+- Only `https` URLs on public addresses are accepted. Redirects are not followed.
+- `GET /executions/:id` shows the callback's delivery under `callback`: `state` (`queued`, `delivered`, `failed`), `attempts`, `last_status`, `last_error`.
+
+## Managing subscriptions
+
+| | |
+|---|---|
+| [Subscribe](/api-reference/webhooks/subscribe) | `POST /webhooks/subscribe` with `webhook_url`, `events: ["execution.finished"]` and `workflow_id`. The key must own the workflow |
+| [List](/api-reference/webhooks/list) | `GET /webhooks` |
+| [Delete](/api-reference/webhooks/delete) | `DELETE /webhooks/:id` |
+
+Revoking the API key that created a subscription ends its deliveries. Make's **Watch Workflow Runs** trigger subscribes and unsubscribes itself this way.

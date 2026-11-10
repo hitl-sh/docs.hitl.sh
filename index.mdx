@@ -1,82 +1,60 @@
 ---
-title: "Welcome"
-description: "Add human oversight to your AI workflows with our mobile-first platform. Build workflows, send items for human review, and receive structured responses via API."
-mode: "frame"
+title: "Introduction"
+description: "HITL lets your agents, code and automations ask real people for a decision, and get the answer back."
 icon: "hand"
 ---
 
-export const HeroCard = ({ filename, title, description, href }) => {
-  return (
-    <a className="group cursor-pointer pb-8" href={href}>
-      <img
-        src={`/images/hero/${filename}.png`}
-        className="block w-full h-auto dark:hidden pointer-events-none group-hover:scale-105 transition-all duration-100 rounded-lg"
-        alt=""
-      />
-      <img
-        src={`/images/hero/${filename}-dark.png`}
-        className="block w-full h-auto pointer-events-none group-hover:scale-105 transition-all duration-100 hidden dark:block rounded-lg"
-        alt=""
-      />
-      <h3 className="mt-5 text-gray-900 dark:text-zinc-50 font-medium">
-        {title}
-      </h3>
-      <span className="mt-1.5">{description}</span>
-    </a>
-  );
-};
+HITL (Human In The Loop) is how software asks a person. You build a **workflow** that says who to ask, what to ask and what to do with the answer. Your agent, your code, n8n, Zapier or Make **runs** it. The people you picked get the question on their phone, in the web inbox or in Telegram, answer it, and the run finishes with their answer.
 
-<div className="relative">
-  <div className="absolute -top-14 left-0 right-0 opacity-80">
-    <img
-      src="/images/hero/background-light.svg"
-      className="block dark:hidden pointer-events-none w-full h-auto"
-      alt="Decorative background image."
-    />
-    <img
-      src="/images/hero/background-dark.svg"
-      className="hidden dark:block pointer-events-none w-full h-auto"
-      alt="Decorative background image."
-    />
-  </div>
+<Frame>
+<img src="/images/editor/review-step.png" alt="The HITL workflow editor showing a refund approval workflow: a webhook trigger, an Approve refund review step, an Approved? condition, two actions and an End step, with the review step's settings open on the right" />
+</Frame>
 
-  <div className="relative z-10 w-full max-w-6xl px-4 sm:px-6 lg:px-10 py-16 lg:py-48 lg:pb-24 mx-auto">
-    <h1 className="block text-4xl font-medium text-center text-gray-900 dark:text-zinc-50 tracking-tight">
-      HITL.sh
-    </h1>
+## How it works
 
-    <div className="max-w-xl mx-auto px-4 mt-4 text-lg text-center text-gray-500 dark:text-zinc-500">
-      Add human oversight to your AI workflows with our mobile-first platform. Build workflows, send items for human review, and receive structured responses via API.
-    </div>
+<Steps>
+<Step title="Build a workflow">
+In the [editor](/guides/workflow-editor) at [my.hitl.sh](https://my.hitl.sh), add a trigger and a **review step**: the question, the kind of answer you want (approve or deny, pick an option, a number, edited text, ...) and a deadline. Add AI, condition and action steps around it if you like.
+</Step>
+<Step title="Invite the reviewers">
+Invite people by email, or share the workflow's join code, QR code or link. They answer in the HITL app for iOS and Android, the web inbox or the Telegram mini app.
+</Step>
+<Step title="Run it">
+Start a run with the [API](/api-reference/runs/run), the [CLI](/integrations/cli), the [MCP server](/integrations/mcp) from Claude, Cursor or another agent, or from [n8n](/integrations/n8n), [Zapier](/integrations/zapier) or [Make](/integrations/make). Each run is an **execution**.
+</Step>
+<Step title="Get the answer">
+The execution moves from `running` to `pending_review` while it waits for a person, then to `completed` with their decision. Read it with `GET /executions/:id?wait=30`, have it POSTed to a `callback_url`, or subscribe to `execution.finished`.
+</Step>
+</Steps>
 
-    <div className="px-6 lg:px-0 mt-12 lg:mt-24 grid sm:grid-cols-2 gap-x-6 gap-y-4">
-      <HeroCard
-        filename="rocket"
-        title="Create Your First Workflow"
-        description="Set up your first human-in-the-loop workflow in minutes with our API."
-        href="/first-workflow"
-      />
+## Start here
 
-      <HeroCard
-        filename="cli"
-        title="Mobile-First Reviews"
-        description="Reviewers receive instant push notifications and can respond on-the-go using our native mobile app."
-        href="/mobile/home-screen"
-      />
+<CardGroup cols={2}>
+<Card title="Quickstart" icon="rocket" href="/quickstart">
+From nothing to a person approving your first run, in about five minutes.
+</Card>
+<Card title="Set up your agent" icon="robot" href="/integrations/agent-setup">
+Paste one prompt into Claude Code, Codex or Cursor and let it connect itself.
+</Card>
+<Card title="Workflows" icon="diagram-project" href="/concepts/workflows">
+Triggers, steps, review steps and executions.
+</Card>
+<Card title="API reference" icon="code" href="/api-reference/introduction">
+Run workflows and follow their runs over REST.
+</Card>
+</CardGroup>
 
-      <HeroCard
-        filename="components"
-        title="API Reference"
-        description="Full-featured REST API for creating workflows, triggering reviews, and receiving responses."
-        href="/api-reference/introduction"
-      />
+## Ways to connect
 
-      <HeroCard
-        filename="editor"
-        title="Integrations"
-        description="Connect HITL.sh to thousands of apps through Zapier or n8n."
-        href="/integrations/n8n"
-      />
-    </div>
-  </div>
-</div>
+<CardGroup cols={3}>
+<Card title="MCP" icon="plug" href="/integrations/mcp">Claude, Cursor and any MCP client</Card>
+<Card title="CLI" icon="terminal" href="/integrations/cli">`npx @hitl-sh/cli`</Card>
+<Card title="REST API" icon="code" href="/integrations/rest">Any language</Card>
+<Card title="n8n" icon="diagram-project" href="/integrations/n8n">Community node</Card>
+<Card title="Zapier" icon="bolt" href="/integrations/zapier">Run a Workflow action</Card>
+<Card title="Make" icon="gears" href="/integrations/make">Verified app</Card>
+</CardGroup>
+
+<Note>
+Coming from HITL version 1? Read [Moving from HITL version 1](/guides/moving-from-version-1).
+</Note>
