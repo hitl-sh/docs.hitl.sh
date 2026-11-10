@@ -1,0 +1,109 @@
+---
+title: "REST API"
+description: "Run a workflow from any language, wait for the person's answer, and act on it. curl, Python and Node.js."
+icon: "code"
+---
+
+Three calls cover most integrations: find the input a workflow reads, start a run, and read the run until it has finished. Base URL `https://api.hitl.sh/v1`, with your [API key](/api-keys) as a Bearer token.
+
+<Steps>
+<Step title="See what the workflow reads">
+```bash
+curl https://api.hitl.sh/v1/api/workflows/6af2ce4e8207961501f59472/input \
+  -H "Authorization: Bearer $HITL_API_KEY"
+```
+
+`fields` lists each `{{trigger.body.<path>}}` its steps use: `amount`, `currency`, `customer.email`, `customer.name`, `order_id`, `reason`. List your workflows and their ids with [`GET /api/workflows`](/api-reference/workflows/list).
+</Step>
+<Step title="Start a run">
+<CodeGroup>
+```bash curl
+curl -X POST https://api.hitl.sh/v1/api/workflows/6af2ce4e8207961501f59472/run \
+  -H "Authorization: Bearer $HITL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"input": {"order_id": "ORD-48252", "customer": {"name": "Mary Jackson", "email": "mary@example.com"}, "amount": 320, "currency": "USD", "reason": "Item never arrived."}}'
+```
+
+```python Python
+import os, requests
+
+API = "https://api.hitl.sh/v1/api"
+H = {"Authorization": f"Bearer {os.environ['HITL_API_KEY']}"}
+
+run = requests.post(f"{API}/workflows/6af2ce4e8207961501f59472/run", headers=H, json={
+    "input": {"order_id": "ORD-48252", "customer": {"name": "Mary Jackson", "email": "mary@example.com"},
+              "amount": 320, "currency": "USD", "reason": "Item never arrived."},
+}).json()["data"]
+print(run["id"], run["status"])  # 6af2da4b2ce04c173fe49697 running
+```
+
+```javascript Node.js
+const API = "https://api.hitl.sh/v1/api";
+const H = { Authorization: `Bearer ${process.env.HITL_API_KEY}`, "Content-Type": "application/json" };
+
+const res = await fetch(`${API}/workflows/6af2ce4e8207961501f59472/run`, {
+  method: "POST",
+  headers: H,
+  body: JSON.stringify({
+    input: { order_id: "ORD-48252", customer: { name: "Mary Jackson", email: "mary@example.com" },
+             amount: 320, currency: "USD", reason: "Item never arrived." },
+  }),
+});
+const { data: run } = await res.json();
+console.log(run.id, run.status); // 6af2da4b2ce04c173fe49697 running
+```
+</CodeGroup>
+
+`202 Accepted` with the execution. A draft or paused workflow answers `409`.
+</Step>
+<Step title="Wait for the answer">
+`?wait=60` holds each call until the run finishes or a minute passes.
+
+<CodeGroup>
+```python Python
+while True:
+    ex = requests.get(f"{API}/executions/{run['id']}", headers=H, params={"wait": 60}).json()["data"]
+    if ex["finished"]:
+        break
+
+if ex["status"] == "completed" and ex["result"] == "approve":
+    print("Approved by", ex["decisions"][-1]["reviewer_name"])
+else:
+    print("Not approved:", ex["status"], ex.get("result"))
+```
+
+```javascript Node.js
+let ex;
+do {
+  const r = await fetch(`${API}/executions/${run.id}?wait=60`, { headers: H });
+  ex = (await r.json()).data;
+} while (!ex.finished);
+
+if (ex.status === "completed" && ex.result === "approve") {
+  console.log("Approved by", ex.decisions.at(-1).reviewer_name);
+} else {
+  console.log("Not approved:", ex.status, ex.result);
+}
+```
+</CodeGroup>
+
+```text
+Approved by Priya Shah
+```
+</Step>
+</Steps>
+
+## Instead of polling
+
+- Pass `"callback_url": "https://your.app/hitl"` when you start the run and HITL POSTs the finished run there, signed.
+- Or [subscribe](/api-reference/webhooks/subscribe) to `execution.finished` for a workflow, to hear about every run however it started.
+
+Both are explained, with signature verification code, in [Webhooks](/guides/webhooks).
+
+## TypeScript client
+
+[`@hitl-sh/core`](https://www.npmjs.com/package/@hitl-sh/core) is the typed client the CLI and MCP server are built on.
+
+## Errors and limits
+
+Every answer is `{"error": false, "msg": "...", "data": ...}` or `{"error": true, "msg": "..."}`. See [Errors](/api-reference/errors). Runs take up to 64 KB of input, and `/workflows` and `/executions` allow 1,000 requests an hour per key.

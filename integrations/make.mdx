@@ -1,303 +1,75 @@
 ---
-title: "Make Integration"
-description: "Trigger HITL.sh workflows and receive responses using Make.com modules with webhook support"
-icon: "puzzle"
+title: "Make"
+description: "Run a HITL workflow from a Make scenario, and start a second scenario with the person's answer."
+icon: "gears"
 ---
 
-# Make Integration
+The verified **Human Approval - HITL Platform** app on [Make](https://www.make.com/integrations/hitl) has these modules:
 
-Integrate HITL.sh with Make.com (formerly Integromat) to add human decision-making to your automation scenarios. The HITL.sh plugin provides modules to trigger workflows via webhook and receive responses in real time.
+| Module | Type | What it does |
+|---|---|---|
+| **Run a Workflow** | Action | Starts an active workflow, with a form of its input fields |
+| **Watch Workflow Runs** | Instant trigger | Fires when any run of a workflow finishes, with the people's answer |
+| **Get a Workflow Run** | Action | One run, optionally waiting up to 30 seconds for it to finish |
+| **List Workflow Runs** | Search | A workflow's runs, newest first |
+| **List Workflows** | Search | Your workflows |
+| **Make an API Call** | Universal | Any other [API](/api-reference/introduction) route |
 
-<Note>
-Before configuring Make, install the HITL.sh mobile app ([App Store](https://apps.apple.com/us/app/hitl-human-in-the-loop/id6752878072) | [Google Play](https://play.google.com/store/apps/details?id=hitl.sh.app)) since it's an integral part of the setup.
-</Note>
+## How a scenario gets the answer
 
-<Frame>
-<img src="/images/integrations/make-pics/google-forms-submission.png" alt="Make.com scenario with HITL.sh" />
-</Frame>
+A Make module can run for at most 40 seconds, and people take longer than that. So use **two scenarios**:
 
-## Why Use Make with HITL.sh?
+1. **Start**: your trigger, then **Run a Workflow**.
+2. **Carry on**: **Watch Workflow Runs** on the same workflow, then whatever should happen with the answer.
 
-<CardGroup cols={2}>
-<Card title="Visual Scenario Builder" icon="diagram-project">
-Design complex automation with an intuitive drag-and-drop visual interface
-</Card>
-
-<Card title="Real-Time Webhooks" icon="bolt">
-Receive instant notifications when human reviews complete using the webhook trigger module
-</Card>
-
-<Card title="Advanced Data Mapping" icon="code">
-Powerful data transformation and mapping between services
-</Card>
-
-<Card title="1,000+ App Integrations" icon="plug">
-Connect with Google Workspace, databases, CRMs, and countless other services
-</Card>
-</CardGroup>
-
-## Available Modules
-
-HITL.sh provides three modules in Make.com:
-
-<AccordionGroup>
-<Accordion title="Trigger Workflow">
-Send a JSON payload to your HITL.sh workflow's webhook URL to start an execution. The module waits for the human review response and returns it to your Make scenario.
-
-**Use Cases:**
-- Content moderation workflows
-- Approval processes
-- Quality assurance checks
-- Escalation routing
-
-**Required Fields:**
-- Webhook URL (from your HITL.sh workflow Settings tab)
-- Payload (JSON data to send)
-</Accordion>
-
-<Accordion title="Get Response">
-Retrieve the status and response data of a workflow execution by its execution ID.
-
-**Use Cases:**
-- Polling for completed reviews
-- Status monitoring
-- Data synchronization
-
-**Required Fields:**
-- Execution ID
-</Accordion>
-
-<Accordion title="Watch Responses (Webhook Trigger)">
-A real-time trigger module that fires when a human review response is submitted in any of your HITL.sh workflows. No polling required.
-
-**Use Cases:**
-- Instant notification workflows
-- Real-time dashboards
-- Immediate action routing
-
-**How it works:**
-1. Add the Watch Responses module as your scenario trigger
-2. Make generates a unique webhook URL
-3. Configure that URL as the callback in your HITL.sh workflow's action node
-4. The scenario fires automatically when a reviewer submits a response
-
-<Warning>
-This is a unique feature not available in other integration platforms.
-</Warning>
-</Accordion>
-</AccordionGroup>
-
-## Setting Up Authentication
+## Set up
 
 <Steps>
-<Step title="Add HITL.sh Module">
-Add any HITL.sh module to your scenario
+<Step title="Create a connection">
+Add any HITL module, click **Add** next to **Connection**, and paste your [API key](/api-keys).
 
 <Frame>
-<img src="/images/integrations/make-pics/authentication-connection.png" alt="Setting up HITL.sh connection in Make" />
+<img src="/images/make/connect.png" alt="Make's Create a connection dialog for HITL with a connection name and an API Key field" />
 </Frame>
-</Step>
-
-<Step title="Create Connection">
-Click "Add" next to the Connection field
-</Step>
-
-<Step title="Enter API Key">
-1. Go to your [HITL.sh dashboard](https://my.hitl.sh)
-2. Navigate to Settings -> API Keys
-3. Copy your API key
-4. Paste it into the Make connection dialog
-</Step>
-
-<Step title="Save & Test">
-Save the connection and test with a simple scenario
 </Step>
 </Steps>
 
-## Module Configuration
-
-### Trigger Workflow Module
-
-<Frame>
-<img src="/images/integrations/make-pics/create-request.png" alt="Trigger Workflow module configuration in Make" />
-</Frame>
-
-<ParamField body="Webhook URL" type="string" required>
-The webhook URL from your HITL.sh workflow's Settings tab
-</ParamField>
-
-<ParamField body="Payload" type="json" required>
-JSON data to send to the workflow. This data is available to all nodes in the HITL.sh workflow.
-</ParamField>
-
-The response type, options, reviewers, and timeout are all configured in the HITL.sh workflow designer -- not in the Make module.
-
-### Get Response Module
-
-<Frame>
-<img src="/images/integrations/make-pics/get-request-status.png" alt="Get Response module configuration in Make" />
-</Frame>
-
-<ParamField body="Execution ID" type="string" required>
-The execution ID returned when triggering a workflow
-</ParamField>
-
-**Returns:**
-```json
-{
-  "execution_id": "exec_abc123",
-  "status": "completed",
-  "response_data": "approve",
-  "response_by_user": {
-    "id": "65f1234567890abcdef12350",
-    "name": "John Reviewer",
-    "email": "john@example.com"
-  },
-  "response_time_seconds": 145.5,
-  "created_at": "2024-03-15T10:30:00Z",
-  "completed_at": "2024-03-15T10:32:25Z"
-}
-```
-
-### Watch Responses Module (Webhook Trigger)
-
-<Frame>
-<img src="/images/integrations/make-pics/Trigger-Module.png" alt="Watch Responses webhook trigger module" />
-</Frame>
+## Scenario 1: run the workflow
 
 <Steps>
-<Step title="Add Webhook Module">
-Add "HITL.sh > Watch Responses" as your scenario trigger
-</Step>
+<Step title="Add Run a Workflow">
+Pick the **Workflow** (only active workflows are listed), then fill in its **Input**: Make builds the form from the fields the workflow reads, so `customer.email` shows as **Email** inside a **Customer** group. Map values from earlier modules.
 
-<Step title="Copy Webhook URL">
-Make generates a unique webhook URL for this scenario
-</Step>
+<Frame>
+<img src="/images/make/run-workflow.png" alt="The Run a Workflow module with callouts: 1. pick the workflow Refund approval, 2. fill its input fields Amount 980 and Customer Email ada@example.com, and optional extra JSON under Show advanced settings" />
+</Frame>
 
-<Step title="Configure in HITL.sh">
-Add an Action node in your HITL.sh workflow that sends a webhook to this URL when the execution completes
+Fields are sent as text. To send numbers, or data the steps do not read directly, use **Input as JSON** under **Show advanced settings**.
 </Step>
+<Step title="Run it">
+The module returns the new run (`status: running`) straight away, and the reviewers get the question.
 
-<Step title="Automatic Triggering">
-Scenario automatically runs when a reviewer completes a response
+<Frame>
+<img src="/images/make/run-history.png" alt="The History tab of the scenario Refund approval: Run a Workflow, with a successful run started by API" />
+</Frame>
 </Step>
 </Steps>
 
-**Webhook Payload:**
-```json
-{
-  "event": "execution.completed",
-  "execution_id": "exec_abc123",
-  "workflow_id": "wf_def456",
-  "status": "completed",
-  "response_data": "approve",
-  "response_by_user": {
-    "id": "65f1234567890abcdef12350",
-    "name": "Sarah Reviewer",
-    "email": "sarah@example.com"
-  },
-  "response_time_seconds": 127.5,
-  "timestamp": "2024-03-15T10:32:25Z"
-}
-```
+## Scenario 2: carry on with the answer
 
-## Example Scenarios
+<Steps>
+<Step title="Add Watch Workflow Runs">
+Start a new scenario with **Watch Workflow Runs** and pick the same workflow. It subscribes itself to the workflow's finished runs, so there is no URL to copy. Turn the scenario **on** and keep it on.
+</Step>
+<Step title="A person answers">
+When a reviewer answers and the run finishes, the scenario runs with **Answer**, **Decided By**, **Status** and the rest of the run. Add a router or filter on **Answer** to do different things for *approve* and *deny*.
 
-### Google Forms Approval Workflow
-
-1. **Trigger:** New Google Forms Response
-2. **Filter:** Check if requires approval
-3. **HITL.sh Trigger Workflow:** Send form data to workflow webhook URL
-4. **Router:** Route based on response
-   - Approved: Update Google Sheet, send email
-   - Rejected: Archive response, notify submitter
-   - Escalate: Create ticket, notify manager
-
-### Real-Time Content Moderation (using Webhook)
-
-1. **Trigger:** HITL.sh Watch Responses (Webhook)
-2. **Switch:** Based on response_data
-   - "approve": Post to social media, log to database
-   - "reject": Send rejection notice, archive content
-   - "flag": Create moderation ticket, alert team
-
-### Customer Support Escalation
-
-1. **Trigger:** New Zendesk Ticket
-2. **Filter:** Priority = High or Urgent
-3. **HITL.sh Trigger Workflow:** Send ticket data to workflow webhook
-4. **Wait for Response:** The module polls until the reviewer responds
-5. **Action:** Route based on decision
-
-## Best Practices
-
-<CardGroup cols={2}>
-<Card title="Use Webhooks" icon="bolt">
-Prefer Watch Responses over polling Get Response for better performance and lower operation usage
-</Card>
-
-<Card title="Data Validation" icon="shield-check">
-Validate data before sending to HITL.sh to prevent errors
-</Card>
-
-<Card title="Error Handling" icon="triangle-exclamation">
-Always add error handlers to critical modules
-</Card>
-
-<Card title="Test Thoroughly" icon="flask">
-Run scenarios with test data before activating
-</Card>
-</CardGroup>
-
-## Troubleshooting
-
-<AccordionGroup>
-<Accordion title="Connection Failed">
-**Solution:**
-- Verify API key is correct
-- Check API key permissions
-- Regenerate API key if needed
-</Accordion>
-
-<Accordion title="Webhook Not Triggering">
-**Solution:**
-- Verify the workflow is activated in HITL.sh
-- Check the webhook URL is correctly configured in the HITL.sh workflow's action node
-- Test with a manual webhook call
-- Review Make scenario execution logs
-</Accordion>
-
-<Accordion title="No Response Received">
-**Solution:**
-- Verify the HITL.sh workflow has active reviewers assigned
-- Check the webhook URL is correct
-- Ensure the workflow is activated
-- Check reviewer notification settings
-</Accordion>
-</AccordionGroup>
-
-## Pricing & Operations
+<Frame>
+<img src="/images/make/watch-history.png" alt="The History tab of the scenario Refund approval: Watch Workflow Runs, with an Instant run marked Success" />
+</Frame>
+</Step>
+</Steps>
 
 <Note>
-Each module execution counts as one Make operation. Using webhooks (Watch Responses) is more efficient than polling (Get Response) as it only triggers when there's actual data.
+Deleting the scenario's webhook in Make also removes the HITL subscription. Runs finishing while the Watch scenario is off are not delivered later; read them with **List Workflow Runs**.
 </Note>
-
-## Next Steps
-
-<CardGroup cols={2}>
-<Card title="n8n Integration" icon="workflow" href="/integrations/n8n">
-Explore n8n for open-source automation
-</Card>
-
-<Card title="Zapier Integration" icon="zap" href="/integrations/zapier">
-Learn about Zapier for simpler workflows
-</Card>
-
-<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
-Configure your HITL.sh workflows
-</Card>
-
-<Card title="Community" icon="users" href="https://discord.gg/jYVrpmnMP9">
-Join Discord for scenario templates and support
-</Card>
-</CardGroup>

@@ -1,256 +1,73 @@
 ---
-title: "Zapier Integration"
-description: "Trigger HITL.sh workflows from Zapier using webhook URLs for no-code human-in-the-loop automation"
-icon: "zap"
+title: "Zapier"
+description: "Run a HITL workflow from a Zap, pause the Zap until a person answers, and continue with their answer."
+icon: "bolt"
 ---
 
-# Zapier Integration
+The **Human Approval - HITL Platform** app on Zapier has two workflow steps:
 
-Integrate HITL.sh with Zapier to connect human decision-making with over 7,000 apps and services. The HITL.sh plugin sends data to your workflow's webhook URL and waits for the human review response.
+| Step | Type | What it does |
+|---|---|---|
+| **Run a Workflow** | Action | Runs an active HITL workflow with fields from your Zap, and pauses the Zap until a person answers |
+| **Find a Workflow Run** | Search | Looks up a run and its answer by run id |
 
-<Note>
-Before configuring Zapier, install the HITL.sh mobile app ([App Store](https://apps.apple.com/us/app/hitl-human-in-the-loop/id6752878072) | [Google Play](https://play.google.com/store/apps/details?id=hitl.sh.app)) since it's an integral part of the setup.
-</Note>
-
-<Frame>
-<img src="/images/integrations/zapier-pics/zapier-workflow.png" alt="Zapier workflow with HITL.sh integration" />
-</Frame>
-
-## Why Use Zapier with HITL.sh?
-
-<CardGroup cols={2}>
-<Card title="7,000+ App Integrations" icon="plug">
-Connect HITL.sh with popular tools like Gmail, Slack, Google Sheets, Airtable, and more
-</Card>
-
-<Card title="No-Code Automation" icon="wand-magic-sparkles">
-Build powerful workflows without writing a single line of code using visual interface
-</Card>
-
-<Card title="Multi-Step Workflows" icon="workflow">
-Create complex automation sequences with conditional logic and multiple actions
-</Card>
-
-<Card title="Instant Setup" icon="bolt">
-Get started in minutes with pre-built templates and intuitive configuration
-</Card>
-</CardGroup>
-
-## How It Works
-
-The HITL.sh Zapier plugin triggers a HITL.sh workflow by sending a JSON payload to the workflow's webhook URL. The Zap waits for the human review response, then continues with downstream actions.
+## Set up
 
 <Steps>
-<Step title="Get your workflow webhook URL">
-In the HITL.sh dashboard, open your workflow and copy the webhook URL from the Settings tab.
+<Step title="Add the action">
+In the Zap editor, add a step, search for **Human Approval - HITL Platform**, and choose the **Run a Workflow** action event.
 </Step>
-
-<Step title="Add the HITL.sh action in Zapier">
-Search for "HITL.sh" in Zapier and select the **Trigger Workflow** action.
-</Step>
-
-<Step title="Authenticate">
-Connect your HITL.sh account using your API key.
+<Step title="Connect your account">
+Under **Account**, connect HITL with your [API key](/api-keys).
 
 <Frame>
-<img src="/images/integrations/zapier-pics/authentication-module.png" alt="Authenticating HITL.sh in Zapier" />
+<img src="/images/zapier/connect.png" alt="Zapier's Allow Zapier to access your HITL Account dialog with an API Key field" />
 </Frame>
-</Step>
-
-<Step title="Paste the webhook URL">
-Paste your workflow's webhook URL into the action configuration.
 
 <Frame>
-<img src="/images/integrations/zapier-pics/create-request-step-1-setup-phase.png" alt="Trigger Workflow - Setup phase in Zapier" />
+<img src="/images/zapier/choose-action.png" alt="The Run a Workflow step in the Zap editor: App Human Approval - HITL Platform, Action event Run a Workflow, and the connected HITL account" />
 </Frame>
-</Step>
-
-<Step title="Map your data">
-Map fields from your Zap trigger into the JSON payload.
-
-<Frame>
-<img src="/images/integrations/zapier-pics/create-request-step-2-configure.png" alt="Trigger Workflow - Configuration in Zapier" />
-</Frame>
-</Step>
-
-<Step title="Test & Activate">
-Test your Zap and turn it on to start automating.
 </Step>
 </Steps>
 
-<Info>
-The workflow handles all review configuration (response type, options, reviewers, timeout) in the HITL.sh designer. Your Zap only needs to send the data payload.
-</Info>
+## Run a workflow and use the answer
 
-## Available Actions
-
-<Tabs>
-<Tab title="Trigger Workflow">
-### Trigger Workflow Action
-
-Send data to a HITL.sh workflow webhook URL and wait for the human review response.
-
-**Required Fields:**
-
-<ParamField body="Webhook URL" type="string" required>
-The webhook URL of your HITL.sh workflow
-</ParamField>
-
-<ParamField body="Payload Fields" type="object" required>
-The data to send to the workflow. Map fields from your Zap trigger.
-</ParamField>
-
-**Optional Fields:**
-
-<ParamField body="Wait for Response" type="boolean" default="true">
-Whether to wait for the human review response before continuing the Zap
-</ParamField>
-
-<Note>
-The Zap waits for the human to respond before continuing execution. The response data is available to downstream actions.
-</Note>
-</Tab>
-
-<Tab title="Get Execution Status">
-### Get Execution Status Action
-
-Retrieve the status and response data of a workflow execution:
+<Steps>
+<Step title="Pick the workflow">
+**Workflow** lists your active workflows.
 
 <Frame>
-<img src="/images/integrations/zapier-pics/get-request-status-step-1-setup.png" alt="Get Execution Status - Setup in Zapier" />
+<img src="/images/zapier/pick-workflow.png" alt="The Workflow dropdown in the Configure tab listing Refund approval" />
 </Frame>
+</Step>
+<Step title="Map its fields">
+Zapier loads the fields the workflow's steps read (here **Amount** and **Customer › Email**). Map them from earlier steps. **Additional Input (JSON)** adds anything else; mapped fields win. Leave **Wait for the Answer** on *True*.
 
-**Required Fields:**
+<Frame>
+<img src="/images/zapier/fields.png" alt="The Configure tab with Workflow Refund approval, Amount 450, Customer Email ada@example.com, Additional Input (JSON) and Wait for the Answer set to True" />
+</Frame>
+</Step>
+<Step title="The Zap waits for the person">
+When the Zap runs, HITL starts the workflow and Zapier holds the run as **Delayed** until a reviewer answers on their phone, in the web inbox or in Telegram.
 
-<ParamField body="Execution ID" type="string" required>
-The execution ID returned when triggering a workflow
-</ParamField>
-</Tab>
-</Tabs>
+<Frame>
+<img src="/images/zapier/waiting.png" alt="Zap runs showing a run marked Delayed, waiting on the Run a Workflow step" />
+</Frame>
+</Step>
+<Step title="It continues with the answer">
+When the person answers, HITL calls Zapier back, the step reads the run again from the API and the Zap carries on. Its output includes **Answer** (`approve`), **Answer Label**, **Decided By** (`Priya Shah`), **Status** (`completed`), the run id and the whole run.
 
-## Example Workflows
+<Frame>
+<img src="/images/zapier/answer.png" alt="The successful Zap run: Run a Workflow's Data out shows Run ID, Workflow Name Refund approval, Status completed, Finished true, Answer approve, Answer Label approve and Decided By Priya Shah" />
+</Frame>
+</Step>
+<Step title="Branch on it">
+Add **Paths by Zapier** after the step, with rules on **Answer**: for example *Answer exactly matches approve* → issue the refund; otherwise → notify the customer.
+</Step>
+</Steps>
 
-### Content Approval from Google Forms
+**Answer** is the option value for a choice, `true`/`false` for Approve / Deny, a number, or text.
 
-**Trigger:** New Google Forms Response
-**Action 1:** HITL.sh Trigger Workflow
-```
-Webhook URL: https://api.hitl.sh/v1/workflows/wf_abc123/trigger
-Payload: { "content": "{{Form Response}}", "submitter": "{{Email}}" }
-```
-**Action 2:** Send Email (based on response)
-**Action 3:** Update Google Sheet with decision
+## Without waiting
 
-### Slack Message Moderation
-
-**Trigger:** New Message Posted in Slack
-**Filter:** Message contains flagged keywords
-**Action 1:** HITL.sh Trigger Workflow
-```
-Webhook URL: https://api.hitl.sh/v1/workflows/wf_def456/trigger
-Payload: { "message": "{{Message Text}}", "channel": "{{Channel}}", "user": "{{User ID}}" }
-```
-**Action 2:** Slack - Delete Message (if "Remove")
-**Action 3:** Slack - Send DM to User (if "Warn User")
-
-### Customer Refund Workflow
-
-**Trigger:** New Row in Airtable (Refund Requests)
-**Filter:** Amount > $100
-**Action 1:** HITL.sh Trigger Workflow
-```
-Webhook URL: https://api.hitl.sh/v1/workflows/wf_ghi789/trigger
-Payload: { "amount": "{{Amount}}", "reason": "{{Reason}}", "customer": "{{Customer Name}}" }
-```
-**Action 2:** Update Airtable with decision
-**Action 3:** Send confirmation email
-
-## Using Paths for Conditional Logic
-
-Zapier Paths allow you to handle different response values:
-
-```
-+-- Path A: If response = "approve"
-|  +-- Send approval email
-|  +-- Update database status
-|
-+-- Path B: If response = "reject"
-|  +-- Send rejection email
-|  +-- Archive submission
-|
-+-- Path C: If response = "escalate"
-   +-- Notify management
-   +-- Create high-priority ticket
-```
-
-## Best Practices
-
-<CardGroup cols={2}>
-<Card title="Test Thoroughly" icon="flask">
-Always test your Zaps with sample data before going live
-</Card>
-
-<Card title="Use Filters" icon="filter">
-Add filters to control when workflows are triggered
-</Card>
-
-<Card title="Error Handling" icon="triangle-exclamation">
-Set up error notifications to catch failed Zaps
-</Card>
-
-<Card title="Monitor Usage" icon="chart-line">
-Track your Zapier task usage to stay within limits
-</Card>
-</CardGroup>
-
-## Troubleshooting
-
-<AccordionGroup>
-<Accordion title="Authentication Failed">
-**Solution:**
-- Verify API key is correct
-- Regenerate API key if needed
-- Check API key permissions in HITL dashboard
-</Accordion>
-
-<Accordion title="Webhook URL Not Working">
-**Solution:**
-- Confirm the HITL.sh workflow is activated
-- Copy the webhook URL directly from the workflow Settings tab
-- Check for extra spaces in the URL field
-</Accordion>
-
-<Accordion title="Zap Not Firing">
-**Solution:**
-- Check trigger conditions are met
-- Verify Zap is turned ON
-- Review Zap history for errors
-- Test trigger manually
-</Accordion>
-</AccordionGroup>
-
-## Pricing Considerations
-
-<Note>
-Zapier integration uses your Zapier task quota. Each action (Trigger Workflow, Get Execution Status) counts as one task.
-</Note>
-
-## Next Steps
-
-<CardGroup cols={2}>
-<Card title="n8n Integration" icon="workflow" href="/integrations/n8n">
-Explore n8n for more advanced automation capabilities
-</Card>
-
-<Card title="Make Integration" icon="puzzle" href="/integrations/make">
-Learn about Make.com integration
-</Card>
-
-<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
-Configure your HITL.sh workflows
-</Card>
-
-<Card title="Community Templates" icon="users" href="https://discord.gg/jYVrpmnMP9">
-Browse templates shared by the community
-</Card>
-</CardGroup>
+Set **Wait for the Answer** to *False* and the Zap continues at once with the run id. Read the answer later with **Find a Workflow Run**.

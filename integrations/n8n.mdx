@@ -1,305 +1,98 @@
 ---
-title: "n8n Integration"
-description: "Trigger HITL.sh workflows from n8n using webhook URLs for human-in-the-loop automation"
-icon: "bolt"
+title: "n8n"
+description: "Run a HITL workflow from n8n, pause until a person answers, and branch on their answer."
+icon: "diagram-project"
 ---
 
-# n8n Integration
-
-Integrate HITL.sh with n8n to add human decision-making to your automated workflows. The HITL.sh plugin for n8n sends data to your workflow's webhook URL and waits for the human review response.
-
-<Note>
-Before configuring n8n, install the HITL.sh mobile app ([App Store](https://apps.apple.com/us/app/hitl-human-in-the-loop/id6752878072) | [Google Play](https://play.google.com/store/apps/details?id=hitl.sh.app)) since it's an integral part of the setup.
-</Note>
+The **HITL** community node (`n8n-nodes-human-in-the-loop`) runs one of your HITL workflows with data from n8n, waits for the person's answer, and continues on a different output for each answer.
 
 <Frame>
-<img src="/images/integrations/hitl-pics/n8n-workflow.png" alt="n8n workflow with HITL.sh integration" />
+<img src="/images/n8n/canvas.png" alt="An n8n workflow with a Start trigger connected to the HITL node, whose outputs are approve, reject and Other" />
 </Frame>
 
-## Why Use n8n with HITL.sh?
-
-<CardGroup cols={2}>
-<Card title="Visual Workflow Builder" icon="diagram-project">
-Design complex automation workflows with an intuitive drag-and-drop interface
-</Card>
-
-<Card title="300+ Integrations" icon="plug">
-Connect HITL.sh with popular services like Slack, Gmail, databases, and more
-</Card>
-
-<Card title="Self-Hosted Option" icon="server">
-Deploy on your own infrastructure for complete data control and privacy
-</Card>
-
-<Card title="Open Source" icon="code">
-Fully transparent codebase you can customize and extend to your needs
-</Card>
-</CardGroup>
-
-## Installation Methods
-
-n8n offers two ways to add HITL.sh integration to your workflows:
-
-<Tabs>
-<Tab title="Community Nodes (Recommended)">
-### Install via Community Nodes
+## Set up
 
 <Steps>
-<Step title="Open n8n Settings">
-Navigate to **Settings** -> **Community Nodes** in your n8n instance
-</Step>
-
-<Step title="Install HITL.sh Node">
-Search for `@hitlsh/n8n-nodes-hitl` and click **Install**
+<Step title="Install the node">
+In n8n, open **Settings → Community nodes → Install**, enter `n8n-nodes-human-in-the-loop` and install it.
 
 <Frame>
-<img src="/images/integrations/hitl-pics/n8n-community-nodes-installation.png" alt="Installing HITL.sh community node in n8n" />
+<img src="/images/n8n/install.png" alt="n8n's Install community nodes dialog with n8n-nodes-human-in-the-loop as the npm package name" />
 </Frame>
 </Step>
+<Step title="Add your API key">
+Create a **HITL.sh Human Approval API** credential and paste your [API key](/api-keys). The key is only sent to `api.hitl.sh`.
 
-<Step title="Restart n8n">
-Restart your n8n instance to load the new nodes
+<Frame>
+<img src="/images/n8n/credential.png" alt="The HITL credential in n8n with the API key filled in and Connection tested successfully" />
+</Frame>
 </Step>
-
-<Step title="Start Building">
-The HITL.sh nodes will now appear in your node palette
+<Step title="Have an active workflow in HITL">
+Build a workflow with a review step in [my.hitl.sh](https://my.hitl.sh) and activate it. Its fields (`{{trigger.body.amount}}`, ...) become the node's inputs.
 </Step>
 </Steps>
 
-<Note>
-Community Nodes are the recommended installation method as they receive automatic updates and simplified configuration.
-</Note>
-</Tab>
-
-<Tab title="Self-Hosted NPM">
-### Install via NPM
-
-For self-hosted n8n instances with custom node installations:
-
-```bash
-cd ~/.n8n/nodes
-npm install @hitlsh/n8n-nodes-hitl
-n8n restart
-```
-
-<Warning>
-Self-hosted NPM installation requires manual updates when new versions are released.
-</Warning>
-</Tab>
-</Tabs>
-
-## Setting Up Credentials
+## Run a workflow and branch on the answer
 
 <Steps>
-<Step title="Get Your API Key">
-1. Log in to your HITL.sh dashboard at [my.hitl.sh](https://my.hitl.sh)
-2. Navigate to **Settings** -> **API Keys**
-3. Click **Generate New API Key**
-4. Copy your API key
+<Step title="Add the HITL node">
+Add **HITL** after your trigger. Set **Resource** to *Workflow*, **Operation** to *Run*, and pick the **Workflow** from the list.
+</Step>
+<Step title="Fill in its input">
+The node loads the fields the workflow reads. Map each one from earlier nodes, for example **Amount** to `{{ $json.amount }}`. **Additional Input (JSON)** adds anything else.
 
 <Frame>
-<img src="/images/integrations/hitl-pics/n8n-api-credentials-setup.png" alt="Setting up HITL.sh API credentials in n8n" />
+<img src="/images/n8n/node-form.png" alt="The HITL node's parameters with callouts: 1. pick the workflow (Refund approval), 2. fill its input fields Amount and Customer Email, and optional extra JSON" />
 </Frame>
 </Step>
+<Step title="Choose how to wait, and the outputs">
+**Wait for Answer**:
 
-<Step title="Add Credentials in n8n">
-1. In n8n, go to **Credentials** -> **New**
-2. Search for "HITL.sh"
-3. Paste your API key
+| Option | What happens |
+|---|---|
+| **Automatic** | A callback when HITL can reach your n8n, otherwise polling |
+| **Callback** | The n8n execution pauses and frees the worker until HITL calls back. Needs a public `https` n8n address (`WEBHOOK_URL`) |
+| **Poll** | The execution keeps running and checks for the answer. Works on any n8n |
+| **Don't Wait** | Continues at once with the run id. Read the answer later with *Run → Get* |
+
+**Stop Waiting After (Hours)** caps the wait. **Answer Output Names or IDs**: pick answers (such as *approve* and *reject*) to give each its own output; other answers, no answer in time and failed runs go to **Other**.
 </Step>
+<Step title="Execute and answer">
+Run the n8n workflow. The reviewers get the question; when one answers, the node continues on that answer's output.
 
-<Step title="Test Connection">
-Click **Test Credentials** to verify the connection
+<Frame caption="Approved: the item leaves on the approve output">
+<img src="/images/n8n/approve-branch.png" alt="The HITL node after running: the Approve Branch output holds one item with the run's id" />
+</Frame>
+
+<Frame caption="Rejected: the canvas shows the item routed to reject">
+<img src="/images/n8n/canvas-routed.png" alt="The n8n canvas after a run: Start connected to HITL, with one item passed on the reject output" />
+</Frame>
 </Step>
 </Steps>
 
-## How It Works
+The output item is the execution: `status` (`completed`, `failed`, `timed_out`), `result` (the last answer), `decisions` (who answered what, where) and the rest of the [execution](/concepts/executions). When polling stops at **Stop Waiting After**, the item has the run so far and `stopped_waiting: true`.
 
-The HITL.sh n8n plugin triggers a workflow by sending a JSON payload to the workflow's webhook URL. The execution pauses at the human review node, and the plugin polls for the response.
+## Operations
 
-<Steps>
-<Step title="Get your workflow webhook URL">
-In the HITL.sh dashboard, open your workflow and copy the webhook URL from the Settings tab.
-</Step>
-
-<Step title="Configure the n8n node">
-Paste the webhook URL into the HITL.sh node configuration in n8n.
-</Step>
-
-<Step title="Map your data">
-Map fields from your n8n workflow into the JSON payload that will be sent to the HITL.sh webhook.
-</Step>
-
-<Step title="n8n sends the payload">
-When the n8n workflow runs, it sends the JSON payload to the webhook URL, triggering a HITL.sh workflow execution.
-</Step>
-
-<Step title="Human reviews and responds">
-The HITL.sh workflow pauses at the human review node. A reviewer responds via the mobile app or web dashboard.
-</Step>
-
-<Step title="n8n receives the response">
-The plugin polls for the response and returns it to your n8n workflow for downstream processing.
-</Step>
-</Steps>
-
-## Node Configuration
+| Resource | Operation | What it does |
+|---|---|---|
+| Workflow | **Run** | Start a workflow, optionally wait for the answer |
+| Workflow | **Get Many**, **Get** | Your workflows and their steps |
+| Workflow | **Get Input Fields** | The fields a workflow's steps read |
+| Run | **Get**, **Get Many** | One run, or a workflow's runs |
 
 <Frame>
-<img src="/images/integrations/hitl-pics/n8n-node-configuration.png" alt="Configuring HITL.sh node parameters in n8n" />
+<img src="/images/n8n/operations.png" alt="An n8n test workflow that ran every HITL operation successfully, with its log listing the workflow, input and run operations" />
 </Frame>
 
-### Required Parameters
+The node also works as a tool for n8n's **AI Agent**, where it polls for the answer.
 
-<ParamField body="Webhook URL" type="string" required>
-The webhook URL of your HITL.sh workflow (found in the workflow's Settings tab)
-</ParamField>
+## Notes
 
-<ParamField body="Payload" type="object" required>
-The JSON data to send to the workflow trigger. This data is available to all nodes in the HITL.sh workflow.
-</ParamField>
+- A callback only wakes the n8n execution; the node then reads the answer from the HITL API with your key, so the resume URL cannot be used to fake a decision.
+- A paused execution continues with its input data: check for a `status` field in the next step.
+- Saved n8n workflows that use version 1 of the node keep working unchanged.
 
-### Optional Parameters
-
-<ParamField body="API Key" type="string">
-Your HITL.sh API key for authenticated webhook requests
-</ParamField>
-
-<ParamField body="Wait for Response" type="boolean" default="true">
-Whether to wait for the human review response before continuing the n8n workflow
-</ParamField>
-
-## Response Data Structure
-
-When a reviewer completes a response, the n8n node receives:
-
-<Frame>
-<img src="/images/integrations/hitl-pics/n8n-response-data-structure.png" alt="Complete response data structure from HITL.sh in n8n" />
+<Frame caption="The node's icon in n8n's dark and light themes">
+<img src="/images/n8n/icon-light-dark.png" alt="The HITL node next to a Start trigger, in n8n's dark theme and light theme" />
 </Frame>
-
-```json
-{
-  "execution_id": "exec_abc123",
-  "status": "completed",
-  "response_data": "approve",
-  "response_by_user": {
-    "id": "65f1234567890abcdef12350",
-    "name": "John Reviewer",
-    "email": "john@example.com"
-  },
-  "response_time_seconds": 145.5,
-  "created_at": "2024-03-15T10:30:00Z",
-  "completed_at": "2024-03-15T10:32:25Z"
-}
-```
-
-## Example Workflow: Customer Refund Approval
-
-<Frame>
-<img src="/images/integrations/hitl-pics/customer-refund-approval-workflow.png" alt="n8n workflow for customer refund approvals with HITL.sh" />
-</Frame>
-
-### Workflow Steps
-
-<Steps>
-<Step title="Trigger: New Refund Request">
-Webhook or form submission triggers when customer requests refund
-</Step>
-
-<Step title="Check Refund Amount">
-Conditional node routes based on refund amount:
-- Under $50: Auto-approve
-- $50+: Send to HITL.sh for human review
-</Step>
-
-<Step title="HITL.sh Node">
-Send the refund details to your HITL.sh workflow webhook URL:
-
-```json
-{
-  "content": "Customer requesting ${{ $json.amount }} refund\nReason: {{ $json.reason }}\nCustomer lifetime value: ${{ $json.customer_ltv }}",
-  "customer_id": "{{ $json.customer_id }}",
-  "order_id": "{{ $json.order_id }}",
-  "amount": "{{ $json.amount }}"
-}
-```
-
-The HITL.sh workflow handles response type, options, reviewers, and timeout -- all configured in the workflow designer.
-</Step>
-
-<Step title="Process Decision">
-Switch node routes based on human decision
-</Step>
-
-<Step title="Execute Action">
-- **Approved**: Process refund and send confirmation
-- **Denied**: Send explanation email
-- **Escalate**: Notify management team
-</Step>
-</Steps>
-
-## Best Practices
-
-<CardGroup cols={2}>
-<Card title="Clear Payload Data" icon="message">
-Include all relevant context in your webhook payload so the HITL.sh workflow can display it to reviewers
-</Card>
-
-<Card title="Handle Timeouts" icon="clock">
-Configure your n8n workflow to handle cases where the HITL.sh response times out
-</Card>
-
-<Card title="Safe Defaults" icon="shield">
-Set conservative default responses in your HITL.sh workflow for timeout scenarios
-</Card>
-
-<Card title="Error Handling" icon="alert-triangle">
-Add error nodes in n8n to handle webhook failures gracefully
-</Card>
-</CardGroup>
-
-## Troubleshooting
-
-<AccordionGroup>
-<Accordion title="Node Not Appearing">
-**Solution**:
-- Verify installation completed successfully
-- Restart n8n instance
-- Check n8n logs for installation errors
-</Accordion>
-
-<Accordion title="Authentication Failed">
-**Solution**:
-- Verify API key is correct
-- Check API key has required permissions
-- Ensure API key hasn't expired
-</Accordion>
-
-<Accordion title="No Response Received">
-**Solution**:
-- Verify the HITL.sh workflow is activated
-- Check that the webhook URL is correct
-- Ensure the workflow has human review nodes with assigned reviewers
-- Check reviewer notification settings
-</Accordion>
-</AccordionGroup>
-
-## Next Steps
-
-<CardGroup cols={2}>
-<Card title="Zapier Integration" icon="zap" href="/integrations/zapier">
-Learn about our Zapier integration
-</Card>
-
-<Card title="Make Integration" icon="puzzle" href="/integrations/make">
-Explore Make.com integration
-</Card>
-
-<Card title="Workflow Designer" icon="pen-ruler" href="/guides/workflow-designer">
-Configure your HITL.sh workflows
-</Card>
-
-<Card title="Community Support" icon="discord" href="https://discord.gg/jYVrpmnMP9">
-Join our Discord community for help and examples
-</Card>
-</CardGroup>
